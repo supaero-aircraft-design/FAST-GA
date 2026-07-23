@@ -12,8 +12,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import openmdao.api as om
 import fastoad.api as oad
+import openmdao.api as om
 from fastoad.module_management.constants import ModelDomain
 
 from fastga.models.geometry.geom_components import (
@@ -27,14 +27,15 @@ from fastga.models.geometry.geom_components.fuselage.compute_fuselage import (
     ComputeFuselageLegacy,
 )
 from fastga.models.options import CABIN_SIZING_OPTION
+
 from .constants import (
-    SERVICE_WING_GEOMETRY,
-    SERVICE_NACELLE_DIMENSION,
-    SERVICE_NACELLE_POSITION,
+    SERVICE_AIRCRAFT_WET_AREA,
     SERVICE_LANDING_GEAR_GEOMETRY,
     SERVICE_MFW,
-    SERVICE_AIRCRAFT_WET_AREA,
+    SERVICE_NACELLE_DIMENSION,
+    SERVICE_NACELLE_POSITION,
     SERVICE_PROPELLER_GEOMETRY,
+    SERVICE_WING_GEOMETRY,
 )
 
 

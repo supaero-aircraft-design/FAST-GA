@@ -11,15 +11,14 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import numpy as np
-
-import openmdao.api as om
 import fastoad.api as oad
+import numpy as np
+import openmdao.api as om
 
 from ..constants import (
-    SUBMODEL_CN_R_WING,
-    SUBMODEL_CN_R_VT,
     SUBMODEL_CN_R,
+    SUBMODEL_CN_R_VT,
+    SUBMODEL_CN_R_WING,
 )
 
 

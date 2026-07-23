@@ -15,17 +15,16 @@
 import logging
 import warnings
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import scipy.optimize as optimize
-from scipy.interpolate import make_interp_spline
-from scipy.constants import g, knot, foot, lbf
+from fastoad.constants import EngineSetting
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
-from fastoad.constants import EngineSetting
-import fastoad.api as oad
-
+from scipy import optimize
+from scipy.constants import foot, g, knot, lbf
+from scipy.interpolate import make_interp_spline
 from stdatm import Atmosphere
 
 from fastga.utils.options_checkers import check_propulsion_id
@@ -213,7 +212,7 @@ class ComputeVN(om.ExplicitComponent):
             design_n_ng=0.0,
         )
 
-        if DOMAIN_PTS_NB < len(velocity_array_mtow):
+        if len(velocity_array_mtow) > DOMAIN_PTS_NB:
             velocity_array_mtow = velocity_array_mtow[0 : DOMAIN_PTS_NB - 1]
             load_factor_array_mtow = load_factor_array_mtow[0 : DOMAIN_PTS_NB - 1]
             warnings.warn(
@@ -240,7 +239,7 @@ class ComputeVN(om.ExplicitComponent):
             design_n_ng=0.0,
         )
 
-        if DOMAIN_PTS_NB < len(velocity_array_mzfw):
+        if len(velocity_array_mzfw) > DOMAIN_PTS_NB:
             velocity_array_mzfw = velocity_array_mzfw[0 : DOMAIN_PTS_NB - 1]
             load_factor_array_mzfw = load_factor_array_mzfw[0 : DOMAIN_PTS_NB - 1]
             warnings.warn(
@@ -491,14 +490,13 @@ class ComputeVN(om.ExplicitComponent):
                 k_c = 36.0 + (mtow_loading_psf - 20.0) * (28.6 - 36.0) / (100.0 - 20.0)
             else:
                 k_c = 28.6
+        elif mtow_loading_psf < 20.0:
+            k_c = 33.0
+        elif mtow_loading_psf < 100.0:
+            # Linear variation from 33.0 to 28.6
+            k_c = 33.0 + (mtow_loading_psf - 20.0) * (28.6 - 33.0) / (100.0 - 20.0)
         else:
-            if mtow_loading_psf < 20.0:
-                k_c = 33.0
-            elif mtow_loading_psf < 100.0:
-                # Linear variation from 33.0 to 28.6
-                k_c = 33.0 + (mtow_loading_psf - 20.0) * (28.6 - 33.0) / (100.0 - 20.0)
-            else:
-                k_c = 28.6
+            k_c = 28.6
 
         vc_min_1 = k_c * np.sqrt(weight_lbf / wing_area_sft) * self.kts_to_ms  # [m/s]
 
@@ -558,14 +556,13 @@ class ComputeVN(om.ExplicitComponent):
                 k_d = 1.50 + (mtow_loading_psf - 20.0) * (1.35 - 1.50) / (100.0 - 20.0)
             else:
                 k_d = 1.35
+        elif mtow_loading_psf < 20.0:
+            k_d = 1.4
+        elif mtow_loading_psf < 100.0:
+            # Linear variation from 1.4 to 1.35
+            k_d = 1.4 + (mtow_loading_psf - 20.0) * (1.35 - 1.4) / (100.0 - 20.0)
         else:
-            if mtow_loading_psf < 20.0:
-                k_d = 1.4
-            elif mtow_loading_psf < 100.0:
-                # Linear variation from 1.4 to 1.35
-                k_d = 1.4 + (mtow_loading_psf - 20.0) * (1.35 - 1.4) / (100.0 - 20.0)
-            else:
-                k_d = 1.35
+            k_d = 1.35
 
         vd_min_2 = k_d * vc_min_fin  # [m/s]
         vd = max(vd_min_1, vd_min_2)  # [m/s]

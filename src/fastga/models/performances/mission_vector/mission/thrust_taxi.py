@@ -11,17 +11,17 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
 from fastoad.constants import EngineSetting
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
-import fastoad.api as oad
 from stdatm import Atmosphere
 
-from fastga.utils.options_checkers import check_propulsion_id
 from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
+from fastga.utils.options_checkers import check_propulsion_id
 
 
 class ThrustTaxi(om.ExplicitComponent):

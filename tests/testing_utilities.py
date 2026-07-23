@@ -16,22 +16,18 @@ Convenience functions for helping tests
 
 import logging
 import os.path as pth
-from copy import deepcopy
-from typing import Union, List
 import time
+from copy import deepcopy
 
+import fastoad.api as oad
 import numpy as np
-
 import openmdao.api as om
-from openmdao.core.system import System
-
+from fastoad.io import VariableIO
 
 # noinspection PyProtectedMember
 from fastoad.module_management.service_registry import _RegisterOpenMDAOService
-import fastoad.api as oad
-
-from fastoad.io import VariableIO
 from fastoad.openmdao.problem import AutoUnitsDefaultGroup
+from openmdao.core.system import System
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -80,7 +76,7 @@ def register_wrappers():
     _RegisterOpenMDAOService.explore_folder(unsplit_path)
 
 
-def get_indep_var_comp(var_names: List[str], test_file: str, xml_file_name: str) -> om.IndepVarComp:
+def get_indep_var_comp(var_names: list[str], test_file: str, xml_file_name: str) -> om.IndepVarComp:
     """Reads required input data from xml file and returns an IndepVarcomp() instance"""
     reader = VariableIO(pth.join(pth.dirname(test_file), "data", xml_file_name))
     reader.path_separator = ":"
@@ -116,7 +112,7 @@ class VariableListLocal(oad.VariableList):
         return VariableListLocal.from_problem(problem, use_initial_values=True)
 
 
-def list_inputs(component: Union[om.ExplicitComponent, om.Group]) -> list:
+def list_inputs(component: om.ExplicitComponent | om.Group) -> list:
     """Reads input variables from a component/problem and return as a list"""
     # register_wrappers()
     if isinstance(component, om.Group):
@@ -129,7 +125,7 @@ def list_inputs(component: Union[om.ExplicitComponent, om.Group]) -> list:
     return input_names
 
 
-class Timer(object):
+class Timer:
     def __init__(self, name=None):
         self.name = name
 

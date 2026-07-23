@@ -14,9 +14,9 @@ Python module for wing chords of calculations (l1 and l4), part of the wing geom
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 
 from ..constants import SERVICE_WING_L1_L4, SUBMODEL_WING_L1_L4_LEGACY
 

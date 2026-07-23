@@ -12,18 +12,15 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import Union
-import numpy as np
-import pandas as pd
-
-from openmdao.core.component import Component
 
 import fastoad.api as oad
+import numpy as np
+import pandas as pd
 from fastoad.constants import EngineSetting
+from openmdao.core.component import Component
 
-from fastga.models.propulsion.fuel_propulsion.base import AbstractFuelPropulsion
+from fastga.models.propulsion.fuel_propulsion.base import AbstractFuelPropulsion, FuelEngineSet
 from fastga.models.propulsion.propulsion import IPropulsion
-from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
 
 ENGINE_WRAPPER_BE76 = "test.wrapper.handling_qualities.beechcraft.dummy_engine"
 ENGINE_WRAPPER_SR22 = "test.wrapper.handling_qualities.cirrus.dummy_engine"
@@ -54,7 +51,7 @@ class DummyEngineBE76(AbstractFuelPropulsion):
         self.fuel_type = fuel_type
         self.strokes_nb = strokes_nb
 
-    def compute_flight_points(self, flight_points: Union[oad.FlightPoint, pd.DataFrame]):
+    def compute_flight_points(self, flight_points: oad.FlightPoint | pd.DataFrame):
         if flight_points.engine_setting == EngineSetting.TAKEOFF:
             flight_points.thrust = 5800.0 / 2.0
         elif flight_points.engine_setting == EngineSetting.CLIMB:
@@ -77,7 +74,7 @@ class DummyEngineBE76(AbstractFuelPropulsion):
     def get_consumed_mass(self, flight_point: oad.FlightPoint, time_step: float) -> float:
         return 0.0
 
-    def compute_max_power(self, flight_points: Union[oad.FlightPoint, pd.DataFrame]) -> float:
+    def compute_max_power(self, flight_points: oad.FlightPoint | pd.DataFrame) -> float:
         return 0.0
 
 
@@ -121,7 +118,7 @@ class DummyEngineSR22(AbstractFuelPropulsion):
         """
         super().__init__()
 
-    def compute_flight_points(self, flight_points: Union[oad.FlightPoint, pd.DataFrame]):
+    def compute_flight_points(self, flight_points: oad.FlightPoint | pd.DataFrame):
         if flight_points.engine_setting == EngineSetting.TAKEOFF:
             flight_points.thrust = 5417.0
         elif flight_points.engine_setting == EngineSetting.CLIMB:
@@ -148,7 +145,7 @@ class DummyEngineSR22(AbstractFuelPropulsion):
     def compute_sl_thrust(self) -> float:
         return 5417.0
 
-    def compute_max_power(self, flight_points: Union[oad.FlightPoint, pd.DataFrame]) -> float:
+    def compute_max_power(self, flight_points: oad.FlightPoint | pd.DataFrame) -> float:
         return 0.0
 
 
@@ -180,7 +177,7 @@ class DummyEngineTBM900(AbstractFuelPropulsion):
         """
         super().__init__()
 
-    def compute_flight_points(self, flight_points: Union[oad.FlightPoint, pd.DataFrame]):
+    def compute_flight_points(self, flight_points: oad.FlightPoint | pd.DataFrame):
         if flight_points.engine_setting == EngineSetting.TAKEOFF:
             flight_points.thrust = 8000.0
         elif flight_points.engine_setting == EngineSetting.CLIMB:
@@ -207,7 +204,7 @@ class DummyEngineTBM900(AbstractFuelPropulsion):
     def compute_sl_thrust(self) -> float:
         return 8000.0
 
-    def compute_max_power(self, flight_points: Union[oad.FlightPoint, pd.DataFrame]) -> float:
+    def compute_max_power(self, flight_points: oad.FlightPoint | pd.DataFrame) -> float:
         return 0.0
 
 

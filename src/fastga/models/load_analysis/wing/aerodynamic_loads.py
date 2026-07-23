@@ -16,13 +16,12 @@ according to aerostructural loads.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-
-import fastoad.api as oad
 from stdatm import Atmosphere
 
-from .aerostructural_loads import AerostructuralLoad, SPAN_MESH_POINT_LOADS
+from .aerostructural_loads import SPAN_MESH_POINT_LOADS, AerostructuralLoad
 from .constants import SUBMODEL_AERODYNAMIC_LOADS
 
 

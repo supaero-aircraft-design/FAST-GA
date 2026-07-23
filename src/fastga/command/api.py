@@ -12,38 +12,36 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import logging
-import warnings
-import os.path as pth
-import os
-import shutil
-import inspect
 import importlib
+import inspect
+import logging
+import os
+import os.path as pth
+import shutil
 import tempfile
-from tempfile import TemporaryDirectory
+import warnings
 from copy import deepcopy
 from itertools import product
 from pathlib import Path
-from typing import Union, List
 from platform import system
-
-import numpy as np
-from deprecated import deprecated
-import openmdao.api as om
-from openmdao.core.explicitcomponent import ExplicitComponent
-from openmdao.core.implicitcomponent import ImplicitComponent
-from openmdao.core.indepvarcomp import IndepVarComp
-from openmdao.core.group import Group
-from openmdao.core.system import System
+from tempfile import TemporaryDirectory
 
 import fastoad.api as oad
+import numpy as np
+import openmdao.api as om
+from deprecated import deprecated
+
+# noinspection PyProtectedMember
+from fastoad.cmd.api import _get_simple_system_list
 from fastoad.cmd.exceptions import FastPathExistsError
 from fastoad.io import IVariableIOFormatter, VariableIO
 from fastoad.io.xml import VariableXmlStandardFormatter
 from fastoad.openmdao.problem import AutoUnitsDefaultGroup
-
-# noinspection PyProtectedMember
-from fastoad.cmd.api import _get_simple_system_list
+from openmdao.core.explicitcomponent import ExplicitComponent
+from openmdao.core.group import Group
+from openmdao.core.implicitcomponent import ImplicitComponent
+from openmdao.core.indepvarcomp import IndepVarComp
+from openmdao.core.system import System
 
 from fastga.utils.warnings import VariableDescriptionWarning
 
@@ -80,7 +78,7 @@ def file_temporary_transfer(file_path: str):
     tmp_folder = _create_tmp_directory()
     file_name = pth.split(file_path)[-1]
     shutil.copy(file_path, pth.join(tmp_folder.name, file_name))
-    file = open(file_path, "r")
+    file = open(file_path)
     lines = file.read()
     lines = lines.split("\n")
     idx_to_remove = []
@@ -136,7 +134,7 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
         # Read file and construct dictionary of variables name index
         saved_dict = {}
         if pth.exists(pth.join(subpackage_path, "variable_descriptions.txt")):
-            file = open(pth.join(subpackage_path, "variable_descriptions.txt"), "r")
+            file = open(pth.join(subpackage_path, "variable_descriptions.txt"))
             for line in file:
                 if line[0] != "#" and len(line.split("||")) == 2:
                     variable_name, variable_description = line.split("||")
@@ -156,7 +154,7 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                 empty_description_variables = []
                 for name in files:
                     if name == "variable_descriptions.txt":
-                        file = open(pth.join(root, name), "r")
+                        file = open(pth.join(root, name))
                         for line in file:
                             if line[0] != "#" and len(line.split("||")) == 2:
                                 variable_name, variable_description = line.split("||")
@@ -170,23 +168,22 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                                 while variable_name_length != len(variable_name):
                                     variable_name = variable_name.replace(" ", "")
                                     variable_name_length = len(variable_name)
-                                if variable_name not in saved_dict.keys():
+                                if variable_name not in saved_dict:
                                     saved_dict[variable_name] = (variable_description, root)
-                                else:
-                                    if not (
-                                        pth.split(root)[-1]
-                                        == pth.split(saved_dict[variable_name][1])[-1]
-                                    ):
-                                        warnings.warn(
-                                            "file variable_descriptions.txt from subpackage "
-                                            + pth.split(root)[-1]
-                                            + " contains parameter "
-                                            + variable_name
-                                            + " already saved in "
-                                            + pth.split(saved_dict[variable_name][1])[-1]
-                                            + " subpackage!",
-                                            category=VariableDescriptionWarning,
-                                        )
+                                elif not (
+                                    pth.split(root)[-1]
+                                    == pth.split(saved_dict[variable_name][1])[-1]
+                                ):
+                                    warnings.warn(
+                                        "file variable_descriptions.txt from subpackage "
+                                        + pth.split(root)[-1]
+                                        + " contains parameter "
+                                        + variable_name
+                                        + " already saved in "
+                                        + pth.split(saved_dict[variable_name][1])[-1]
+                                        + " subpackage!",
+                                        category=VariableDescriptionWarning,
+                                    )
                         file.close()
                 if vd_file_empty_description:
                     warnings.warn(
@@ -215,7 +212,7 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                         # noinspection PyBroadException
                         try:
                             spec.loader.exec_module(module)
-                        except Exception:  # noqa: E722
+                        except Exception:
                             _LOGGER.info(
                                 "Trying to load %s, but it is not a module!", pth.join(root, name)
                             )
@@ -228,11 +225,8 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                         class_list = []
                         for class_name in total_class_list:
                             address = getattr(module, class_name).__module__
-                            if len(address.split(".")) <= 2:
+                            if len(address.split(".")) <= 2 or pth.split(subpackage_path)[-1] == address.split(".")[2]:
                                 class_list.append(class_name)
-                            else:
-                                if pth.split(subpackage_path)[-1] == address.split(".")[2]:
-                                    class_list.append(class_name)
                         # noinspection PyUnboundLocalVariable
                         retrieve_original_file(tmp_folder, pth.join(root, name))
                         if system() != "Windows":
@@ -292,7 +286,7 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                                             or ("settings:" in key)
                                             or ("tuning:" in key)
                                         ):
-                                            if key not in dict_to_be_saved.keys():
+                                            if key not in dict_to_be_saved:
                                                 dict_to_be_saved[key] = ""
                                 # If boolean options alternatives encountered, all alternatives
                                 # have to be tested to ensure complete coverage of variables.
@@ -338,13 +332,13 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                                                 or ("settings:" in key)
                                                 or ("tuning:" in key)
                                             ):
-                                                if key not in dict_to_be_saved.keys():
+                                                if key not in dict_to_be_saved:
                                                     dict_to_be_saved[key] = ""
-                            except Exception:  # noqa: E722
+                            except Exception:
                                 _LOGGER.info(
                                     "Failed to read %s.%s class parameters!", root_lib, class_name
                                 )
-                    except Exception:  # noqa: E722
+                    except Exception:
                         if tmp_folder is not None:
                             # noinspection PyUnboundLocalVariable
                             retrieve_original_file(tmp_folder, pth.join(root, name))
@@ -357,19 +351,18 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
             ) != len(dict_to_be_saved.keys()):
                 file.write("\n")
             file.close()
-        else:
-            if dict_to_be_saved.keys():
-                file = open(pth.join(subpackage_path, "variable_descriptions.txt"), "w")
-                file.write("# Documentation of variables used in FAST-GA models\n")
-                file.write("# Each line should be like:\n")
-                file.write(
-                    "# my:variable||The description of my:variable, as long as needed, but on one "
-                    "line.\n "
-                )
-                file.write(
-                    '# The separator "||" can be surrounded with spaces (that will be ignored)\n\n'
-                )
-                file.close()
+        elif dict_to_be_saved.keys():
+            file = open(pth.join(subpackage_path, "variable_descriptions.txt"), "w")
+            file.write("# Documentation of variables used in FAST-GA models\n")
+            file.write("# Each line should be like:\n")
+            file.write(
+                "# my:variable||The description of my:variable, as long as needed, but on one "
+                "line.\n "
+            )
+            file.write(
+                '# The separator "||" can be surrounded with spaces (that will be ignored)\n\n'
+            )
+            file.close()
         if len(dict_to_be_saved.keys()) != 0:
             file = open(pth.join(subpackage_path, "variable_descriptions.txt"), "a")
             sorted_keys = sorted(dict_to_be_saved.keys(), key=lambda x: x.lower())
@@ -384,9 +377,9 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
             file.close()
             if added_key:
                 warnings.warn(
-                    "file variable_descriptions.txt from {} subpackage contains empty "
-                    "descriptions! \n".format(pth.split(subpackage_path)[-1])
-                    + "\tFollowing variables have empty descriptions : "
+                    f"file variable_descriptions.txt from {pth.split(subpackage_path)[-1]} subpackage contains empty "
+                    "descriptions! \n"
+                     "\tFollowing variables have empty descriptions : "
                     + ", ".join(added_key_names),
                     category=VariableDescriptionWarning,
                 )
@@ -476,7 +469,7 @@ def write_needed_inputs(
     variables.save()
 
 
-def list_ivc_outputs_name(local_system: Union[ExplicitComponent, ImplicitComponent, Group]):
+def list_ivc_outputs_name(local_system: ExplicitComponent | ImplicitComponent | Group):
     """
     List all "root" components in the systems, meaning the components that don't have any
     subcomponents.
@@ -516,8 +509,8 @@ def list_ivc_outputs_name(local_system: Union[ExplicitComponent, ImplicitCompone
 
 
 def generate_block_analysis(
-    local_system: Union[ExplicitComponent, ImplicitComponent, Group, str],
-    var_inputs: List,
+    local_system: ExplicitComponent | ImplicitComponent | Group | str,
+    var_inputs: list,
     xml_file_path: str,
     options: dict = None,
     overwrite: bool = False,
@@ -581,54 +574,51 @@ def generate_block_analysis(
             "but no function is returned!\nConsider defining proper values before second execution!"
         )
 
+    if os.path.exists(xml_file_path):
+        reader = VariableIO(xml_file_path, VariableXmlStandardFormatter()).read(
+            ignore=(var_inputs + outputs_names + ivc_outputs_names)
+        )
+        xml_inputs = reader.names()
     else:
-        if os.path.exists(xml_file_path):
-            reader = VariableIO(xml_file_path, VariableXmlStandardFormatter()).read(
-                ignore=(var_inputs + outputs_names + ivc_outputs_names)
+        xml_inputs = []
+    if not (
+        set(xml_inputs + var_inputs + ivc_outputs_names).intersection(set(inputs_names))
+        == set(inputs_names)
+    ):
+        # If some inputs are missing write an error message and add them to the problem if
+        # authorized
+        missing_inputs = list(
+            set(inputs_names).difference(
+                set(xml_inputs + var_inputs + ivc_outputs_names).intersection(set(inputs_names))
             )
-            xml_inputs = reader.names()
-        else:
-            xml_inputs = []
-        if not (
-            set(xml_inputs + var_inputs + ivc_outputs_names).intersection(set(inputs_names))
-            == set(inputs_names)
-        ):
-            # If some inputs are missing write an error message and add them to the problem if
-            # authorized
-            missing_inputs = list(
-                set(inputs_names).difference(
-                    set(xml_inputs + var_inputs + ivc_outputs_names).intersection(set(inputs_names))
-                )
+        )
+        message = "The following inputs are missing in .xml file:"
+        for item in missing_inputs:
+            message += " [" + item + "],"
+        message = message[:-1] + ".\n"
+        if overwrite:
+            # noinspection PyUnboundLocalVariable
+            reader.path_separator = ":"
+            ivc = reader.to_ivc()
+            group = AutoUnitsDefaultGroup()
+            group.add_subsystem("system", local_system, promotes=["*"])
+            group.add_subsystem("ivc", ivc, promotes=["*"])
+            problem = oad.FASTOADProblem()
+            problem.model = group
+            problem.input_file_path = xml_file_path
+            problem.output_file_path = xml_file_path
+            problem.setup()
+            problem.write_outputs()
+            message += (
+                f"Default values have been added to {xml_file_path} file. "
+                "Consider modifying them for a second run!"
             )
-            message = "The following inputs are missing in .xml file:"
-            for item in missing_inputs:
-                message += " [" + item + "],"
-            message = message[:-1] + ".\n"
-            if overwrite:
-                # noinspection PyUnboundLocalVariable
-                reader.path_separator = ":"
-                ivc = reader.to_ivc()
-                group = AutoUnitsDefaultGroup()
-                group.add_subsystem("system", local_system, promotes=["*"])
-                group.add_subsystem("ivc", ivc, promotes=["*"])
-                problem = oad.FASTOADProblem()
-                problem.model = group
-                problem.input_file_path = xml_file_path
-                problem.output_file_path = xml_file_path
-                problem.setup()
-                problem.write_outputs()
-                message += (
-                    "Default values have been added to {} file. "
-                    "Consider modifying them for a second run!".format(xml_file_path)
-                )
-                raise Exception(message)
-            else:
-                raise Exception(message)
-        else:
-            # If all inputs addressed either by .xml or var_inputs or in an IVC, construct the
-            # function
-            def patched_function(inputs_dict: dict) -> dict:
-                """
+            raise Exception(message)
+        raise Exception(message)
+    # If all inputs addressed either by .xml or var_inputs or in an IVC, construct the
+    # function
+    def patched_function(inputs_dict: dict) -> dict:
+        """
                 The patched function perform a run of an openmdao component or group applying
                 FASTOAD formalism.
 
@@ -638,34 +628,34 @@ def generate_block_analysis(
                 units) as tuple.
                 """
 
-                # Read .xml file and construct Independent Variable Component excluding outputs
-                if os.path.exists(xml_file_path):
-                    reader.path_separator = ":"
-                    ivc_local = reader.to_ivc()
-                else:
-                    ivc_local = IndepVarComp()
-                for name, value in inputs_dict.items():
-                    ivc_local.add_output(name, value[0], units=value[1])
-                group_local = AutoUnitsDefaultGroup()
-                group_local.add_subsystem("ivc", ivc_local, promotes=["*"])
-                group_local.add_subsystem("system", local_system, promotes=["*"])
-                problem_local = oad.FASTOADProblem()
-                model_local = problem_local.model
-                model_local.add_subsystem("local_system", group_local, promotes=["*"])
-                problem_local.setup()
-                problem_local.run_model()
-                if overwrite:
-                    problem_local.output_file_path = xml_file_path
-                    problem_local.write_outputs()
-                # Get output names from component/group and construct dictionary
-                outputs_units = [var.units for var in variables if not var.is_input]
-                outputs_dict = {}
-                for idx, _ in enumerate(outputs_names):
-                    value = problem_local.get_val(outputs_names[idx], outputs_units[idx])
-                    outputs_dict[outputs_names[idx]] = (value, outputs_units[idx])
-                return outputs_dict
+        # Read .xml file and construct Independent Variable Component excluding outputs
+        if os.path.exists(xml_file_path):
+            reader.path_separator = ":"
+            ivc_local = reader.to_ivc()
+        else:
+            ivc_local = IndepVarComp()
+        for name, value in inputs_dict.items():
+            ivc_local.add_output(name, value[0], units=value[1])
+        group_local = AutoUnitsDefaultGroup()
+        group_local.add_subsystem("ivc", ivc_local, promotes=["*"])
+        group_local.add_subsystem("system", local_system, promotes=["*"])
+        problem_local = oad.FASTOADProblem()
+        model_local = problem_local.model
+        model_local.add_subsystem("local_system", group_local, promotes=["*"])
+        problem_local.setup()
+        problem_local.run_model()
+        if overwrite:
+            problem_local.output_file_path = xml_file_path
+            problem_local.write_outputs()
+        # Get output names from component/group and construct dictionary
+        outputs_units = [var.units for var in variables if not var.is_input]
+        outputs_dict = {}
+        for idx, _ in enumerate(outputs_names):
+            value = problem_local.get_val(outputs_names[idx], outputs_units[idx])
+            outputs_dict[outputs_names[idx]] = (value, outputs_units[idx])
+        return outputs_dict
 
-            return patched_function
+    return patched_function
 
 
 def list_all_subsystem(model, model_address, dict_subsystems):
@@ -724,7 +714,7 @@ class VariableListLocal(oad.VariableList):
         return VariableListLocal.from_problem(problem, use_initial_values=True)
 
 
-def list_variables(component: Union[om.ExplicitComponent, om.Group]) -> list:
+def list_variables(component: om.ExplicitComponent | om.Group) -> list:
     """Reads all variables from a component/problem and return as a list."""
     if isinstance(component, om.Group):
         new_component = AutoUnitsDefaultGroup()
@@ -735,7 +725,7 @@ def list_variables(component: Union[om.ExplicitComponent, om.Group]) -> list:
     return variables
 
 
-def list_inputs(component: Union[om.ExplicitComponent, om.Group]) -> list:
+def list_inputs(component: om.ExplicitComponent | om.Group) -> list:
     """Reads all variables from a component/problem and returns inputs as a list."""
     variables = list_variables(component)
     input_names = [var.name for var in variables if var.is_input]
@@ -743,7 +733,7 @@ def list_inputs(component: Union[om.ExplicitComponent, om.Group]) -> list:
     return input_names
 
 
-def list_inputs_metadata(component: Union[om.ExplicitComponent, om.Group]) -> tuple:
+def list_inputs_metadata(component: om.ExplicitComponent | om.Group) -> tuple:
     """
     Reads all variables from a component/problem and returns inputs name and metadata as a
     list.
@@ -798,7 +788,7 @@ def list_inputs_metadata(component: Union[om.ExplicitComponent, om.Group]) -> tu
     return var_inputs, var_units, var_shape, var_shape_by_conn, var_copy_shape
 
 
-def list_outputs(component: Union[om.ExplicitComponent, om.Group]) -> list:
+def list_outputs(component: om.ExplicitComponent | om.Group) -> list:
     """Reads all variables from a component/problem and returns outputs as a list."""
     variables = list_variables(component)
     output_names = [var.name for var in variables if not var.is_input]

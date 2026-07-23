@@ -15,9 +15,10 @@ Python module for propeller position calculation wrt the wing, part of the prope
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import warnings
+
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 
 from ..constants import SERVICE_PROPELLER_POSITION, SUBMODEL_PROPELLER_POSITION_LEGACY
 
@@ -97,9 +98,7 @@ class ComputePropellerPosition(om.ExplicitComponent):
         else:
             x_from_le_array = fa_length - 0.25 * l0_wing
             warnings.warn(
-                "Propulsion layout {} not implemented in model, replaced by layout 3!".format(
-                    prop_layout
-                )
+                f"Propulsion layout {prop_layout} not implemented in model, replaced by layout 3!"
             )
 
         outputs["data:geometry:propulsion:nacelle:from_LE"] = x_from_le_array

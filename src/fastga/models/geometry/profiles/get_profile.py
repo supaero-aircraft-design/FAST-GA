@@ -22,6 +22,7 @@ import numpy as np
 import pandas as pd
 
 from fastga.models.aerodynamics import airfoil_folder
+
 from .profile import Profile
 
 _LOGGER = logging.getLogger(__name__)
@@ -65,7 +66,7 @@ def get_profile(
 
 
 def genfromtxt(file_name: str = None) -> pd.DataFrame:
-    with open(file_name, "r") as file:
+    with open(file_name) as file:
         data = file.readlines()
         # Extract data
         x_data = []

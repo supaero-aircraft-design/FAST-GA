@@ -21,8 +21,8 @@ from stdatm import AtmosphereWithPartials
 
 from .constants import (
     SERVICE_FLIGHT_CONTROLS_MASS,
-    SUBMODEL_FLIGHT_CONTROLS_MASS_LEGACY,
     SUBMODEL_FLIGHT_CONTROLS_MASS_FLOPS,
+    SUBMODEL_FLIGHT_CONTROLS_MASS_LEGACY,
 )
 
 oad.RegisterSubmodel.active_models[SERVICE_FLIGHT_CONTROLS_MASS] = (

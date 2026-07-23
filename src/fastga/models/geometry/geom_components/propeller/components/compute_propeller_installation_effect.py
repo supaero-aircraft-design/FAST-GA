@@ -15,9 +15,10 @@ Python module for propeller effective advance ratio calculation, part of the pro
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import warnings
+
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 
 from ..constants import SERVICE_PROPELLER_INSTALLATION, SUBMODEL_PROPELLER_INSTALLATION_LEGACY
 
@@ -61,9 +62,7 @@ class ComputePropellerInstallationEffect(om.ExplicitComponent):
         else:
             cowling_master_cross_section = inputs["data:geometry:fuselage:master_cross_section"]
             warnings.warn(
-                "Propulsion layout {} not implemented in model, replaced by layout 3!".format(
-                    engine_layout
-                )
+                f"Propulsion layout {engine_layout} not implemented in model, replaced by layout 3!"
             )
 
         disk_diameter = inputs["data:geometry:propeller:diameter"]
@@ -109,9 +108,7 @@ class ComputePropellerInstallationEffect(om.ExplicitComponent):
         else:
             cowling_master_cross_section = inputs["data:geometry:fuselage:master_cross_section"]
             warnings.warn(
-                "Propulsion layout {} not implemented in model, replaced by layout 3!".format(
-                    engine_layout
-                )
+                f"Propulsion layout {engine_layout} not implemented in model, replaced by layout 3!"
             )
             partials[
                 "data:aerodynamics:propeller:installation_effect:effective_advance_ratio",

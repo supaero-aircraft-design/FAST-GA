@@ -15,26 +15,26 @@ Computation of the airfoil aerodynamic properties using Neuralfoil from :cite:`n
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-import numpy as np
-import neuralfoil as nf
-from typing import Tuple
-import tempfile
 import os
-
-import openmdao.api as om
+import tempfile
 from pathlib import Path
+
+import neuralfoil as nf
+import numpy as np
+import openmdao.api as om
+
 from fastga.models.aerodynamics import airfoil_folder
+
 from ...constants import (
-    POLAR_POINT_COUNT,
-    OPTION_ALPHA_START,
-    OPTION_ALPHA_END,
-    OPTION_COMP_NEG_AIR_SYM,
-    _DEFAULT_AIRFOIL_FILE,
     ALPHA_STEP,
     DEFAULT_2D_CL_MAX,
     DEFAULT_2D_CL_MIN,
+    OPTION_ALPHA_END,
+    OPTION_ALPHA_START,
+    OPTION_COMP_NEG_AIR_SYM,
+    POLAR_POINT_COUNT,
+    _DEFAULT_AIRFOIL_FILE,
 )
-
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -175,7 +175,7 @@ class NeuralfoilPolar(om.ExplicitComponent):
         cm = computed_result["CM"]
 
         # Modify vector length if necessary
-        if POLAR_POINT_COUNT < len(alpha):
+        if len(alpha) > POLAR_POINT_COUNT:
             alpha = np.linspace(alpha[0], alpha[-1], POLAR_POINT_COUNT)
             cl = np.interp(alpha, alpha, cl)
             cd = np.interp(alpha, alpha, cd)
@@ -189,7 +189,7 @@ class NeuralfoilPolar(om.ExplicitComponent):
 
         return alpha, cl, cd, cm
 
-    def _get_max_cl(self, alpha: np.ndarray, lift_coeff: np.ndarray) -> Tuple[float, bool]:
+    def _get_max_cl(self, alpha: np.ndarray, lift_coeff: np.ndarray) -> tuple[float, bool]:
         """
         :param alpha:
         :param lift_coeff: CL
@@ -220,7 +220,7 @@ class NeuralfoilPolar(om.ExplicitComponent):
         )
         return DEFAULT_2D_CL_MAX, True
 
-    def _get_min_cl(self, alpha: np.ndarray, lift_coeff: np.ndarray) -> Tuple[float, bool]:
+    def _get_min_cl(self, alpha: np.ndarray, lift_coeff: np.ndarray) -> tuple[float, bool]:
         """
         :param alpha:
         :param lift_coeff: CL
@@ -290,7 +290,7 @@ class NeuralfoilPolar(om.ExplicitComponent):
                 return False
 
         # Read and filter coordinate lines from file
-        with open(original_file_path, "r") as f:
+        with open(original_file_path) as f:
             coord_lines = [line.strip() for line in f if is_coordinate_line(line)]
 
         # Convert string coordinates to float tuples
@@ -309,11 +309,10 @@ class NeuralfoilPolar(om.ExplicitComponent):
                 upper_coords.append(pt)
             elif pt[1] < -1e-8:  # Clearly negative y - lower surface
                 lower_coords.append(pt)
-            else:  # Near zero y values - need special handling
-                if abs(pt[0]) < 1e-6:  # Leading edge point (0,0)
-                    leading_edge_points.append(pt)
-                else:  # All other points with near-zero y
-                    upper_coords.append(pt)
+            elif abs(pt[0]) < 1e-6:  # Leading edge point (0,0)
+                leading_edge_points.append(pt)
+            else:  # All other points with near-zero y
+                upper_coords.append(pt)
 
         # Handle leading edge points: distribute between upper and lower surfaces
         # Put one in lower surface, rest in upper to maintain proper connectivity

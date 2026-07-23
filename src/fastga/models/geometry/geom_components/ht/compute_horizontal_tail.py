@@ -14,16 +14,16 @@ Python module for horizontal tail geometry calculation, part of the geometry com
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import openmdao.api as om
 import fastoad.api as oad
+import openmdao.api as om
 
 from .components import ComputeHTMAC, ComputeHTMACFromWing25, ComputeHTVolumeCoefficient
 from .constants import (
     SERVICE_HT_CHORD,
-    SERVICE_HT_SWEEP,
-    SERVICE_HT_WET_AREA,
     SERVICE_HT_DISTANCE,
     SERVICE_HT_EFFICIENCY,
+    SERVICE_HT_SWEEP,
+    SERVICE_HT_WET_AREA,
 )
 
 

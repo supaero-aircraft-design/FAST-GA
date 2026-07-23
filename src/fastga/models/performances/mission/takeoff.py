@@ -12,18 +12,17 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import logging
+import warnings
+
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import warnings
-import logging
-
-from scipy.constants import g
-from typing import Union, List, Optional, Tuple
+from fastoad.constants import EngineSetting
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
-import fastoad.api as oad
-from fastoad.constants import EngineSetting
+from scipy.constants import g
 from stdatm import Atmosphere
 
 from fastga.command.api import list_inputs, list_outputs
@@ -96,18 +95,17 @@ class TakeOffPhase(om.Group):
     @staticmethod
     def get_io_names(
         component: om.ExplicitComponent,
-        excludes: Optional[Union[str, List[str]]] = None,
-        iotypes: Optional[Union[str, Tuple[str, str]]] = ("inputs", "outputs"),
-    ) -> List[str]:
+        excludes: str | list[str] | None = None,
+        iotypes: str | tuple[str, str] | None = ("inputs", "outputs"),
+    ) -> list[str]:
         list_names = []
         if isinstance(iotypes, tuple):
             list_names.extend(list_inputs(component))
             list_names.extend(list_outputs(component))
+        elif iotypes == "inputs":
+            list_names.extend(list_inputs(component))
         else:
-            if iotypes == "inputs":
-                list_names.extend(list_inputs(component))
-            else:
-                list_names.extend(list_outputs(component))
+            list_names.extend(list_outputs(component))
         if excludes is not None:
             list_names = [x for x in list_names if x not in excludes]
 
@@ -190,7 +188,7 @@ class _v2(om.ExplicitComponent):
             climb_gradient = thrust / (mtow * g) - cd / cl
             if climb_gradient > CLIMB_GRAD_AEO:
                 break
-            elif iteration_number < 100.0:
+            if iteration_number < 100.0:
                 iteration_number += 1
                 factor += 0.01
             else:
@@ -301,11 +299,10 @@ class _v_lift_off_from_v2(om.ExplicitComponent):
                 # Calculate v_lift_off necessary to overcome weight
                 if thrust * np.sin(alpha[i]) > mtow * g:
                     break
-                else:
-                    v = np.sqrt(
-                        (mtow * g - thrust * np.sin(alpha[i]))
-                        / (0.5 * atm_0.density * wing_area * cl)
-                    )
+                v = np.sqrt(
+                    (mtow * g - thrust * np.sin(alpha[i]))
+                    / (0.5 * atm_0.density * wing_area * cl)
+                )
                 rel_error = abs(v - v_lift_off[i]) / v
                 v_lift_off[i] = v
 
@@ -366,14 +363,13 @@ class _v_lift_off_from_v2(om.ExplicitComponent):
             alpha = 0.0
             v_lift_off = v_lift_off[0]  # FIXME: not reachable v2
             warnings.warn("V2 @ 50ft requirement not reachable with max lift-off speed!")
+        # If max alpha angle lead to v2 > v2 target take it
+        elif v2[-1] > v2_target:
+            alpha = alpha[-1]
+            v_lift_off = v_lift_off[-1]
         else:
-            # If max alpha angle lead to v2 > v2 target take it
-            if v2[-1] > v2_target:
-                alpha = alpha[-1]
-                v_lift_off = v_lift_off[-1]
-            else:
-                alpha = np.interp(v2_target, v2, alpha)
-                v_lift_off = np.interp(v2_target, v2, v_lift_off)
+            alpha = np.interp(v2_target, v2, alpha)
+            v_lift_off = np.interp(v2_target, v2, v_lift_off)
 
         outputs["v_lift_off:speed"] = v_lift_off
         outputs["v_lift_off:angle"] = alpha

@@ -15,15 +15,14 @@ component computation.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 
-
-from .wing.compute_cl_wing import ComputeWingLiftCoefficient
 from .digitization.compute_cn_delta_a_correlation_constant import (
     ComputeAileronYawCorrelationConstant,
 )
+from .wing.compute_cl_wing import ComputeWingLiftCoefficient
 from ..constants import SUBMODEL_CN_AILERON
 
 

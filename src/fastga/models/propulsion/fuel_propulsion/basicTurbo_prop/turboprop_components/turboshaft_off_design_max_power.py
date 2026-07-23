@@ -15,8 +15,8 @@
 import numpy as np
 import openmdao.api as om
 
-from .turboshaft_off_design_fuel import Turboshaft
 from .propeller_thrust import PropellerMaxThrust
+from .turboshaft_off_design_fuel import Turboshaft
 
 
 class TurboshaftMaxThrustPowerLimit(Turboshaft):

@@ -12,16 +12,16 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import os.path as pth
 import os
-import pytest
+import os.path as pth
 import warnings
 
 import fastoad.api as oad
+import pytest
 
+from fastga import models
 from fastga.command import api
 from fastga.command.unitary_tests.dummy_classes import Disc1, Disc2, Disc3
-from fastga import models
 from fastga.models import (
     aerodynamics,
     geometry,

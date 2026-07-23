@@ -11,10 +11,9 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import Union, Iterable
+from collections.abc import Iterable
 
 import numpy as np
-
 from fastoad.exceptions import FastUnexpectedKeywordArgument
 
 
@@ -141,7 +140,7 @@ class AddKeyAttribute:
 
 
 class AddKeyAttributes:
-    def __init__(self, attribute_definition: Union[dict, Iterable[str]]):
+    def __init__(self, attribute_definition: dict | Iterable[str]):
         """
         A decorator for a dict class that adds properties for accessing the matching dict item.
 
@@ -154,7 +153,7 @@ class AddKeyAttributes:
         if isinstance(attribute_definition, dict):
             self.attribute_definition = attribute_definition
         else:
-            self.attribute_definition = {attr_name: None for attr_name in attribute_definition}
+            self.attribute_definition = dict.fromkeys(attribute_definition)
 
     def __call__(self, decorated_dict: type):
         for attr_name, definition in self.attribute_definition.items():

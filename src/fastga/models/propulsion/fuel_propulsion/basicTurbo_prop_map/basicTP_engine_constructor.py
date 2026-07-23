@@ -15,19 +15,18 @@
 
 import logging
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-
-import fastoad.api as oad
 from fastoad.constants import EngineSetting
 from fastoad.module_management.constants import ModelDomain
 from stdatm import Atmosphere
 
-from fastga.models.propulsion.fuel_propulsion.basicTurbo_prop.basicTP_engine import BasicTPEngine
 from fastga.models.aerodynamics.external.propeller_code.compute_propeller_aero import (
-    THRUST_PTS_NB,
     SPEED_PTS_NB,
+    THRUST_PTS_NB,
 )
+from fastga.models.propulsion.fuel_propulsion.basicTurbo_prop.basicTP_engine import BasicTPEngine
 
 # Logger for this module
 _LOGGER = logging.getLogger(__name__)

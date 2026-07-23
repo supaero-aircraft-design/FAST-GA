@@ -15,19 +15,20 @@ New estimation method of center of gravity for all load cases.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import numpy as np
-import scipy.optimize as optimize
-import openmdao.api as om
 import fastoad.api as oad
+import numpy as np
+import openmdao.api as om
 from fastoad.constants import EngineSetting
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
+from scipy import optimize
 from scipy.constants import g
 from stdatm import Atmosphere
 
 from fastga.utils.options_checkers import check_propulsion_id
-from .constants import SUBMODEL_LOADCASE_GROUND_X, SUBMODEL_LOADCASE_FLIGHT_X
+
+from .constants import SUBMODEL_LOADCASE_FLIGHT_X, SUBMODEL_LOADCASE_GROUND_X
 
 
 @oad.RegisterSubmodel(

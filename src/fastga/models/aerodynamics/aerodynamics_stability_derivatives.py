@@ -11,27 +11,26 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import openmdao.api as om
-
 import fastoad.api as oad
+import openmdao.api as om
 from fastoad.module_management.constants import ModelDomain
 
 from .constants import (
-    SUBMODEL_CL_Q,
+    SUBMODEL_CL_AILERON,
     SUBMODEL_CL_ALPHA_DOT,
-    SUBMODEL_CY_R,
-    SUBMODEL_CY_P,
     SUBMODEL_CL_BETA,
     SUBMODEL_CL_P,
+    SUBMODEL_CL_Q,
     SUBMODEL_CL_R,
-    SUBMODEL_CL_AILERON,
     SUBMODEL_CL_RUDDER,
-    SUBMODEL_CM_Q,
     SUBMODEL_CM_ALPHA_DOT,
+    SUBMODEL_CM_Q,
     SUBMODEL_CN_AILERON,
-    SUBMODEL_CN_RUDDER,
     SUBMODEL_CN_P,
     SUBMODEL_CN_R,
+    SUBMODEL_CN_RUDDER,
+    SUBMODEL_CY_P,
+    SUBMODEL_CY_R,
 )
 
 

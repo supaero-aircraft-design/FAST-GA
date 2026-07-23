@@ -12,10 +12,9 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import Union
 
-import numpy as np
 import fastoad.api as oad
+import numpy as np
 
 from .figure_digitization import FigureDigitization
 from ..constants import SUBMODEL_DELTA_ELEVATOR
@@ -72,8 +71,8 @@ class ComputeDeltaElevator(FigureDigitization):
         )
 
     def _get_elevator_delta_cl(
-        self, inputs, elevator_angle: Union[float, np.array]
-    ) -> Union[float, np.array]:
+        self, inputs, elevator_angle: float | np.array
+    ) -> float | np.array:
         """
         Computes the elevator lift increment as a plain flap following the method presented in
         Roskam part 6, section 8.1.2.1.a.

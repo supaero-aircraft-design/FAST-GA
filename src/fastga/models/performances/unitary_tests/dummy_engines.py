@@ -14,18 +14,15 @@ Test module for geometry functions of cg components.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import pandas as pd
-from openmdao.core.component import Component
-from typing import Union
-import numpy as np
-
-from stdatm import Atmosphere
 
 import fastoad.api as oad
+import numpy as np
+import pandas as pd
+from openmdao.core.component import Component
+from stdatm import Atmosphere
 
-from fastga.models.propulsion.fuel_propulsion.base import AbstractFuelPropulsion
+from fastga.models.propulsion.fuel_propulsion.base import AbstractFuelPropulsion, FuelEngineSet
 from fastga.models.propulsion.propulsion import IPropulsion
-from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
 
 ENGINE_WRAPPER_BE76 = "test.wrapper.performances.beechcraft.dummy_engine"
 ENGINE_WRAPPER_SR22 = "test.wrapper.performances.cirrus.dummy_engine"
@@ -58,7 +55,7 @@ class DummyEngineBE76(AbstractFuelPropulsion):
         self.strokes_nb = strokes_nb
         self.max_thrust = 3500.0
 
-    def compute_flight_points(self, flight_points: Union[oad.FlightPoint, pd.DataFrame]):
+    def compute_flight_points(self, flight_points: oad.FlightPoint | pd.DataFrame):
         mach = np.array(flight_points.mach)
         thrust = np.array(flight_points.thrust)
         sigma = Atmosphere(flight_points.altitude).density / Atmosphere(0.0).density
@@ -105,7 +102,7 @@ class DummyEngineBE76(AbstractFuelPropulsion):
     def compute_drag(self, mach, unit_reynolds, wing_mac):
         return 0.0
 
-    def compute_max_power(self, flight_points: Union[oad.FlightPoint, pd.DataFrame]) -> float:
+    def compute_max_power(self, flight_points: oad.FlightPoint | pd.DataFrame) -> float:
         return 0.0
 
 
@@ -151,7 +148,7 @@ class DummyEngineSR22(AbstractFuelPropulsion):
         self.max_power = 231000.0
         self.max_thrust = 5417.0
 
-    def compute_flight_points(self, flight_points: Union[oad.FlightPoint, pd.DataFrame]):
+    def compute_flight_points(self, flight_points: oad.FlightPoint | pd.DataFrame):
         mach = np.array(flight_points.mach)
         thrust = np.array(flight_points.thrust)
         sigma = Atmosphere(flight_points.altitude).density / Atmosphere(0.0).density
@@ -197,7 +194,7 @@ class DummyEngineSR22(AbstractFuelPropulsion):
     def compute_drag(self, mach, unit_reynolds, wing_mac):
         return 0.0
 
-    def compute_max_power(self, flight_points: Union[oad.FlightPoint, pd.DataFrame]) -> float:
+    def compute_max_power(self, flight_points: oad.FlightPoint | pd.DataFrame) -> float:
         return 0.0
 
 
@@ -227,7 +224,7 @@ class DummyEngineTBM900(AbstractFuelPropulsion):
         self.max_power = 634000.0
         self.max_thrust = 30000.0
 
-    def compute_flight_points(self, flight_points: Union[oad.FlightPoint, pd.DataFrame]):
+    def compute_flight_points(self, flight_points: oad.FlightPoint | pd.DataFrame):
         mach = np.array(flight_points.mach)
         thrust = np.array(flight_points.thrust)
         sigma = Atmosphere(flight_points.altitude).density / Atmosphere(0.0).density
@@ -268,7 +265,7 @@ class DummyEngineTBM900(AbstractFuelPropulsion):
     def compute_drag(self, mach, unit_reynolds, wing_mac):
         return 0.0
 
-    def compute_max_power(self, flight_points: Union[oad.FlightPoint, pd.DataFrame]) -> float:
+    def compute_max_power(self, flight_points: oad.FlightPoint | pd.DataFrame) -> float:
         return 0.0
 
 

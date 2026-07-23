@@ -24,6 +24,7 @@ from fastoad.io import VariableIO
 from plotly.subplots import make_subplots
 
 from fastga.models.aerodynamics.constants import FIRST_INVALID_COEFF
+
 from .postprocessing_utils import _unit_conversion
 
 COLS = plotly.colors.DEFAULT_PLOTLY_COLORS
@@ -726,10 +727,10 @@ def cg_lateral_diagram(
         x=[ac_fixed_x],
         y=[z_cg[0]],
         text=" Neutral Point"
-        + "<br>"
-        + "Stick Fixed"
-        + "<br>"
-        + "Static Margin = "
+         "<br>"
+         "Stick Fixed"
+         "<br>"
+         "Static Margin = "
         + str(round(stick_fixed_sm, 3)),
         textposition="bottom center",
         mode="markers+text",
@@ -743,10 +744,10 @@ def cg_lateral_diagram(
         x=[ac_free_x],
         y=[z_cg[0]],
         text="Neutral Point"
-        + "<br>"
-        + "Stick Free"
-        + "<br>"
-        + "Static Margin = "
+         "<br>"
+         "Stick Free"
+         "<br>"
+         "Static Margin = "
         + str(round(stick_free_sm, 3)),
         textposition="bottom center",
         mode="markers+text",
@@ -900,7 +901,7 @@ def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None, weight
             labels=[
                 "MTOW" + "<br>" + str(int(mtow)) + " [" + weight_unit + "]",
                 "payload"
-                + "<br>"
+                 "<br>"
                 + str(int(payload))
                 + " ["
                 + weight_unit
@@ -908,7 +909,7 @@ def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None, weight
                 + str(round(payload / mtow * 100, 1))
                 + "%)",
                 "onboard_fuel_at_takeoff"
-                + "<br>"
+                 "<br>"
                 + str(int(onboard_fuel_at_takeoff))
                 + " ["
                 + weight_unit
@@ -916,7 +917,7 @@ def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None, weight
                 + str(round(onboard_fuel_at_takeoff / mtow * 100, 1))
                 + "%)",
                 "OWE"
-                + "<br>"
+                 "<br>"
                 + str(int(owe))
                 + " ["
                 + weight_unit

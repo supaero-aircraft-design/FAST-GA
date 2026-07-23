@@ -33,7 +33,8 @@ from fastga.models.geometry.geom_components.wing.components.compute_wing_y impor
 from fastga.models.geometry.geom_components.wing_tank.compute_mfw_advanced import (
     ComputeMFWAdvanced,
 )
-from ..constants import SUBMODEL_WING_AREA_GEOM_LOOP, SUBMODEL_WING_AREA_GEOM_CONS
+
+from ..constants import SUBMODEL_WING_AREA_GEOM_CONS, SUBMODEL_WING_AREA_GEOM_LOOP
 
 _LOGGER = logging.getLogger(__name__)
 

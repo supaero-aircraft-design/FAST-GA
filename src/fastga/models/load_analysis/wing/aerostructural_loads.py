@@ -15,19 +15,18 @@ Computes the aerostructural loads on the wing of the aircraft.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import numpy as np
-from scipy.integrate import trapezoid
-import openmdao.api as om
-
-from stdatm import Atmosphere
 import fastoad.api as oad
+import numpy as np
+import openmdao.api as om
+from scipy.integrate import trapezoid
+from stdatm import Atmosphere
 
 from fastga.models.aerodynamics.constants import SPAN_MESH_POINT
 
 from .constants import (
-    SUBMODEL_AEROSTRUCTURAL_LOADS,
     NB_POINTS_POINT_MASS,
     POINT_MASS_SPAN_RATIO,
+    SUBMODEL_AEROSTRUCTURAL_LOADS,
 )
 
 SPAN_MESH_POINT_LOADS = int(1.5 * SPAN_MESH_POINT)

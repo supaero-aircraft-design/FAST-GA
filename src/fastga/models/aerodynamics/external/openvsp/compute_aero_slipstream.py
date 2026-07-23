@@ -14,19 +14,18 @@ Estimation of slipstream effects using OPENVSP.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-from stdatm import Atmosphere
-
-import fastoad.api as oad
+from fastoad.constants import EngineSetting
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
-from fastoad.constants import EngineSetting
+from stdatm import Atmosphere
 
 from fastga.utils.options_checkers import check_propulsion_id
 
-from .openvsp import OpenVSPSimpleGeometryDP, DEFAULT_WING_AIRFOIL
+from .openvsp import DEFAULT_WING_AIRFOIL, OpenVSPSimpleGeometryDP
 from ...components.compute_reynolds import ComputeUnitReynolds
 from ...constants import SPAN_MESH_POINT, SUBMODEL_THRUST_POWER_SLIPSTREAM
 

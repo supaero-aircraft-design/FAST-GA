@@ -12,18 +12,17 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 from openmdao.core.component import Component
 
-import fastoad.api as oad
-
-from fastga.models.propulsion.propulsion import IPropulsion, BaseOMPropulsionComponent
-from fastga.models.propulsion.fuel_propulsion.basicIC_engine.basicIC_engine import BasicICEngine
-from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
 from fastga.models.aerodynamics.external.propeller_code.compute_propeller_aero import (
-    THRUST_PTS_NB,
     SPEED_PTS_NB,
+    THRUST_PTS_NB,
 )
+from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
+from fastga.models.propulsion.fuel_propulsion.basicIC_engine.basicIC_engine import BasicICEngine
+from fastga.models.propulsion.propulsion import BaseOMPropulsionComponent, IPropulsion
 
 
 @oad.RegisterPropulsion("fastga.wrapper.propulsion.basicIC_engine")

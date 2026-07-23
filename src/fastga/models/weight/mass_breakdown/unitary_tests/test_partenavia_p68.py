@@ -16,12 +16,13 @@ Test module for mass breakdown functions.
 
 import pytest
 
-from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
+from tests.testing_utilities import get_indep_var_comp, list_inputs, run_system
+
 from ..a_airframe import (
+    ComputeFuselageMassAnalytical,
     ComputeFuselageWeight,
     ComputeFuselageWeightRaymer,
     ComputeFuselageWeightRoskam,
-    ComputeFuselageMassAnalytical,
 )
 
 XML_FILE = "partenavia_p68.xml"

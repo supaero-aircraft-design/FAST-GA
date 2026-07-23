@@ -13,15 +13,14 @@
 
 import pytest
 
-from ..compute_static_margin import ComputeStaticMargin
-from ..tail_sizing.update_vt_area import UpdateVTArea, UpdateVTAreaVolumeCoefficient
-from ..tail_sizing.update_ht_area import UpdateHTArea, UpdateHTAreaVolumeCoefficient
-from ..tail_sizing.compute_to_rotation_limit import ComputeTORotationLimitGroup
-from ..tail_sizing.compute_balked_landing_limit import ComputeBalkedLandingLimit
-
-from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
+from tests.testing_utilities import get_indep_var_comp, list_inputs, run_system
 
 from .dummy_engines import ENGINE_WRAPPER_BE76 as ENGINE_WRAPPER
+from ..compute_static_margin import ComputeStaticMargin
+from ..tail_sizing.compute_balked_landing_limit import ComputeBalkedLandingLimit
+from ..tail_sizing.compute_to_rotation_limit import ComputeTORotationLimitGroup
+from ..tail_sizing.update_ht_area import UpdateHTArea, UpdateHTAreaVolumeCoefficient
+from ..tail_sizing.update_vt_area import UpdateVTArea, UpdateVTAreaVolumeCoefficient
 
 XML_FILE = "beechcraft_76.xml"
 

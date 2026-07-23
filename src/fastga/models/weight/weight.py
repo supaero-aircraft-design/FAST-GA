@@ -18,7 +18,7 @@ import fastoad.api as oad
 import openmdao.api as om
 from fastoad.module_management.constants import ModelDomain
 
-from .constants import SUBMODEL_MASS_BREAKDOWN, SUBMODEL_CENTER_OF_GRAVITY
+from .constants import SUBMODEL_CENTER_OF_GRAVITY, SUBMODEL_MASS_BREAKDOWN
 
 
 @oad.RegisterOpenMDAOSystem("fastga.weight.legacy", domain=ModelDomain.WEIGHT)

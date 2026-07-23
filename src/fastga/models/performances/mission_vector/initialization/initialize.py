@@ -19,10 +19,11 @@ from fastga.models.performances.mission.mission_components import (
     POINTS_NB_CRUISE,
     POINTS_NB_DESCENT,
 )
-from ..initialization.initialize_cg import InitializeCoG
+
 from ..initialization.initialize_airspeed import InitializeAirspeed
 from ..initialization.initialize_airspeed_derivatives import InitializeAirspeedDerivatives
 from ..initialization.initialize_altitude import InitializeAltitude
+from ..initialization.initialize_cg import InitializeCoG
 from ..initialization.initialize_gamma import InitializeGamma
 from ..initialization.initialize_horizontal_speed import InitializeHorizontalSpeed
 from ..initialization.initialize_time_and_distance import InitializeTimeAndDistance

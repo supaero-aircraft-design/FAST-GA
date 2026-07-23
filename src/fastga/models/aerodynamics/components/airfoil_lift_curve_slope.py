@@ -17,13 +17,13 @@ Estimation of the slope of the airfoil of the lifting surface using the results 
 
 import logging
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 
 from ..constants import POLAR_POINT_COUNT, SUBMODEL_AIRFOIL_LIFT_SLOPE
-from ..external.xfoil.xfoil_polar import XfoilPolar
 from ..external.neuralfoil.neuralfoil_polar import NeuralfoilPolar
+from ..external.xfoil.xfoil_polar import XfoilPolar
 
 ALPHA_START_LINEAR = np.deg2rad(-5.0)
 ALPHA_END_LINEAR = np.deg2rad(10.0)

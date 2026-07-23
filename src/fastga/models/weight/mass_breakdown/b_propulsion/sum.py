@@ -19,8 +19,8 @@ import fastoad.api as oad
 import openmdao.api as om
 
 from .constants import (
-    SERVICE_INSTALLED_ENGINE_MASS,
     SERVICE_FUEL_SYSTEM_MASS,
+    SERVICE_INSTALLED_ENGINE_MASS,
     SERVICE_UNUSABLE_FUEL_MASS,
 )
 from ..constants import SERVICE_PROPULSION_MASS, SUBMODEL_PROPULSION_MASS_LEGACY

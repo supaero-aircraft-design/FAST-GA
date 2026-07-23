@@ -17,24 +17,23 @@ Test module for basicTP_engine_constructor.py
 
 import pytest
 
-from ..basicTP_engine_constructor import ComputeTurbopropMap
-
-from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
+from tests.testing_utilities import get_indep_var_comp, list_inputs, run_system
 
 from .data.dummy_maps import (
-    MACH_ARRAY_SL,
-    MACH_ARRAY_IL,
     MACH_ARRAY_CL,
+    MACH_ARRAY_IL,
+    MACH_ARRAY_SL,
+    SFC_CL,
+    SFC_IL,
+    SFC_SL,
     THRUST_ARRAY_CL,
     THRUST_ARRAY_IL,
     THRUST_ARRAY_SL,
     THRUST_MAX_ARRAY_CL,
     THRUST_MAX_ARRAY_IL,
     THRUST_MAX_ARRAY_SL,
-    SFC_SL,
-    SFC_CL,
-    SFC_IL,
 )
+from ..basicTP_engine_constructor import ComputeTurbopropMap
 
 XML_FILE = "daher_tbm900.xml"
 SKIP_STEPS = True  # avoid some tests to accelerate validation process (turboprop map creation)

@@ -24,95 +24,94 @@ from platform import system
 from tempfile import TemporaryDirectory
 
 import numpy as np
-import pytest
-
 import openmdao.api as om
+import pytest
 
 from fastga.models.aerodynamics.aerodynamics_high_speed import AerodynamicsHighSpeed
 from fastga.models.aerodynamics.aerodynamics_low_speed import AerodynamicsLowSpeed
 from fastga.models.aerodynamics.components import (
-    ComputeAircraftMaxCl,
-    ComputeUnitReynolds,
-    ComputeLDMax,
-    ComputeDeltaHighLift,
-    ComputeDeltaElevator,
     Compute2DHingeMomentsTail,
     Compute3DHingeMomentsTail,
-    ComputeHingeMomentsTail,
-    ComputeMachInterpolation,
-    ComputeCyDeltaRudder,
+    ComputeAircraftMaxCl,
     ComputeAirfoilLiftCurveSlope,
-    ComputeVNAndVH,
-    ComputeEquilibratedPolar,
-    ComputeNonEquilibratedPolar,
-    ComputeExtremeCLWing,
-    ComputeExtremeCLHtp,
-    ComputeEffectiveEfficiencyPropeller,
     ComputeCLAlphaDotAircraft,
     ComputeCLPitchVelocityAircraft,
+    ComputeCMAlphaDotAircraft,
+    ComputeCMPitchVelocityAircraft,
     ComputeCYBetaAircraft,
-    ComputeCyYawRateAircraft,
-    ComputeCyRollRateAircraft,
     ComputeClBetaAircraft,
-    ComputeClRollRateAircraft,
-    ComputeClYawRateAircraft,
     ComputeClDeltaAileron,
     ComputeClDeltaRudder,
-    ComputeCMPitchVelocityAircraft,
-    ComputeCMAlphaDotAircraft,
+    ComputeClRollRateAircraft,
+    ComputeClYawRateAircraft,
     ComputeCnBetaAircraft,
     ComputeCnDeltaAileron,
     ComputeCnDeltaRudder,
     ComputeCnRollRateAircraft,
+    ComputeCyDeltaRudder,
+    ComputeCyRollRateAircraft,
+    ComputeCyYawRateAircraft,
+    ComputeDeltaElevator,
+    ComputeDeltaHighLift,
+    ComputeEffectiveEfficiencyPropeller,
+    ComputeEquilibratedPolar,
+    ComputeExtremeCLHtp,
+    ComputeExtremeCLWing,
+    ComputeHingeMomentsTail,
+    ComputeLDMax,
+    ComputeMachInterpolation,
+    ComputeNonEquilibratedPolar,
+    ComputeUnitReynolds,
+    ComputeVNAndVH,
 )
 from fastga.models.aerodynamics.components.cd0 import Cd0
 from fastga.models.aerodynamics.components.compute_cn_yaw_rate import ComputeCnYawRateAircraft
 from fastga.models.aerodynamics.components.compute_equilibrated_polar import FIRST_INVALID_COEFF
 from fastga.models.aerodynamics.components.fuselage import (
-    ComputeCyBetaFuselage,
-    ComputeCnBetaFuselage,
     ComputeCmAlphaFuselage,
+    ComputeCnBetaFuselage,
+    ComputeCyBetaFuselage,
 )
 from fastga.models.aerodynamics.components.ht import (
-    DownWashGradientComputation,
     ComputeCLPitchVelocityHorizontalTail,
+    ComputeCMPitchVelocityHorizontalTail,
     ComputeClBetaHorizontalTail,
     ComputeClRollRateHorizontalTail,
-    ComputeCMPitchVelocityHorizontalTail,
-)
-from fastga.models.aerodynamics.components.wing import (
-    ComputeCLPitchVelocityWing,
-    ComputeCyBetaWing,
-    ComputeClBetaWing,
-    ComputeClRollRateWing,
-    ComputeClYawRateWing,
-    ComputeCMPitchVelocityWing,
-    ComputeCnRollRateWing,
-    ComputeCnYawRateWing,
+    DownWashGradientComputation,
 )
 from fastga.models.aerodynamics.components.vt import (
     ComputeClAlphaVerticalTail,
-    ComputeCyBetaVerticalTail,
     ComputeClBetaVerticalTail,
     ComputeClRollRateVerticalTail,
     ComputeClYawRateVerticalTail,
     ComputeCnBetaVerticalTail,
     ComputeCnRollRateVerticalTail,
     ComputeCnYawRateVerticalTail,
+    ComputeCyBetaVerticalTail,
 )
-from fastga.models.aerodynamics.external.propeller_code.compute_propeller_aero import (
-    ComputePropellerPerformance,
+from fastga.models.aerodynamics.components.wing import (
+    ComputeCLPitchVelocityWing,
+    ComputeCMPitchVelocityWing,
+    ComputeClBetaWing,
+    ComputeClRollRateWing,
+    ComputeClYawRateWing,
+    ComputeCnRollRateWing,
+    ComputeCnYawRateWing,
+    ComputeCyBetaWing,
 )
+from fastga.models.aerodynamics.external.neuralfoil.neuralfoil_polar import NeuralfoilPolar
 from fastga.models.aerodynamics.external.openvsp import ComputeAeroOpenVSP
 from fastga.models.aerodynamics.external.openvsp.compute_aero_slipstream import (
     ComputeSlipstreamOpenvsp,
 )
+from fastga.models.aerodynamics.external.propeller_code.compute_propeller_aero import (
+    ComputePropellerPerformance,
+)
 from fastga.models.aerodynamics.external.vlm import ComputeAeroVLM, VLMSimpleGeometry
 from fastga.models.aerodynamics.external.xfoil import resources
 from fastga.models.aerodynamics.external.xfoil.xfoil_polar import XfoilPolar
-from fastga.models.aerodynamics.external.neuralfoil.neuralfoil_polar import NeuralfoilPolar
 from fastga.models.aerodynamics.load_factor import LoadFactor
-from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
+from tests.testing_utilities import get_indep_var_comp, list_inputs, run_system
 from tests.xfoil_exe.get_xfoil import get_xfoil_path
 
 RESULTS_FOLDER = pth.join(pth.dirname(__file__), "results")

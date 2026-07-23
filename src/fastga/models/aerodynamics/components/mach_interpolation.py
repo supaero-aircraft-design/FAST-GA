@@ -19,9 +19,9 @@ import numpy as np
 import openmdao.api as om
 from stdatm import Atmosphere
 
-from ..constants import POLAR_POINT_COUNT, MACH_NB_PTS
-from ..external.xfoil.xfoil_polar import XfoilPolar
+from ..constants import MACH_NB_PTS, POLAR_POINT_COUNT
 from ..external.neuralfoil.neuralfoil_polar import NeuralfoilPolar
+from ..external.xfoil.xfoil_polar import XfoilPolar
 
 
 class ComputeMachInterpolation(om.Group):

@@ -18,9 +18,9 @@ import numpy as np
 import openmdao.api as om
 from fastoad.constants import EngineSetting
 
-from ..openmdao import OMBasicICEngineComponent
-
 from tests.testing_utilities import run_system
+
+from ..openmdao import OMBasicICEngineComponent
 
 THRUST_SL = np.array(
     [

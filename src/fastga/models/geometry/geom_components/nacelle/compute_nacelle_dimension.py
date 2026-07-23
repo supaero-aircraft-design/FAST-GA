@@ -14,11 +14,12 @@ Python module for nacelle dimension calculation, part of the geometry component.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import openmdao.api as om
 import fastoad.api as oad
+import openmdao.api as om
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
+
 from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
 from fastga.utils.options_checkers import check_propulsion_id
 

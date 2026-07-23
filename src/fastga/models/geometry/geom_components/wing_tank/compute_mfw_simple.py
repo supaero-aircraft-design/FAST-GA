@@ -16,9 +16,10 @@ component.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import warnings
+
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 
 from ...constants import SERVICE_MFW, SUBMODEL_MFW_LEGACY
 
@@ -73,7 +74,7 @@ class ComputeMFWSimple(om.ExplicitComponent):
             m_vol_fuel = 804.0  # Jet-A1 volume mass [kg/m**3], cold worst case
         else:
             m_vol_fuel = 718.9
-            warnings.warn("Fuel type {} does not exist, replaced by type 1!".format(fuel_type))
+            warnings.warn(f"Fuel type {fuel_type} does not exist, replaced by type 1!")
 
         # Tanks are between 1st (30% MAC) and 3rd (60% MAC) longeron: 30% of the wing
         ave_thickness = (

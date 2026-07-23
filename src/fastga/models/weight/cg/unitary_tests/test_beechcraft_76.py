@@ -14,15 +14,16 @@
 
 import pytest
 
-from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
+from tests.testing_utilities import get_indep_var_comp, list_inputs, run_system
+
 from .dummy_engines import ENGINE_WRAPPER_BE76 as ENGINE_WRAPPER
 from ..cg import CG
 from ..cg_components.a_airframe import (
-    ComputeWingCG,
-    ComputeFuselageCG,
-    ComputeTailCG,
     ComputeFlightControlCG,
+    ComputeFuselageCG,
     ComputeLandingGearCG,
+    ComputeTailCG,
+    ComputeWingCG,
 )
 from ..cg_components.b_propulsion import (
     ComputeEngineCG,
@@ -31,13 +32,13 @@ from ..cg_components.b_propulsion import (
     FuelPropulsionCG,
 )
 from ..cg_components.c_systems import (
-    ComputePowerSystemsCG,
     ComputeLifeSupportCG,
     ComputeNavigationSystemsCG,
+    ComputePowerSystemsCG,
     ComputeRecordingSystemsCG,
 )
 from ..cg_components.d_furniture import ComputePassengerSeatsCG
-from ..cg_components.loadcase import ComputeGroundCGCase, ComputeFlightCGCase
+from ..cg_components.loadcase import ComputeFlightCGCase, ComputeGroundCGCase
 from ..cg_components.max_cg_ratio import ComputeMaxMinCGRatio
 from ..cg_components.payload import ComputePayloadCG
 from ..cg_components.ratio_aft import ComputeCGRatioAircraftEmpty
@@ -116,7 +117,7 @@ def test_compute_cg_engine():
 def test_compute_cg_fuel_lines():
     """Tests fuel lines center of gravity."""
     # Research independent input value in .xml file and add values calculated from other modules
-    ivc = get_indep_var_comp(list_inputs((ComputeFuelLinesCG())), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeFuelLinesCG()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeFuelLinesCG(), ivc)

@@ -1,6 +1,6 @@
 import numpy as np
 import openmdao.api as om
-from scipy.interpolate import RectBivariateSpline, CubicSpline
+from scipy.interpolate import CubicSpline, RectBivariateSpline
 from stdatm import Atmosphere
 
 THRUST_PTS_NB = 30

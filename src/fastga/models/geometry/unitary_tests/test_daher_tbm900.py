@@ -17,40 +17,41 @@ Test module for geometry functions of cg components.
 import openmdao.api as om
 import pytest
 
-from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
+from tests.testing_utilities import get_indep_var_comp, list_inputs, run_system
+
 from .dummy_engines import ENGINE_WRAPPER_TBM900 as ENGINE_WRAPPER
 from ..geom_components import ComputeTotalArea
 from ..geom_components.fuselage.components import (
+    ComputeFuselageDepth,
     ComputeFuselageGeometryBasic,
     ComputeFuselageGeometryCabinSizingFD,
     ComputeFuselageGeometryCabinSizingFL,
-    ComputeFuselageDepth,
+    ComputeFuselageMasterCrossSection,
     ComputeFuselageVolume,
     ComputeFuselageWetArea,
     ComputeFuselageWetAreaFLOPS,
-    ComputeFuselageMasterCrossSection,
 )
 from ..geom_components.ht.components import (
     ComputeHTChord,
+    ComputeHTDistance,
     ComputeHTMAC,
     ComputeHTMACFromWing25,
     ComputeHTSweep,
-    ComputeHTWetArea,
-    ComputeHTDistance,
     ComputeHTVolumeCoefficient,
+    ComputeHTWetArea,
 )
 from ..geom_components.landing_gears.compute_lg import ComputeLGGeometry
-from ..geom_components.nacelle import ComputeNacellePosition, ComputeNacelleDimension
+from ..geom_components.nacelle import ComputeNacelleDimension, ComputeNacellePosition
 from ..geom_components.propeller.components import (
-    ComputePropellerPosition,
     ComputePropellerInstallationEffect,
+    ComputePropellerPosition,
 )
 from ..geom_components.vt.components import (
     ComputeVTChords,
     ComputeVTMAC,
-    ComputeVTMACDistanceXLocal,
     ComputeVTMACDistanceFD,
     ComputeVTMACDistanceFL,
+    ComputeVTMACDistanceXLocal,
     ComputeVTSweep,
     ComputeVTWetArea,
 )
@@ -63,11 +64,11 @@ from ..geom_components.wing.components import (
     ComputeWingToc,
     ComputeWingWetArea,
     ComputeWingX,
+    ComputeWingXAbsolute,
     ComputeWingY,
     ComputeWingZ,
-    ComputeWingXAbsolute,
 )
-from ..geom_components.wing_tank import ComputeMFWSimple, ComputeMFWAdvanced
+from ..geom_components.wing_tank import ComputeMFWAdvanced, ComputeMFWSimple
 from ..geometry import GeometryFixedFuselage, GeometryFixedTailDistance
 
 XML_FILE = "daher_tbm900.xml"

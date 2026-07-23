@@ -20,10 +20,10 @@ import numpy as np
 import openmdao.api as om
 
 from .vlm import VLMSimpleGeometry
-from ..xfoil.xfoil_polar import XfoilPolar
 from ..neuralfoil.neuralfoil_polar import NeuralfoilPolar
+from ..xfoil.xfoil_polar import XfoilPolar
 from ...components.compute_reynolds import ComputeUnitReynolds
-from ...constants import SPAN_MESH_POINT, MACH_NB_PTS, DEFAULT_INPUT_AOA
+from ...constants import DEFAULT_INPUT_AOA, MACH_NB_PTS, SPAN_MESH_POINT
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -320,11 +320,10 @@ class _ComputeAeroVLM(VLMSimpleGeometry):
 
         if self.options["low_speed_aero"]:
             pass
-        else:
-            if self.options["compute_mach_interpolation"]:
-                mach_interp, cl_alpha_interp = self.compute_cl_alpha_mach(
-                    inputs, input_aoa, altitude, mach
-                )
+        elif self.options["compute_mach_interpolation"]:
+            mach_interp, cl_alpha_interp = self.compute_cl_alpha_mach(
+                inputs, input_aoa, altitude, mach
+            )
 
         # Defining outputs
         if self.options["low_speed_aero"]:

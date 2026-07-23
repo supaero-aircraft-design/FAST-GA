@@ -19,7 +19,7 @@ import numpy as np
 import openmdao.api as om
 from stdatm import AtmosphereWithPartials
 
-from .constants import SERVICE_VTP_MASS, SUBMODEL_VTP_MASS_LEGACY, SUBMODEL_VTP_MASS_GD
+from .constants import SERVICE_VTP_MASS, SUBMODEL_VTP_MASS_GD, SUBMODEL_VTP_MASS_LEGACY
 
 
 @oad.RegisterSubmodel(SERVICE_VTP_MASS, SUBMODEL_VTP_MASS_LEGACY)

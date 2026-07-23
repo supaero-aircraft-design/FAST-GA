@@ -107,8 +107,7 @@ class ComputeSkinMass(om.ExplicitComponent):
         # that could not be solved by hand, consequently when taper ratio gets too close to 1. it
         # will be taken as 0.97
         taper_ratio = inputs["data:geometry:wing:taper_ratio"]
-        if taper_ratio > 0.97:
-            taper_ratio = 0.97
+        taper_ratio = min(taper_ratio, 0.97)
 
         ka = inputs["settings:wing:airfoil:skin:ka"]  # Approximates the wingbox area by a rectangle
         kl = 0.97  # Approximates the wingbox perimeter by a rectangle

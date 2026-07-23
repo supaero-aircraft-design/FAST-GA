@@ -14,36 +14,34 @@ Test takeoff module.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import pytest
 import numpy as np
 import openmdao.api as om
+import pytest
 
-from fastga.models.performances.mission.takeoff import (
-    TakeOffPhase,
-    _v2,
-    _vr_from_v2,
-    _v_lift_off_from_v2,
-    _simulate_takeoff,
-)
+from fastga.models.performances.mission.mission import Mission
+from fastga.models.performances.mission.mission_builder_prep import PrepareMissionBuilder
 from fastga.models.performances.mission.mission_components import (
-    ComputeTaxi,
     ComputeClimb,
     ComputeClimbSpeed,
     ComputeCruise,
     ComputeDescent,
     ComputeDescentSpeed,
     ComputeReserve,
+    ComputeTaxi,
 )
-from fastga.models.performances.mission.mission import Mission
-from fastga.models.performances.mission.mission_builder_prep import PrepareMissionBuilder
+from fastga.models.performances.mission.takeoff import (
+    TakeOffPhase,
+    _simulate_takeoff,
+    _v2,
+    _v_lift_off_from_v2,
+    _vr_from_v2,
+)
 from fastga.models.performances.mission_vector.mission_vector import MissionVector
-from ..payload_range.payload_range import ComputePayloadRange
-
-from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
-
 from fastga.models.weight.cg.cg_variation import InFlightCGVariation
+from tests.testing_utilities import get_indep_var_comp, list_inputs, run_system
 
 from .dummy_engines import ENGINE_WRAPPER_BE76 as ENGINE_WRAPPER
+from ..payload_range.payload_range import ComputePayloadRange
 
 XML_FILE = "beechcraft_76.xml"
 SKIP_STEPS = True

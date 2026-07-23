@@ -14,19 +14,19 @@
 
 import logging
 import time
+
+import fastoad.api as oad
 import numpy as np
+from fastoad.constants import EngineSetting
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
-import fastoad.api as oad
-from fastoad.constants import EngineSetting
-
 from stdatm import Atmosphere
 
 from fastga.utils.options_checkers import check_propulsion_id
 
-from ..dynamic_equilibrium import DynamicEquilibrium
 from ..constants import SUBMODEL_CRUISE
+from ..dynamic_equilibrium import DynamicEquilibrium
 
 _LOGGER = logging.getLogger(__name__)
 

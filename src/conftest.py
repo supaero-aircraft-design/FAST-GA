@@ -18,7 +18,6 @@ from unittest.mock import Mock
 
 import pytest
 import wrapt
-
 from fastoad.module_management._plugins import MODEL_PLUGIN_ID, FastoadLoader
 
 

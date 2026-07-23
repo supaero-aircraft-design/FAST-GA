@@ -14,39 +14,40 @@ Test module for geometry functions of the different components.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 import pytest
 
-from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
+from tests.testing_utilities import get_indep_var_comp, list_inputs, run_system
+
 from .dummy_engines import ENGINE_WRAPPER_BE76 as ENGINE_WRAPPER
-from ..constants import SUBMODEL_MFW_ADVANCED, SERVICE_MFW
+from ..constants import SERVICE_MFW, SUBMODEL_MFW_ADVANCED
 from ..geom_components import ComputeTotalArea
 from ..geom_components.fuselage.components import (
+    ComputeFuselageDepth,
     ComputeFuselageGeometryBasic,
     ComputeFuselageGeometryCabinSizingFD,
     ComputeFuselageGeometryCabinSizingFL,
-    ComputeFuselageDepth,
+    ComputeFuselageMasterCrossSection,
     ComputeFuselageVolume,
     ComputeFuselageWetArea,
     ComputeFuselageWetAreaFLOPS,
-    ComputeFuselageMasterCrossSection,
 )
 from ..geom_components.ht.components import (
     ComputeHTChord,
+    ComputeHTDistance,
     ComputeHTMAC,
     ComputeHTMACFromWing25,
     ComputeHTSweep,
-    ComputeHTWetArea,
-    ComputeHTDistance,
     ComputeHTVolumeCoefficient,
+    ComputeHTWetArea,
 )
 from ..geom_components.landing_gears.compute_lg import ComputeLGGeometry
-from ..geom_components.nacelle import ComputeNacellePosition, ComputeNacelleDimension
+from ..geom_components.nacelle import ComputeNacelleDimension, ComputeNacellePosition
 from ..geom_components.propeller.components import (
-    ComputePropellerPosition,
     ComputePropellerInstallationEffect,
+    ComputePropellerPosition,
 )
 from ..geom_components.vt.components import (
     ComputeVTChords,
@@ -66,26 +67,24 @@ from ..geom_components.wing.components import (
     ComputeWingToc,
     ComputeWingWetArea,
     ComputeWingX,
+    ComputeWingXAbsolute,
     ComputeWingY,
     ComputeWingZ,
-    ComputeWingXAbsolute,
 )
-from ..geom_components.wing_tank import ComputeMFWSimple, ComputeMFWAdvanced
-from ..geometry import GeometryFixedFuselage, GeometryFixedTailDistance
-
-
+from ..geom_components.wing_tank import ComputeMFWAdvanced, ComputeMFWSimple
 from ..geom_components.wing_tank.components import (
-    ComputeWingTankSpans,
-    ComputeWingTankYArray,
+    ComputeMFWFromWingTanksCapacity,
     ComputeWingTankChordArray,
+    ComputeWingTankCrossSectionArray,
+    ComputeWingTankReducedWidthArray,
     ComputeWingTankRelativeThicknessArray,
+    ComputeWingTankSpans,
     ComputeWingTankThicknessArray,
     ComputeWingTankWidthArray,
-    ComputeWingTankReducedWidthArray,
-    ComputeWingTankCrossSectionArray,
+    ComputeWingTankYArray,
     ComputeWingTanksCapacity,
-    ComputeMFWFromWingTanksCapacity,
 )
+from ..geometry import GeometryFixedFuselage, GeometryFixedTailDistance
 
 XML_FILE = "beechcraft_76.xml"
 

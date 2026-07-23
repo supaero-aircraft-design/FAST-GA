@@ -12,13 +12,13 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 
 from fastga.models.aerodynamics.constants import SPAN_MESH_POINT, SUBMODEL_CL_EXTREME_CLEAN_HT
-from fastga.models.aerodynamics.external.xfoil.xfoil_polar import XfoilPolar
 from fastga.models.aerodynamics.external.neuralfoil.neuralfoil_polar import NeuralfoilPolar
+from fastga.models.aerodynamics.external.xfoil.xfoil_polar import XfoilPolar
 
 
 @oad.RegisterSubmodel(

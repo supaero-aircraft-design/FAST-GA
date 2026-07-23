@@ -16,17 +16,18 @@ Test module for mass breakdown functions.
 
 import pytest
 
-from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
+from tests.testing_utilities import get_indep_var_comp, list_inputs, run_system
+
 from ..a_airframe import ComputeWingMassAnalytical
 from ..a_airframe.wing_components import (
-    ComputeWebMass,
     ComputeLowerFlange,
-    ComputeUpperFlange,
-    ComputeSkinMass,
     ComputeMiscMass,
-    ComputeRibsMass,
     ComputePrimaryMass,
+    ComputeRibsMass,
     ComputeSecondaryMass,
+    ComputeSkinMass,
+    ComputeUpperFlange,
+    ComputeWebMass,
     UpdateWingMass,
 )
 

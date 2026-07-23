@@ -12,18 +12,18 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import logging
 import os
 import os.path as pth
-import logging
 import shutil
-from shutil import rmtree
 from platform import system
+from shutil import rmtree
 
+import fastoad.api as oad
 import openmdao.api as om
 import pytest
 from numpy.testing import assert_allclose
 
-import fastoad.api as oad
 from fastga.models.performances.mission import resources
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")

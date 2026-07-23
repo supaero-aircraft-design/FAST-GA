@@ -12,31 +12,31 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import openmdao.api as om
-
 import fastoad.api as oad
+import openmdao.api as om
 from fastoad.module_management.constants import ModelDomain
 
-from fastga.models.aerodynamics.external.openvsp import ComputeAeroOpenVSP
 from fastga.models.aerodynamics.components import ComputeMachInterpolation
+from fastga.models.aerodynamics.external.openvsp import ComputeAeroOpenVSP
 
 # noinspection PyProtectedMember
 from fastga.models.aerodynamics.external.openvsp.compute_aero_slipstream import (
     ComputeSlipstreamOpenvspSubGroup,
 )
 from fastga.models.aerodynamics.external.vlm import ComputeAeroVLM
+
 from .constants import (
+    DEFAULT_INPUT_AOA,
     SUBMODEL_CD0,
     SUBMODEL_CL_ALPHA_VT,
+    SUBMODEL_CM_ALPHA_FUSELAGE,
+    SUBMODEL_CN_BETA,
+    SUBMODEL_CY_BETA,
+    SUBMODEL_CY_RUDDER,
+    SUBMODEL_DOWNWASH,
+    SUBMODEL_EFFECTIVE_EFFICIENCY_PROPELLER,
     SUBMODEL_HINGE_MOMENTS_TAIL,
     SUBMODEL_MAX_L_D,
-    SUBMODEL_CM_ALPHA_FUSELAGE,
-    SUBMODEL_CY_RUDDER,
-    SUBMODEL_EFFECTIVE_EFFICIENCY_PROPELLER,
-    SUBMODEL_DOWNWASH,
-    SUBMODEL_CY_BETA,
-    SUBMODEL_CN_BETA,
-    DEFAULT_INPUT_AOA,
 )
 
 
@@ -110,49 +110,48 @@ class AerodynamicsHighSpeed(om.Group):
                     ),
                     promotes=["*"],
                 )
+        elif self.options["compute_mach_interpolation"]:
+            self.add_subsystem(
+                "aero_openvsp",
+                ComputeAeroOpenVSP(
+                    low_speed_aero=False,
+                    compute_mach_interpolation=True,
+                    result_folder_path=self.options["result_folder_path"],
+                    result_file_name=self.options["result_file_name"],
+                    openvsp_exe_path=self.options["openvsp_exe_path"],
+                    airfoil_folder_path=self.options["airfoil_folder_path"],
+                    wing_airfoil_file=self.options["wing_airfoil"],
+                    htp_airfoil_file=self.options["htp_airfoil"],
+                    input_angle_of_attack=self.options["input_angle_of_attack"],
+                ),
+                promotes=["*"],
+            )
         else:
-            if self.options["compute_mach_interpolation"]:
-                self.add_subsystem(
-                    "aero_openvsp",
-                    ComputeAeroOpenVSP(
-                        low_speed_aero=False,
-                        compute_mach_interpolation=True,
-                        result_folder_path=self.options["result_folder_path"],
-                        result_file_name=self.options["result_file_name"],
-                        openvsp_exe_path=self.options["openvsp_exe_path"],
-                        airfoil_folder_path=self.options["airfoil_folder_path"],
-                        wing_airfoil_file=self.options["wing_airfoil"],
-                        htp_airfoil_file=self.options["htp_airfoil"],
-                        input_angle_of_attack=self.options["input_angle_of_attack"],
-                    ),
-                    promotes=["*"],
-                )
-            else:
-                self.add_subsystem(
-                    "aero_openvsp",
-                    ComputeAeroOpenVSP(
-                        low_speed_aero=False,
-                        compute_mach_interpolation=False,
-                        result_folder_path=self.options["result_folder_path"],
-                        result_file_name=self.options["result_file_name"],
-                        airfoil_folder_path=self.options["airfoil_folder_path"],
-                        openvsp_exe_path=self.options["openvsp_exe_path"],
-                        wing_airfoil_file=self.options["wing_airfoil"],
-                        htp_airfoil_file=self.options["htp_airfoil"],
-                        input_angle_of_attack=self.options["input_angle_of_attack"],
-                    ),
-                    promotes=["*"],
-                )
-                self.add_subsystem(
-                    "mach_interpolation_roskam",
-                    ComputeMachInterpolation(
-                        airfoil_folder_path=self.options["airfoil_folder_path"],
-                        wing_airfoil_file=self.options["wing_airfoil"],
-                        htp_airfoil_file=self.options["htp_airfoil"],
-                        use_neuralfoil=self.options["use_neuralfoil"],
-                    ),
-                    promotes=["*"],
-                )
+            self.add_subsystem(
+                "aero_openvsp",
+                ComputeAeroOpenVSP(
+                    low_speed_aero=False,
+                    compute_mach_interpolation=False,
+                    result_folder_path=self.options["result_folder_path"],
+                    result_file_name=self.options["result_file_name"],
+                    airfoil_folder_path=self.options["airfoil_folder_path"],
+                    openvsp_exe_path=self.options["openvsp_exe_path"],
+                    wing_airfoil_file=self.options["wing_airfoil"],
+                    htp_airfoil_file=self.options["htp_airfoil"],
+                    input_angle_of_attack=self.options["input_angle_of_attack"],
+                ),
+                promotes=["*"],
+            )
+            self.add_subsystem(
+                "mach_interpolation_roskam",
+                ComputeMachInterpolation(
+                    airfoil_folder_path=self.options["airfoil_folder_path"],
+                    wing_airfoil_file=self.options["wing_airfoil"],
+                    htp_airfoil_file=self.options["htp_airfoil"],
+                    use_neuralfoil=self.options["use_neuralfoil"],
+                ),
+                promotes=["*"],
+            )
 
         options_downwash = {
             "low_speed_aero": False,

@@ -14,15 +14,13 @@ Test module for geometry functions of cg components.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import Union
 
 import fastoad.api as oad
 import numpy as np
 import pandas as pd
 from openmdao.core.component import Component
 
-from fastga.models.propulsion.fuel_propulsion.base import AbstractFuelPropulsion
-from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
+from fastga.models.propulsion.fuel_propulsion.base import AbstractFuelPropulsion, FuelEngineSet
 from fastga.models.propulsion.propulsion import IPropulsion
 
 ENGINE_WRAPPER_BE76 = "test.wrapper.cg.beechcraft.dummy_engine"
@@ -55,7 +53,7 @@ class DummyEngineBE76(AbstractFuelPropulsion):
         self.fuel_type = fuel_type
         self.strokes_nb = strokes_nb
 
-    def compute_flight_points(self, flight_points: Union[oad.FlightPoint, pd.DataFrame]):
+    def compute_flight_points(self, flight_points: oad.FlightPoint | pd.DataFrame):
         flight_points.thrust = 3500.0
         flight_points.sfc = 0.0
 
@@ -67,16 +65,16 @@ class DummyEngineBE76(AbstractFuelPropulsion):
 
     def compute_drag(
         self,
-        mach: Union[float, np.array],
-        unit_reynolds: Union[float, np.array],
+        mach: float | np.array,
+        unit_reynolds: float | np.array,
         wing_mac: float,
-    ) -> Union[float, np.array]:
+    ) -> float | np.array:
         return 0.0
 
     def get_consumed_mass(self, flight_point: oad.FlightPoint, time_step: float) -> float:
         return 0.0
 
-    def compute_max_power(self, flight_points: Union[oad.FlightPoint, pd.DataFrame]) -> float:
+    def compute_max_power(self, flight_points: oad.FlightPoint | pd.DataFrame) -> float:
         return 0.0
 
 
@@ -132,7 +130,7 @@ class DummyEngineSR22(AbstractFuelPropulsion):
         self.fuel_type = fuel_type
         self.strokes_nb = strokes_nb
 
-    def compute_flight_points(self, flight_points: Union[oad.FlightPoint, pd.DataFrame]):
+    def compute_flight_points(self, flight_points: oad.FlightPoint | pd.DataFrame):
         flight_points.thrust = 5417.0
         flight_points.sfc = 0.0
 
@@ -144,16 +142,16 @@ class DummyEngineSR22(AbstractFuelPropulsion):
 
     def compute_drag(
         self,
-        mach: Union[float, np.array],
-        unit_reynolds: Union[float, np.array],
+        mach: float | np.array,
+        unit_reynolds: float | np.array,
         wing_mac: float,
-    ) -> Union[float, np.array]:
+    ) -> float | np.array:
         return 0.0
 
     def get_consumed_mass(self, flight_point: oad.FlightPoint, time_step: float) -> float:
         return 0.0
 
-    def compute_max_power(self, flight_points: Union[oad.FlightPoint, pd.DataFrame]) -> float:
+    def compute_max_power(self, flight_points: oad.FlightPoint | pd.DataFrame) -> float:
         return 0.0
 
 
@@ -203,7 +201,7 @@ class DummyEngineTBM900(AbstractFuelPropulsion):
         self.prop_layout = prop_layout
         self.fuel_type = fuel_type
 
-    def compute_flight_points(self, flight_points: Union[oad.FlightPoint, pd.DataFrame]):
+    def compute_flight_points(self, flight_points: oad.FlightPoint | pd.DataFrame):
         flight_points.thrust = 8000.0
         flight_points.sfc = 0.0
 
@@ -215,16 +213,16 @@ class DummyEngineTBM900(AbstractFuelPropulsion):
 
     def compute_drag(
         self,
-        mach: Union[float, np.array],
-        unit_reynolds: Union[float, np.array],
+        mach: float | np.array,
+        unit_reynolds: float | np.array,
         wing_mac: float,
-    ) -> Union[float, np.array]:
+    ) -> float | np.array:
         return 0.0
 
     def get_consumed_mass(self, flight_point: oad.FlightPoint, time_step: float) -> float:
         return 0.0
 
-    def compute_max_power(self, flight_points: Union[oad.FlightPoint, pd.DataFrame]) -> float:
+    def compute_max_power(self, flight_points: oad.FlightPoint | pd.DataFrame) -> float:
         return 0.0
 
 

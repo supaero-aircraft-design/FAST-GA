@@ -13,11 +13,9 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from abc import ABC, abstractmethod
-from typing import Union
-
-import pandas as pd
 
 import fastoad.api as oad
+import pandas as pd
 
 from fastga.models.propulsion.propulsion import IPropulsionCS23
 
@@ -54,14 +52,14 @@ class FuelEngineSet(AbstractFuelPropulsion):
         self.engine = engine
         self.engine_count = engine_count
 
-    def compute_flight_points(self, flight_points: Union[oad.FlightPoint, pd.DataFrame]):
+    def compute_flight_points(self, flight_points: oad.FlightPoint | pd.DataFrame):
         if flight_points.thrust is not None:
             flight_points.thrust = flight_points.thrust / self.engine_count
 
         self.engine.compute_flight_points(flight_points)
         flight_points.thrust = flight_points.thrust * self.engine_count
 
-    def compute_max_power(self, flight_points: Union[oad.FlightPoint, pd.DataFrame]):
+    def compute_max_power(self, flight_points: oad.FlightPoint | pd.DataFrame):
         return self.engine.compute_max_power(flight_points)
 
     def compute_weight(self):

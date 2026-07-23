@@ -15,72 +15,74 @@ Test module for mass breakdown functions with DAHER TBM900.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import pytest
-from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
+
+from tests.testing_utilities import get_indep_var_comp, list_inputs, run_system
+
 from .dummy_engines import ENGINE_WRAPPER_TBM900 as ENGINE_WRAPPER
 from ..a_airframe import (
-    ComputeHTPWeight,
-    ComputeVTPWeight,
-    ComputeHTPWeightGD,
-    ComputeVTPWeightGD,
-    ComputeHTPWeightTorenbeek,
     ComputeFlightControlsWeight,
     ComputeFlightControlsWeightFLOPS,
+    ComputeFuselageMassAnalytical,
     ComputeFuselageWeight,
     ComputeFuselageWeightRaymer,
     ComputeFuselageWeightRoskam,
-    ComputeFuselageMassAnalytical,
-    ComputeWingWeight,
+    ComputeHTPWeight,
+    ComputeHTPWeightGD,
+    ComputeHTPWeightTorenbeek,
     ComputeLandingGearWeight,
-    ComputeWingMassAnalytical,
     ComputePaintWeight,
+    ComputeVTPWeight,
+    ComputeVTPWeightGD,
+    ComputeWingMassAnalytical,
+    ComputeWingWeight,
 )
 from ..a_airframe.fuselage_components import (
-    ComputeWingFuselageConnection,
-    ComputeShell,
-    ComputeWindows,
-    ComputeFloor,
-    ComputeDoors,
+    ComputeAddBendingMassHorizontal,
+    ComputeAddBendingMassVertical,
     ComputeBulkhead,
+    ComputeDoors,
+    ComputeEngineSupport,
+    ComputeFloor,
     ComputeInsulation,
     ComputeNLGHatch,
+    ComputeShell,
     ComputeTailCone,
-    ComputeEngineSupport,
-    ComputeAddBendingMassVertical,
-    ComputeAddBendingMassHorizontal,
+    ComputeWindows,
+    ComputeWingFuselageConnection,
 )
 from ..a_airframe.sum import AirframeWeight
 from ..a_airframe.wing_components import (
-    ComputeWebMass,
     ComputeLowerFlange,
-    ComputeUpperFlange,
-    ComputeSkinMass,
     ComputeMiscMass,
-    ComputeRibsMass,
     ComputePrimaryMass,
+    ComputeRibsMass,
     ComputeSecondaryMass,
+    ComputeSkinMass,
+    ComputeUpperFlange,
+    ComputeWebMass,
     UpdateWingMass,
 )
 from ..b_propulsion import (
-    ComputeOilWeight,
-    ComputeFuelLinesWeight,
-    ComputeFuelLinesWeightFLOPS,
     ComputeEngineWeight,
     ComputeEngineWeightRaymer,
+    ComputeFuelLinesWeight,
+    ComputeFuelLinesWeightFLOPS,
+    ComputeOilWeight,
     ComputeUnusableFuelWeight,
 )
 from ..b_propulsion.sum import PropulsionWeight
 from ..c_systems import (
+    ComputeAvionicsSystemsWeight,
+    ComputeAvionicsSystemsWeightFromUninstalled,
     ComputeLifeSupportSystemsWeight,
     ComputeLifeSupportSystemsWeightFLOPS,
-    ComputeAvionicsSystemsWeight,
     ComputePowerSystemsWeight,
-    ComputeAvionicsSystemsWeightFromUninstalled,
     ComputeRecordingSystemsWeight,
 )
 from ..c_systems.sum import SystemsWeight
 from ..d_furniture import ComputePassengerSeatsWeight
 from ..d_furniture.sum import FurnitureWeight
-from ..mass_breakdown import MassBreakdown, ComputeOperatingWeightEmpty
+from ..mass_breakdown import ComputeOperatingWeightEmpty, MassBreakdown
 from ..payload import ComputePayload
 
 XML_FILE = "daher_tbm900.xml"

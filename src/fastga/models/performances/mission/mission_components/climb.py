@@ -12,26 +12,25 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import os
 import logging
+import os
 import time
+
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-
-from scipy.constants import g
+from fastoad.constants import EngineSetting
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
-import fastoad.api as oad
-from fastoad.constants import EngineSetting
-
+from scipy.constants import g
 from stdatm import Atmosphere
 
-from fastga.utils.options_checkers import check_propulsion_id
 from fastga.models.performances.mission.takeoff import SAFETY_HEIGHT
+from fastga.utils.options_checkers import check_propulsion_id
 
-from ..dynamic_equilibrium import DynamicEquilibrium
 from ..constants import SUBMODEL_CLIMB, SUBMODEL_CLIMB_SPEED
+from ..dynamic_equilibrium import DynamicEquilibrium
 
 _LOGGER = logging.getLogger(__name__)
 

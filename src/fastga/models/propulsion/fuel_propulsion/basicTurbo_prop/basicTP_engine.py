@@ -15,31 +15,30 @@
 
 import logging
 from collections import OrderedDict
-from typing import Union, Sequence, Tuple, Optional
-from scipy.interpolate import RectBivariateSpline
-import numpy as np
-
-import openmdao.api as om
+from collections.abc import Sequence
 
 import fastoad.api as oad
+import numpy as np
+import openmdao.api as om
 from fastoad.constants import EngineSetting
 from fastoad.exceptions import FastUnknownEngineSettingError
+from scipy.interpolate import RectBivariateSpline
 from stdatm import Atmosphere
 
+from fastga.models.propulsion.dict import AddKeyAttributes, DynamicAttributeDict
+from fastga.models.propulsion.fuel_propulsion.base import AbstractFuelPropulsion
 from fastga.models.propulsion.fuel_propulsion.basicTurbo_prop.exceptions import (
     FastBasicICEngineInconsistentInputParametersError,
 )
-from fastga.models.propulsion.fuel_propulsion.base import AbstractFuelPropulsion
-from fastga.models.propulsion.dict import DynamicAttributeDict, AddKeyAttributes
 
 from .turboprop_components.turboshaft_geometry_computation import DesignPointCalculation
+from .turboprop_components.turboshaft_off_design_fuel import Turboshaft
 from .turboprop_components.turboshaft_off_design_max_power import (
-    TurboshaftMaxThrustPowerLimit,
-    TurboshaftMaxThrustOPRLimit,
     TurboshaftMaxThrustITTLimit,
+    TurboshaftMaxThrustOPRLimit,
+    TurboshaftMaxThrustPowerLimit,
     TurboshaftMaxThrustPropellerThrustLimit,
 )
-from .turboprop_components.turboshaft_off_design_fuel import Turboshaft
 
 # Logger for this module
 _LOGGER = logging.getLogger(__name__)
@@ -913,12 +912,12 @@ class BasicTPEngine(AbstractFuelPropulsion):
 
     def _compute_flight_points(
         self,
-        mach: Union[float, Sequence],
-        altitude: Union[float, Sequence],
-        thrust_is_regulated: Optional[Union[bool, Sequence]] = None,
-        thrust_rate: Optional[Union[float, Sequence]] = None,
-        thrust: Optional[Union[float, Sequence]] = None,
-    ) -> Tuple[Union[float, Sequence], Union[float, Sequence], Union[float, Sequence]]:
+        mach: float | Sequence,
+        altitude: float | Sequence,
+        thrust_is_regulated: bool | Sequence | None = None,
+        thrust_rate: float | Sequence | None = None,
+        thrust: float | Sequence | None = None,
+    ) -> tuple[float | Sequence, float | Sequence, float | Sequence]:
         """
         Same as :meth:`compute_flight_points`.
 
@@ -986,10 +985,10 @@ class BasicTPEngine(AbstractFuelPropulsion):
 
     @staticmethod
     def _check_thrust_inputs(
-        thrust_is_regulated: Optional[Union[float, Sequence]],
-        thrust_rate: Optional[Union[float, Sequence]],
-        thrust: Optional[Union[float, Sequence]],
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        thrust_is_regulated: float | Sequence | None,
+        thrust_rate: float | Sequence | None,
+        thrust: float | Sequence | None,
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         Checks that inputs are consistent and return them in proper shape.
         Some of the inputs can be None, but outputs will be proper numpy arrays.
@@ -1126,7 +1125,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
         max_power = prob_max_thrust_propeller_thrust_limit.get_val("shaft_power", units="kW")
         return max_power
 
-    def compute_max_power(self, flight_points: oad.FlightPoint) -> Union[float, Sequence]:
+    def compute_max_power(self, flight_points: oad.FlightPoint) -> float | Sequence:
         """
         Compute the turboprop maximum power @ given flight-point. We'll assume the max power
         happens when the max_thrust does so we'll use the same OpenMDAO problem.
@@ -1144,9 +1143,9 @@ class BasicTPEngine(AbstractFuelPropulsion):
 
     def sfc(
         self,
-        thrust: Union[float, Sequence[float]],
+        thrust: float | Sequence[float],
         atmosphere: Atmosphere,
-    ) -> Tuple[np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray]:
         """
         Computation of the SFC.
 
@@ -1293,7 +1292,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
 
     def _fuel_consumed(
         self, altitude: float, mach: float, thrust_required: float
-    ) -> Tuple[float, float]:
+    ) -> tuple[float, float]:
         """
         Computes the fuel consumed at the current flight point. Will first attempt to use the no
         ls problem because it is quicker, if it doesn't converge, compute using the ls problem.
@@ -1337,8 +1336,8 @@ class BasicTPEngine(AbstractFuelPropulsion):
         )
 
     def propeller_efficiency(
-        self, thrust: Union[float, Sequence[float]], atmosphere: Atmosphere
-    ) -> Union[float, Sequence]:
+        self, thrust: float | Sequence[float], atmosphere: Atmosphere
+    ) -> float | Sequence:
         """
         Compute the propeller efficiency.
 

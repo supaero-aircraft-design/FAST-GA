@@ -16,9 +16,8 @@ Test module for mass breakdown functions.
 
 from platform import system
 
-import pytest
-
 import numpy as np
+import pytest
 
 from .test_functions import comp_low_speed_xfoil
 

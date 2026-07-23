@@ -15,23 +15,22 @@ component.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import openmdao.api as om
 import fastoad.api as oad
-
-from ...constants import SERVICE_MFW, SUBMODEL_MFW_ADVANCED
+import openmdao.api as om
 
 from .components import (
-    ComputeWingTankSpans,
-    ComputeWingTankYArray,
+    ComputeMFWFromWingTanksCapacity,
     ComputeWingTankChordArray,
+    ComputeWingTankCrossSectionArray,
+    ComputeWingTankReducedWidthArray,
     ComputeWingTankRelativeThicknessArray,
+    ComputeWingTankSpans,
     ComputeWingTankThicknessArray,
     ComputeWingTankWidthArray,
-    ComputeWingTankReducedWidthArray,
-    ComputeWingTankCrossSectionArray,
+    ComputeWingTankYArray,
     ComputeWingTanksCapacity,
-    ComputeMFWFromWingTanksCapacity,
 )
+from ...constants import SERVICE_MFW, SUBMODEL_MFW_ADVANCED
 
 
 @oad.RegisterSubmodel(SERVICE_MFW, SUBMODEL_MFW_ADVANCED)

@@ -20,8 +20,8 @@ import plotly.graph_objects as go
 from fastoad.io import VariableIO
 
 from fastga.models.load_analysis.wing.constants import (
-    POINT_MASS_SPAN_RATIO,
     NB_POINTS_POINT_MASS,
+    POINT_MASS_SPAN_RATIO,
 )
 
 COLS = plotly.colors.DEFAULT_PLOTLY_COLORS

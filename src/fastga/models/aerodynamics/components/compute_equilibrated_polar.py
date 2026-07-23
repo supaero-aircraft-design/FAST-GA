@@ -17,7 +17,7 @@ Computation of the non-equilibrated aircraft polars
 import numpy as np
 from stdatm import Atmosphere
 
-from fastga.models.aerodynamics.constants import POLAR_POINT_COUNT, FIRST_INVALID_COEFF
+from fastga.models.aerodynamics.constants import FIRST_INVALID_COEFF, POLAR_POINT_COUNT
 from fastga.models.performances.mission.dynamic_equilibrium import DynamicEquilibrium
 
 
@@ -162,13 +162,12 @@ class ComputeEquilibratedPolar(DynamicEquilibrium):
             )
             if previous_step[-1]:
                 break
-            else:
-                cl_wing = float(previous_step[2])
-                cl_tail = float(previous_step[3])
-                thrust = float(previous_step[1])
-                cl_array = np.append(cl_array, cl_wing + cl_tail)
-                cd = thrust / (0.5 * atm.density * v_tas**2 * wing_area)
-                cd_array = np.append(cd_array, cd)
+            cl_wing = float(previous_step[2])
+            cl_tail = float(previous_step[3])
+            thrust = float(previous_step[1])
+            cl_array = np.append(cl_array, cl_wing + cl_tail)
+            cd = thrust / (0.5 * atm.density * v_tas**2 * wing_area)
+            cd_array = np.append(cd_array, cd)
 
         additional_zeros = np.linspace(
             FIRST_INVALID_COEFF, 2 * FIRST_INVALID_COEFF, POLAR_POINT_COUNT - len(cd_array)

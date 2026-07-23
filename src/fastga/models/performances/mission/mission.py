@@ -14,24 +14,22 @@
 
 import logging
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-
-import fastoad.api as oad
 from fastoad.module_management.constants import ModelDomain
 
 from fastga.models.performances.mission.takeoff import TakeOffPhase
-
-
 from fastga.models.weight.cg.cg_variation import InFlightCGVariation
+
 from .constants import (
-    SUBMODEL_TAXI,
-    SUBMODEL_CLIMB_SPEED,
     SUBMODEL_CLIMB,
+    SUBMODEL_CLIMB_SPEED,
     SUBMODEL_CRUISE,
     SUBMODEL_DESCENT,
     SUBMODEL_DESCENT_SPEED,
     SUBMODEL_RESERVES,
+    SUBMODEL_TAXI,
 )
 
 MAX_CALCULATION_TIME = 15  # time in seconds

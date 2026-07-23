@@ -15,10 +15,9 @@ coefficient of the aircraft.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import logging
 import functools
+import logging
 import os.path as pth
-from typing import List
 
 import numpy as np
 import openmdao.api as om
@@ -1476,7 +1475,7 @@ def interpolate_database(database, tag_x: str, tag_y: str, input_x: float):
     return output_y
 
 
-def filter_nans(database: pd.DataFrame, tags: List[str]) -> List[np.ndarray]:
+def filter_nans(database: pd.DataFrame, tags: list[str]) -> list[np.ndarray]:
     """
     Utility function to jointly filter out NaN in the database with the selected tags.
     """

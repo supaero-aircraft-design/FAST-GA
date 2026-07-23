@@ -14,9 +14,9 @@
 
 import warnings
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 from stdatm import Atmosphere
 
 from ..constants import SUBMODEL_EFFECTIVE_EFFICIENCY_PROPELLER
@@ -87,9 +87,7 @@ class ComputeEffectiveEfficiencyPropeller(om.ExplicitComponent):
                 wet_area_cowling = inputs["data:geometry:fuselage:wet_area"]
                 friction_drag_coeff = inputs["data:aerodynamics:fuselage:low_speed:CD0"]
                 warnings.warn(
-                    "Propulsion layout {} not implemented in model, replaced by layout 3!".format(
-                        engine_layout
-                    )
+                    f"Propulsion layout {engine_layout} not implemented in model, replaced by layout 3!"
                 )
         else:
             altitude = inputs["data:mission:sizing:main_route:cruise:altitude"]
@@ -103,9 +101,7 @@ class ComputeEffectiveEfficiencyPropeller(om.ExplicitComponent):
                 wet_area_cowling = inputs["data:geometry:fuselage:wet_area"]
                 friction_drag_coeff = inputs["data:aerodynamics:fuselage:cruise:CD0"]
                 warnings.warn(
-                    "Propulsion layout {} not implemented in model, replaced by layout 3!".format(
-                        engine_layout
-                    )
+                    f"Propulsion layout {engine_layout} not implemented in model, replaced by layout 3!"
                 )
 
         # All drag coefficient are given wrt the wing area but for this formula we need to have

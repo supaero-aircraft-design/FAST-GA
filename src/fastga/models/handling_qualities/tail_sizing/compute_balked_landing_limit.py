@@ -15,16 +15,15 @@ proposed by Gudmundsson.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
-from scipy.interpolate import RectBivariateSpline
-from scipy.constants import g
 import openmdao.api as om
+from fastoad.constants import EngineSetting
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
-import fastoad.api as oad
-from fastoad.constants import EngineSetting
-
+from scipy.constants import g
+from scipy.interpolate import RectBivariateSpline
 from stdatm import Atmosphere
 
 from fastga.utils.options_checkers import check_propulsion_id
@@ -136,13 +135,7 @@ class aircraft_equilibrium_limit(om.ExplicitComponent):
         stall_angle_min_htp = stall_angle_min + delta_alpha_stall
         stall_angle_max_htp = stall_angle_max - delta_alpha_stall
 
-        if abs(delta_e) > abs(max_elevator_deflection):
-            equilibrium_found = False
-        elif alpha_avion > stall_angle_max_htp:
-            equilibrium_found = False
-        elif alpha_avion < stall_angle_min_htp:
-            equilibrium_found = False
-        elif CL[0] > cl_max_landing:
+        if abs(delta_e) > abs(max_elevator_deflection) or alpha_avion > stall_angle_max_htp or alpha_avion < stall_angle_min_htp or CL[0] > cl_max_landing:
             equilibrium_found = False
         else:
             equilibrium_found = True

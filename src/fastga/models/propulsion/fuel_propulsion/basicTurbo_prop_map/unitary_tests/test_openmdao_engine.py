@@ -16,34 +16,32 @@ Test module for OpenMDAO versions of basicICEngine
 
 import numpy as np
 import openmdao.api as om
-
 from fastoad.constants import EngineSetting
 
-from ..openmdao import OMBasicTPEngineMappedComponent
+from tests.testing_utilities import run_system
 
 from .data.dummy_maps import (
-    SPEED,
-    THRUST_SL,
-    THRUST_SL_LIMIT,
+    EFFICIENCY_CL,
     EFFICIENCY_SL,
+    MACH_ARRAY_CL,
+    MACH_ARRAY_IL,
+    MACH_ARRAY_SL,
+    SFC_CL,
+    SFC_IL,
+    SFC_SL,
+    SPEED,
+    THRUST_ARRAY_CL,
+    THRUST_ARRAY_IL,
+    THRUST_ARRAY_SL,
     THRUST_CL,
     THRUST_CL_LIMIT,
-    EFFICIENCY_CL,
-    MACH_ARRAY_SL,
-    THRUST_ARRAY_SL,
-    THRUST_MAX_ARRAY_SL,
-    SFC_SL,
-    MACH_ARRAY_CL,
-    THRUST_ARRAY_CL,
     THRUST_MAX_ARRAY_CL,
-    SFC_CL,
-    MACH_ARRAY_IL,
-    THRUST_ARRAY_IL,
     THRUST_MAX_ARRAY_IL,
-    SFC_IL,
+    THRUST_MAX_ARRAY_SL,
+    THRUST_SL,
+    THRUST_SL_LIMIT,
 )
-
-from tests.testing_utilities import run_system
+from ..openmdao import OMBasicTPEngineMappedComponent
 
 
 def test_OMBasicTPEngineMappedComponent():

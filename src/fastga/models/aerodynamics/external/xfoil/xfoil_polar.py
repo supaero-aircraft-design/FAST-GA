@@ -21,7 +21,6 @@ import warnings
 from importlib.resources import path
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Tuple
 
 import numpy as np
 import pandas as pd
@@ -34,16 +33,17 @@ from openmdao.utils.file_wrap import InputFileGenerator
 from fastga.command.api import string_to_array
 from fastga.models.aerodynamics.external.xfoil import xfoil699
 from fastga.models.geometry.profiles.get_profile import get_profile
+
 from . import resources as local_resources
 from ...constants import (
-    POLAR_POINT_COUNT,
-    OPTION_ALPHA_START,
-    OPTION_ALPHA_END,
-    OPTION_COMP_NEG_AIR_SYM,
-    _DEFAULT_AIRFOIL_FILE,
     ALPHA_STEP,
     DEFAULT_2D_CL_MAX,
     DEFAULT_2D_CL_MIN,
+    OPTION_ALPHA_END,
+    OPTION_ALPHA_START,
+    OPTION_COMP_NEG_AIR_SYM,
+    POLAR_POINT_COUNT,
+    _DEFAULT_AIRFOIL_FILE,
 )
 
 OPTION_RESULT_POLAR_FILENAME = "result_polar_filename"
@@ -287,11 +287,10 @@ class XfoilPolar(ExternalCodeComp):
                 input_file_name = "polar_session_inv.txt"
             else:
                 input_file_name = "polar_session.txt"
+        elif inviscid:
+            input_file_name = "polar_session_single_AoA_inv.txt"
         else:
-            if inviscid:
-                input_file_name = "polar_session_single_AoA_inv.txt"
-            else:
-                input_file_name = "polar_session_single_AoA.txt"
+            input_file_name = "polar_session_single_AoA.txt"
 
         # input command to run XFoil
         with path(local_resources, input_file_name) as input_template_path:
@@ -334,7 +333,7 @@ class XfoilPolar(ExternalCodeComp):
         _LOGGER.error("XFOIL results file not found")
         return np.array([])
 
-    def _get_max_cl(self, alpha: np.ndarray, lift_coeff: np.ndarray) -> Tuple[float, bool]:
+    def _get_max_cl(self, alpha: np.ndarray, lift_coeff: np.ndarray) -> tuple[float, bool]:
         """
 
         :param alpha:
@@ -361,7 +360,7 @@ class XfoilPolar(ExternalCodeComp):
         )
         return DEFAULT_2D_CL_MAX, True
 
-    def _get_min_cl(self, alpha: np.ndarray, lift_coeff: np.ndarray) -> Tuple[float, bool]:
+    def _get_min_cl(self, alpha: np.ndarray, lift_coeff: np.ndarray) -> tuple[float, bool]:
         """
         :param alpha:
         :param lift_coeff: CL
@@ -424,7 +423,7 @@ class XfoilPolar(ExternalCodeComp):
             tmp_directory.cleanup()
 
         if max(len(tmp_profile_file_path), len(tmp_result_file_path)) > _XFOIL_PATH_LIMIT:
-            raise IOError(
+            raise OSError(
                 "Could not create a tmp directory where file path will respects XFOIL "
                 "limitation (%i): tried %s" % (_XFOIL_PATH_LIMIT, tmp_candidates)
             )
@@ -757,7 +756,7 @@ class XfoilPolar(ExternalCodeComp):
         """
 
         # use interpolation to fill missing values and add zero for values that are out of range
-        if POLAR_POINT_COUNT < len(alpha):
+        if len(alpha) > POLAR_POINT_COUNT:
             alpha_interp = np.linspace(alpha[0], alpha[-1], POLAR_POINT_COUNT)
             cl = np.interp(alpha_interp, alpha, cl)
             cd = np.interp(alpha_interp, alpha, cd)
@@ -797,7 +796,7 @@ class XfoilPolar(ExternalCodeComp):
         cd_min_2d = np.min(cd)
 
         # Modify vector length if necessary
-        if POLAR_POINT_COUNT < len(alpha):
+        if len(alpha) > POLAR_POINT_COUNT:
             alpha = np.linspace(alpha[0], alpha[-1], POLAR_POINT_COUNT)
             cl = np.interp(alpha, alpha, cl)
             cd = np.interp(alpha, alpha, cd)

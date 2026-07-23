@@ -16,15 +16,15 @@ import os.path as pth
 
 from ..analysis_and_plots import (
     aircraft_geometry_plot,
-    evolution_diagram,
-    compressibility_effects_diagram,
-    cl_wing_diagram,
+    aircraft_polar,
     cg_lateral_diagram,
+    cl_wing_diagram,
+    compressibility_effects_diagram,
+    drag_breakdown_diagram,
+    evolution_diagram,
     mass_breakdown_bar_plot,
     mass_breakdown_sun_plot,
-    drag_breakdown_diagram,
     payload_range,
-    aircraft_polar,
 )
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")

@@ -12,12 +12,11 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import openmdao.api as om
-import numpy as np
-
-from stdatm import Atmosphere
 import fastoad.api as oad
+import numpy as np
+import openmdao.api as om
 from fastoad.module_management.constants import ModelDomain
+from stdatm import Atmosphere
 
 from fastga.models.performances.mission.takeoff import TakeOffPhase
 from fastga.models.weight.cg.cg_variation import InFlightCGVariation

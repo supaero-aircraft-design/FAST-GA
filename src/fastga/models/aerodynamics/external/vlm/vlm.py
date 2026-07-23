@@ -18,19 +18,19 @@ import json
 import logging
 import warnings
 from pathlib import Path
-from typing import Optional, Union
 
 import numpy as np
 import openmdao.api as om
 from stdatm import Atmosphere
 
 from fastga.models.geometry.profiles.get_profile import get_profile
+
 from ...constants import (
-    SPAN_MESH_POINT,
-    POLAR_POINT_COUNT,
-    MACH_NB_PTS,
     GEOMETRY_SET_LABELS,
+    MACH_NB_PTS,
+    POLAR_POINT_COUNT,
     RESULT_LABELS,
+    SPAN_MESH_POINT,
 )
 
 DEFAULT_NX = 19
@@ -59,18 +59,18 @@ class VLMSimpleGeometry(om.ExplicitComponent):
 
     # File the cache should be saved to (only set when a `result_file_name` is
     # configured).
-    _cache_file: Optional[str] = None
+    _cache_file: str | None = None
 
     # Folder/file the cache was last loaded from, used only to avoid redundant
     # reloads on repeated component instantiation. Distinct from `_cache_file`:
     # this is set even when no `result_file_name` is configured (folder-only mode).
-    _cache_loaded_from: Optional[str] = None
+    _cache_loaded_from: str | None = None
 
     # Guards against registering the atexit save more than once.
     _atexit_registered: bool = False
 
     @staticmethod
-    def _resolve_cache_path(folder_path: Union[str, Path], file_name: str) -> Path:
+    def _resolve_cache_path(folder_path: str | Path, file_name: str) -> Path:
         """
         Turns the `result_folder_path`/`result_file_name` options into the full cache
         file path.
@@ -78,7 +78,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         return (Path(folder_path) / file_name).resolve()
 
     @classmethod
-    def load_cache(cls, folder_path: Union[str, Path]) -> None:
+    def load_cache(cls, folder_path: str | Path) -> None:
         """
         Loads a previously saved VLM result cache from disk and merges it into the in-memory cache.
 
@@ -92,7 +92,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         no_vlm_cache = True
         for file in search_folder.glob("*.json"):
             try:
-                with open(file, "r", encoding="utf-8") as cache_fp:
+                with open(file, encoding="utf-8") as cache_fp:
                     saved_cache = json.load(cache_fp)
             except (json.JSONDecodeError, OSError) as exc:
                 # The result folder may contain JSON files unrelated to the VLM cache.
@@ -129,8 +129,8 @@ class VLMSimpleGeometry(om.ExplicitComponent):
     @classmethod
     def save_cache(
         cls,
-        folder_path: Optional[Union[str, Path]] = None,
-        file_name: Optional[str] = None,
+        folder_path: str | Path | None = None,
+        file_name: str | None = None,
     ) -> None:
         """
         Persists the current in-memory VLM result cache to disk so it can be reused
@@ -556,8 +556,8 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         altitude: float,
         mach: float,
         aoa_angle: float,
-        flaps_angle: Optional[float] = 0.0,
-        use_airfoil: Optional[bool] = True,
+        flaps_angle: float | None = 0.0,
+        use_airfoil: bool | None = True,
     ):
         """
         VLM computations for the wing alone.
@@ -646,7 +646,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         altitude: float,
         mach: float,
         aoa_angle: float,
-        use_airfoil: Optional[bool] = True,
+        use_airfoil: bool | None = True,
     ):
         """
         VLM computation for the horizontal tail alone.
@@ -727,9 +727,9 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         altitude: float,
         mach: float,
         aoa_angle: float,
-        flaps_angle: Optional[float] = 0.0,
-        use_airfoil: Optional[bool] = True,
-        saved_wing_result: Optional[dict] = None,
+        flaps_angle: float | None = 0.0,
+        use_airfoil: bool | None = True,
+        saved_wing_result: dict | None = None,
     ):
         """
         VLM computation for the complete aircraft.
@@ -1343,7 +1343,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         resized_vectors = []
 
         # shorter
-        if SPAN_MESH_POINT < len(y_vector):
+        if len(y_vector) > SPAN_MESH_POINT:
             y_interp = np.linspace(y_vector[0], y_vector[-1], SPAN_MESH_POINT)
             warnings.warn("Defined maximum span mesh in fast aerodynamics\\constants.py exceeded!")
 

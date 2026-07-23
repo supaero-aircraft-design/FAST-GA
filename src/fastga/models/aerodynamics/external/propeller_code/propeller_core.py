@@ -15,10 +15,8 @@
 import logging
 
 import numpy as np
-from scipy.optimize import root
-
 import openmdao.api as om
-
+from scipy.optimize import root
 from stdatm import Atmosphere
 
 from fastga.models.aerodynamics.external.xfoil.xfoil_polar import POLAR_POINT_COUNT

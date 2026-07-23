@@ -11,12 +11,11 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import numpy as np
-
-import openmdao.api as om
 import fastoad.api as oad
+import numpy as np
+import openmdao.api as om
 
-from ..constants import SUBMODEL_CM_Q, SUBMODEL_CM_Q_WING, SUBMODEL_CM_Q_HT
+from ..constants import SUBMODEL_CM_Q, SUBMODEL_CM_Q_HT, SUBMODEL_CM_Q_WING
 
 
 @oad.RegisterSubmodel(SUBMODEL_CM_Q, "submodel.aerodynamics.aircraft.cm_pitch_velocity.legacy")

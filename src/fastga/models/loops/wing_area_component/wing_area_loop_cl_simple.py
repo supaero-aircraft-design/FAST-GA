@@ -20,7 +20,7 @@ import numpy as np
 import openmdao.api as om
 from scipy.constants import g
 
-from ..constants import SUBMODEL_WING_AREA_AERO_LOOP, SUBMODEL_WING_AREA_AERO_CONS
+from ..constants import SUBMODEL_WING_AREA_AERO_CONS, SUBMODEL_WING_AREA_AERO_LOOP
 
 oad.RegisterSubmodel.active_models[SUBMODEL_WING_AREA_AERO_LOOP] = (
     "fastga.submodel.loop.wing_area.update.aero.simple"

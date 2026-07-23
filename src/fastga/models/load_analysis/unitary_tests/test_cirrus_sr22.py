@@ -17,12 +17,12 @@ Test load_analysis module.
 import numpy as np
 import pytest
 
-from ..wing.aerostructural_loads import AerostructuralLoad
-from ..wing.structural_loads import StructuralLoads
-from ..wing.aerodynamic_loads import AerodynamicLoads
-from ..wing.loads import WingLoads
+from tests.testing_utilities import get_indep_var_comp, list_inputs, run_system
 
-from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
+from ..wing.aerodynamic_loads import AerodynamicLoads
+from ..wing.aerostructural_loads import AerostructuralLoad
+from ..wing.loads import WingLoads
+from ..wing.structural_loads import StructuralLoads
 
 XML_FILE = "cirrus_sr22.xml"
 

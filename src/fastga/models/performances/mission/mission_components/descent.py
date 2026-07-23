@@ -15,22 +15,21 @@
 import copy
 import logging
 import time
+
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-
-from scipy.constants import g
+from fastoad.constants import EngineSetting
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
-import fastoad.api as oad
-from fastoad.constants import EngineSetting
-
+from scipy.constants import g
 from stdatm import Atmosphere
 
 from fastga.utils.options_checkers import check_propulsion_id
 
-from ..dynamic_equilibrium import DynamicEquilibrium
 from ..constants import SUBMODEL_DESCENT, SUBMODEL_DESCENT_SPEED
+from ..dynamic_equilibrium import DynamicEquilibrium
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -120,7 +119,7 @@ class ComputeDescent(DynamicEquilibrium):
 
         # Define specific time step ~POINTS_NB_DESCENT points for calculation (with ground
         # conditions)
-        time_step = abs((altitude_t / descent_rate)) / float(POINTS_NB_DESCENT)
+        time_step = abs(altitude_t / descent_rate) / float(POINTS_NB_DESCENT)
 
         while altitude_t > 0.0:
             flight_point = oad.FlightPoint(

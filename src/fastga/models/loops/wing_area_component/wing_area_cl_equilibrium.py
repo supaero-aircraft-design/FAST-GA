@@ -25,12 +25,13 @@ from fastoad.openmdao.problem import AutoUnitsDefaultGroup
 from scipy.constants import g
 
 from fastga.command.api import list_inputs_metadata
-from fastga.utils.options_checkers import check_propulsion_id
 from fastga.models.performances.mission_vector.constants import SUBMODEL_EQUILIBRIUM
 from fastga.models.performances.mission_vector.mission.dep_equilibrium import (
     DEPEquilibrium,
 )
-from ..constants import SUBMODEL_WING_AREA_AERO_LOOP, SUBMODEL_WING_AREA_AERO_CONS
+from fastga.utils.options_checkers import check_propulsion_id
+
+from ..constants import SUBMODEL_WING_AREA_AERO_CONS, SUBMODEL_WING_AREA_AERO_LOOP
 
 _LOGGER = logging.getLogger(__name__)
 

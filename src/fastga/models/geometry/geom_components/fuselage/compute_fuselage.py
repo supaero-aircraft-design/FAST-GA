@@ -15,17 +15,18 @@ component.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import openmdao.api as om
 import fastoad.api as oad
+import openmdao.api as om
 
 from fastga.models.options import CABIN_SIZING_OPTION
+
 from .components import (
     ComputeFuselageGeometryBasic,
     ComputeFuselageGeometryCabinSizingFD,
     ComputeFuselageGeometryCabinSizingFL,
     ComputeFuselageMasterCrossSection,
 )
-from .constants import SERVICE_FUSELAGE_WET_AREA, SERVICE_FUSELAGE_DEPTH, SERVICE_FUSELAGE_VOLUME
+from .constants import SERVICE_FUSELAGE_DEPTH, SERVICE_FUSELAGE_VOLUME, SERVICE_FUSELAGE_WET_AREA
 
 
 class ComputeFuselageAlternate(om.Group):

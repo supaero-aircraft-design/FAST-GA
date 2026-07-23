@@ -16,14 +16,14 @@ Python module for fuel lines weight calculation, part of the propulsion system m
 
 import warnings
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 
 from .constants import (
     SERVICE_FUEL_SYSTEM_MASS,
-    SUBMODEL_FUEL_SYSTEM_MASS_LEGACY,
     SUBMODEL_FUEL_SYSTEM_MASS_FLOPS,
+    SUBMODEL_FUEL_SYSTEM_MASS_LEGACY,
 )
 
 oad.RegisterSubmodel.active_models[SERVICE_FUEL_SYSTEM_MASS] = SUBMODEL_FUEL_SYSTEM_MASS_LEGACY
@@ -77,7 +77,7 @@ class ComputeFuelLinesWeight(om.ExplicitComponent):
             m_vol_fuel = 804.0  # Jet-A1 volume mass [kg/m**3], cold worst case
         else:
             m_vol_fuel = 718.9
-            warnings.warn("Fuel type {} does not exist, replaced by type 1!".format(fuel_type))
+            warnings.warn(f"Fuel type {fuel_type} does not exist, replaced by type 1!")
 
         k_fsp = m_vol_fuel * 0.008345
         # In lbs/gal
@@ -104,7 +104,7 @@ class ComputeFuelLinesWeight(om.ExplicitComponent):
             m_vol_fuel = 804.0  # Jet-A1 volume mass [kg/m**3], cold worst case
         else:
             m_vol_fuel = 718.9
-            warnings.warn("Fuel type {} does not exist, replaced by type 1!".format(fuel_type))
+            warnings.warn(f"Fuel type {fuel_type} does not exist, replaced by type 1!")
 
         k_fsp = m_vol_fuel * 0.008345
         # In lbs/gal

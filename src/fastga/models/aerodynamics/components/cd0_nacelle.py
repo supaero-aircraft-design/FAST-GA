@@ -14,15 +14,16 @@
 
 import warnings
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
 
 from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
 from fastga.utils.options_checkers import check_propulsion_id
+
 from ..constants import SUBMODEL_CD0_NACELLE
 
 
@@ -82,9 +83,7 @@ class Cd0Nacelle(om.ExplicitComponent):
         else:
             cd0 = 0.0
             warnings.warn(
-                "Propulsion layout {} not implemented in model, replaced by layout 1!".format(
-                    prop_layout
-                )
+                f"Propulsion layout {prop_layout} not implemented in model, replaced by layout 1!"
             )
 
         if self.options["low_speed_aero"]:

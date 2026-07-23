@@ -16,8 +16,8 @@ import os.path as pth
 
 from ..load_analysis.analysis_and_plots_la import (
     force_repartition_diagram,
-    shear_diagram,
     rbm_diagram,
+    shear_diagram,
 )
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")

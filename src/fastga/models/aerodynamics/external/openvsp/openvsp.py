@@ -12,35 +12,34 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import ast
+import atexit
+import json
+import logging
 import os
 import os.path as pth
-from pathlib import Path
 import warnings
-from importlib.resources import path
-import ast
-import json
-import atexit
-import logging
-import numpy as np
-
 from distutils.dir_util import copy_tree
-from typing import Optional, Union
+from importlib.resources import path
+from pathlib import Path
+
+import numpy as np
 
 # noinspection PyProtectedMember
 from fastoad._utils.resource_management.copy import copy_resource
-
 from openmdao.components.external_code_comp import ExternalCodeComp
 from openmdao.utils.file_wrap import InputFileGenerator
 from stdatm import Atmosphere
 
 # noinspection PyProtectedMember
 from fastga.command.api import _create_tmp_directory
-from fastga.utils.resource_management.copy import copy_resource_from_path
 from fastga.utils.options_checkers import check_propulsion_id
+from fastga.utils.resource_management.copy import copy_resource_from_path
+
 from . import openvsp3201
 from . import resources as local_resources
 from ... import airfoil_folder
-from ...constants import SPAN_MESH_POINT, MACH_NB_PTS, GEOMETRY_SET_LABELS, RESULT_LABELS
+from ...constants import GEOMETRY_SET_LABELS, MACH_NB_PTS, RESULT_LABELS, SPAN_MESH_POINT
 
 DEFAULT_WING_AIRFOIL = "naca23012.af"
 DEFAULT_HTP_AIRFOIL = "naca0012.af"
@@ -96,18 +95,18 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
 
     # File the cache should be saved to (only set when a `result_file_name` is
     # configured).
-    _cache_file: Optional[str] = None
+    _cache_file: str | None = None
 
     # Folder/file the cache was last loaded from, used only to avoid redundant
     # reloads on repeated component instantiation. Distinct from `_cache_file`:
     # this is set even when no `result_file_name` is configured (folder-only mode).
-    _cache_loaded_from: Optional[str] = None
+    _cache_loaded_from: str | None = None
 
     # Guards against registering the atexit save more than once.
     _atexit_registered: bool = False
 
     @staticmethod
-    def _resolve_cache_path(folder_path: Union[str, Path], file_name: str) -> Path:
+    def _resolve_cache_path(folder_path: str | Path, file_name: str) -> Path:
         """
         Turns the `result_folder_path`/`result_file_name` options into the full cache
         file path.
@@ -115,7 +114,7 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
         return (Path(folder_path) / file_name).resolve()
 
     @classmethod
-    def load_cache(cls, folder_path: Union[str, Path]) -> None:
+    def load_cache(cls, folder_path: str | Path) -> None:
         """
         Loads a previously saved OpenVSP result cache from disk and merges it into the in-memory cache.
 
@@ -130,7 +129,7 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
 
         for file in search_folder.glob("*.json"):
             try:
-                with open(file, "r", encoding="utf-8") as cache_fp:
+                with open(file, encoding="utf-8") as cache_fp:
                     saved_cache = json.load(cache_fp)
             except (json.JSONDecodeError, OSError) as exc:
                 # The result folder may contain JSON files unrelated to the OpenVSP cache.
@@ -167,8 +166,8 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
     @classmethod
     def save_cache(
         cls,
-        folder_path: Optional[Union[str, Path]] = None,
-        file_name: Optional[str] = None,
+        folder_path: str | Path | None = None,
+        file_name: str | None = None,
     ) -> None:
         """
         Persists the current in-memory OpenVSP result cache to disk so it can be reused
@@ -631,30 +630,29 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
             elif comp_opt == "ac":
                 copy_resource(airfoil_folder, self.options["wing_airfoil_file"], target_directory)
                 copy_resource(airfoil_folder, self.options["htp_airfoil_file"], target_directory)
-        else:
-            if comp_opt == "wing":
-                copy_resource_from_path(
-                    self.options["airfoil_folder_path"],
-                    self.options["wing_airfoil_file"],
-                    target_directory,
-                )
-            elif comp_opt == "htp":
-                copy_resource_from_path(
-                    self.options["airfoil_folder_path"],
-                    self.options["htp_airfoil_file"],
-                    target_directory,
-                )
-            elif comp_opt == "ac":
-                copy_resource_from_path(
-                    self.options["airfoil_folder_path"],
-                    self.options["wing_airfoil_file"],
-                    target_directory,
-                )
-                copy_resource_from_path(
-                    self.options["airfoil_folder_path"],
-                    self.options["htp_airfoil_file"],
-                    target_directory,
-                )
+        elif comp_opt == "wing":
+            copy_resource_from_path(
+                self.options["airfoil_folder_path"],
+                self.options["wing_airfoil_file"],
+                target_directory,
+            )
+        elif comp_opt == "htp":
+            copy_resource_from_path(
+                self.options["airfoil_folder_path"],
+                self.options["htp_airfoil_file"],
+                target_directory,
+            )
+        elif comp_opt == "ac":
+            copy_resource_from_path(
+                self.options["airfoil_folder_path"],
+                self.options["wing_airfoil_file"],
+                target_directory,
+            )
+            copy_resource_from_path(
+                self.options["airfoil_folder_path"],
+                self.options["htp_airfoil_file"],
+                target_directory,
+            )
 
         # Create corresponding .bat files (one for each geometry configuration)
         self.options["command"] = [pth.join(target_directory, "vspscript.bat")]
@@ -907,7 +905,7 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
             wing_cl_vect = []
             wing_cd_vect = []
             wing_cm_vect = []
-            with open(output_file_list[0], "r") as file_stream:
+            with open(output_file_list[0]) as file_stream:
                 data = file_stream.readlines()
                 for i, _ in enumerate(data):
                     line = data[i].split()
@@ -930,7 +928,7 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
                         )  # sum CM left/right
                         break
             # Open .polar file and extract data
-            with open(output_file_list[1], "r") as file_stream:
+            with open(output_file_list[1]) as file_stream:
                 data = file_stream.readlines()
                 wing_e = float(data[1].split()[10])
             # Delete temporary directory
@@ -956,7 +954,7 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
             htp_cl_vect = []
             htp_cd_vect = []
             htp_cm_vect = []
-            with open(output_file_list[0], "r") as lf:
+            with open(output_file_list[0]) as lf:
                 data = lf.readlines()
                 for i, _ in enumerate(data):
                     line = data[i].split()
@@ -978,7 +976,7 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
                         )  # sum CM left/right
                         break
             # Open .polar file and extract data
-            with open(output_file_list[1], "r") as lf:
+            with open(output_file_list[1]) as lf:
                 data = lf.readlines()
                 htp_e = float(data[1].split()[10])
             # Delete temporary directory
@@ -1007,7 +1005,7 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
             htp_cl_vect = []
             htp_cd_vect = []
             htp_cm_vect = []
-            with open(output_file_list[0], "r") as lf:
+            with open(output_file_list[0]) as lf:
                 data = lf.readlines()
                 for i in range(len(data)):
                     line = data[i].split()
@@ -1043,7 +1041,7 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
                         )  # sum CM left/right
                         break
             # Open .polar file and extract data
-            with open(output_file_list[1], "r") as lf:
+            with open(output_file_list[1]) as lf:
                 data = lf.readlines()
                 aircraft_cl = float(data[1].split()[4])
                 aircraft_cd0 = float(data[1].split()[5])
@@ -1316,7 +1314,7 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
         resized_vectors = []
 
         # shorter
-        if SPAN_MESH_POINT < len(y_vector):
+        if len(y_vector) > SPAN_MESH_POINT:
             y_interp = np.linspace(y_vector[0], y_vector[-1], SPAN_MESH_POINT)
             warnings.warn("Defined maximum span mesh in fast aerodynamics\\constants.py exceeded!")
 
@@ -1768,7 +1766,7 @@ class OpenVSPSimpleGeometryDP(OpenVSPSimpleGeometry):
         if engine_config == 1.0:
             rotor_template_file_name = generate_wing_rotor_file(int(engine_count / 2.0))
         else:
-            rotor_template_file_name = generate_wing_rotor_file(int(1))
+            rotor_template_file_name = generate_wing_rotor_file(1)
 
         with path(local_resources, rotor_template_file_name) as input_template_path:
             parser.set_template_file(str(input_template_path))
@@ -1833,7 +1831,7 @@ class OpenVSPSimpleGeometryDP(OpenVSPSimpleGeometry):
         wing_cl_vect = []
         wing_cd_vect = []
         wing_cm_vect = []
-        with open(output_file_list[0], "r") as lf:
+        with open(output_file_list[0]) as lf:
             data = lf.readlines()
             for i in range(len(data)):
                 line = data[i].split()
@@ -1856,7 +1854,7 @@ class OpenVSPSimpleGeometryDP(OpenVSPSimpleGeometry):
                     )  # sum CM left/right
                     break
         # Open .polar file and extract data
-        with open(output_file_list[1], "r") as lf:
+        with open(output_file_list[1]) as lf:
             data = lf.readlines()
             wing_e = float(data[1].split()[10])
         # Delete temporary directory
@@ -1893,7 +1891,7 @@ def generate_wing_rotor_file(engine_count: int):
     original_template = pth.join(local_resources.__path__[0], "wing_openvsp_DegenGeom.vspaero")
     new_template = pth.join(local_resources.__path__[0], rotor_template_file_name)
 
-    file_to_copy = open(original_template, "r").readlines()
+    file_to_copy = open(original_template).readlines()
     file = open(new_template, "w")
 
     for i, _ in enumerate(file_to_copy):

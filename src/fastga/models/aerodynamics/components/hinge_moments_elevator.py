@@ -12,20 +12,18 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-
-import fastoad.api as oad
 from stdatm import Atmosphere
 
+from .digitization.compute_k_prime_single_slotted import ComputeSingleSlottedLiftEffectiveness
 from .figure_digitization import FigureDigitization
 from ..constants import (
+    SUBMODEL_HINGE_MOMENTS_TAIL,
     SUBMODEL_HINGE_MOMENTS_TAIL_2D,
     SUBMODEL_HINGE_MOMENTS_TAIL_3D,
-    SUBMODEL_HINGE_MOMENTS_TAIL,
 )
-
-from .digitization.compute_k_prime_single_slotted import ComputeSingleSlottedLiftEffectiveness
 
 
 @oad.RegisterSubmodel(
@@ -105,11 +103,11 @@ class Compute2DHingeMomentsTail(FigureDigitization):
         tan_0_5_phi_te_prime_prime = (y_95 / 2.0 - y_99 / 2.0) / 9.0
 
         condition = bool(
-            (
+            
                 (tan_0_5_phi_te == tan_0_5_phi_te_prime)
                 and (tan_0_5_phi_te_prime == tan_0_5_phi_te_prime_prime)
                 and (tan_0_5_phi_te_prime_prime == tail_thickness_ratio)
-            )
+            
         )
 
         # Step 2.

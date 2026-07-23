@@ -13,10 +13,11 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
 
-import fastoad.api as oad
 from ..constants import SUBMODEL_RESERVES
 
 _LOGGER = logging.getLogger(__name__)

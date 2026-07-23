@@ -14,22 +14,22 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-import pandas as pd
-from typing import Union, Sequence, Tuple, Optional
-from scipy.interpolate import RectBivariateSpline
 import os.path as pth
-import numpy as np
+from collections.abc import Sequence
 
 import fastoad.api as oad
+import numpy as np
+import pandas as pd
 from fastoad.constants import EngineSetting
 from fastoad.exceptions import FastUnknownEngineSettingError
+from scipy.interpolate import RectBivariateSpline
 from stdatm import Atmosphere
 
+from fastga.models.propulsion.dict import AddKeyAttributes, DynamicAttributeDict
 from fastga.models.propulsion.fuel_propulsion.base import AbstractFuelPropulsion
-from fastga.models.propulsion.dict import DynamicAttributeDict, AddKeyAttributes
 
-from .exceptions import FastBasicICEngineInconsistentInputParametersError
 from . import resources
+from .exceptions import FastBasicICEngineInconsistentInputParametersError
 
 # Logger for this module
 _LOGGER = logging.getLogger(__name__)
@@ -316,13 +316,13 @@ class BasicICEngine(AbstractFuelPropulsion):
 
     def _compute_flight_points(
         self,
-        mach: Union[float, Sequence],
-        altitude: Union[float, Sequence],
-        engine_setting: Union[EngineSetting, Sequence],
-        thrust_is_regulated: Optional[Union[bool, Sequence]] = None,
-        thrust_rate: Optional[Union[float, Sequence]] = None,
-        thrust: Optional[Union[float, Sequence]] = None,
-    ) -> Tuple[Union[float, Sequence], Union[float, Sequence], Union[float, Sequence]]:
+        mach: float | Sequence,
+        altitude: float | Sequence,
+        engine_setting: EngineSetting | Sequence,
+        thrust_is_regulated: bool | Sequence | None = None,
+        thrust_rate: float | Sequence | None = None,
+        thrust: float | Sequence | None = None,
+    ) -> tuple[float | Sequence, float | Sequence, float | Sequence]:
         """
         Same as :meth:`compute_flight_points`.
 
@@ -388,10 +388,10 @@ class BasicICEngine(AbstractFuelPropulsion):
 
     @staticmethod
     def _check_thrust_inputs(
-        thrust_is_regulated: Optional[Union[float, Sequence]],
-        thrust_rate: Optional[Union[float, Sequence]],
-        thrust: Optional[Union[float, Sequence]],
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        thrust_is_regulated: float | Sequence | None,
+        thrust_rate: float | Sequence | None,
+        thrust: float | Sequence | None,
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         Checks that inputs are consistent and return them in proper shape.
         Some of the inputs can be None, but outputs will be proper numpy arrays.
@@ -460,8 +460,8 @@ class BasicICEngine(AbstractFuelPropulsion):
         return thrust_is_regulated, thrust_rate, thrust
 
     def propeller_efficiency(
-        self, thrust: Union[float, Sequence[float]], atmosphere: Atmosphere
-    ) -> Union[float, Sequence]:
+        self, thrust: float | Sequence[float], atmosphere: Atmosphere
+    ) -> float | Sequence:
         """
         Compute the propeller efficiency.
 
@@ -521,7 +521,7 @@ class BasicICEngine(AbstractFuelPropulsion):
 
         return propeller_efficiency
 
-    def compute_max_power(self, flight_points: oad.FlightPoint) -> Union[float, Sequence]:
+    def compute_max_power(self, flight_points: oad.FlightPoint) -> float | Sequence:
         """
         Compute the ICE maximum power @ given flight-point.
 
@@ -536,10 +536,10 @@ class BasicICEngine(AbstractFuelPropulsion):
 
     def sfc(
         self,
-        thrust: Union[float, Sequence[float]],
-        engine_setting: Union[float, Sequence[float]],
+        thrust: float | Sequence[float],
+        engine_setting: float | Sequence[float],
         atmosphere: Atmosphere,
-    ) -> Tuple[np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray]:
         """
         Computation of the SFC.
 
@@ -596,7 +596,7 @@ class BasicICEngine(AbstractFuelPropulsion):
 
     def max_thrust(
         self,
-        engine_setting: Union[float, Sequence[float]],
+        engine_setting: float | Sequence[float],
         atmosphere: Atmosphere,
     ) -> np.ndarray:
         """

@@ -20,8 +20,8 @@ import openmdao.api as om
 
 from .constants import (
     SERVICE_PAINT_MASS,
-    SUBMODEL_PAINT_MASS_NO_PAINT,
     SUBMODEL_PAINT_MASS_BY_WET_AREA,
+    SUBMODEL_PAINT_MASS_NO_PAINT,
 )
 
 oad.RegisterSubmodel.active_models[SERVICE_PAINT_MASS] = SUBMODEL_PAINT_MASS_NO_PAINT

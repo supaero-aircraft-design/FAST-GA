@@ -24,7 +24,7 @@ from numpy.testing import assert_allclose
 
 from fastga.command import api
 from fastga.models.aerodynamics.aerodynamics import Aerodynamics
-import fastga.notebooks.tutorial.data as data
+from fastga.notebooks.tutorial import data
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 WORKDIR_FOLDER_PATH = pth.join(pth.dirname(__file__), "workdir")

@@ -15,8 +15,8 @@ import numpy as np
 import openmdao.api as om
 
 from fastga.models.performances.mission.mission_components import (
-    POINTS_NB_CRUISE,
     POINTS_NB_CLIMB,
+    POINTS_NB_CRUISE,
     POINTS_NB_DESCENT,
 )
 

@@ -14,19 +14,17 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-import numpy as np
-import openmdao.api as om
-
-
-from scipy.optimize import fsolve
 
 import fastoad.api as oad
+import numpy as np
+import openmdao.api as om
 from fastoad.module_management.constants import ModelDomain
 from fastoad.openmdao.problem import AutoUnitsDefaultGroup
+from scipy.optimize import fsolve
 
 from fastga.command import api as api_cs23
-from fastga.utils.options_checkers import check_propulsion_id
 from fastga.models.performances.mission.mission import Mission
+from fastga.utils.options_checkers import check_propulsion_id
 
 _LOGGER = logging.getLogger(__name__)
 

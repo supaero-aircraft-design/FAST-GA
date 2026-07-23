@@ -19,13 +19,14 @@ import openmdao.api as om
 
 from fastga.models.options import PAYLOAD_FROM_NPAX
 from fastga.models.weight.mass_breakdown.update_mlw_and_mzfw import UpdateMLWandMZFW
+
 from .constants import (
     SERVICE_AIRFRAME_MASS,
+    SERVICE_FURNITURE_MASS,
+    SERVICE_OWE,
+    SERVICE_PAYLOAD_MASS,
     SERVICE_PROPULSION_MASS,
     SERVICE_SYSTEMS_MASS,
-    SERVICE_FURNITURE_MASS,
-    SERVICE_PAYLOAD_MASS,
-    SERVICE_OWE,
     SUBMODEL_OWE_LEGACY,
 )
 from ..constants import SUBMODEL_MASS_BREAKDOWN

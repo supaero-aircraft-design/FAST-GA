@@ -95,9 +95,7 @@ class ComputeEngineCG(om.ExplicitComponent):
         else:
             x_cg_b1 = x_cg_in_nacelle + prop_depth
             warnings.warn(
-                "Propulsion layout {} not implemented in model, replaced by layout 3!".format(
-                    prop_layout
-                )
+                f"Propulsion layout {prop_layout} not implemented in model, replaced by layout 3!"
             )
 
         outputs["data:weight:propulsion:engine:CG:x"] = x_cg_b1

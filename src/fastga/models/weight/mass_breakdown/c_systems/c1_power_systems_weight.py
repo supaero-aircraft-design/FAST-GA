@@ -14,9 +14,9 @@ Python module for power systems weight calculation, part of the systems mass com
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 
 from .constants import SERVICE_POWER_SYSTEM_MASS, SUBMODEL_POWER_SYSTEM_MASS_LEGACY
 

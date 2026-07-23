@@ -305,14 +305,13 @@ class ComputeAddBendingMassHorizontal(om.ExplicitComponent):
                             + load_factor * distributed_cabin_weight * (x_position - lav) ** 2
                             + moment_to_compensate_with_lift / wing_centroid * x_position
                         )
+                elif x_position <= lav:
+                    bending = moment_to_compensate_with_lift / wing_centroid * x_position
                 else:
-                    if x_position <= lav:
-                        bending = moment_to_compensate_with_lift / wing_centroid * x_position
-                    else:
-                        bending = (
-                            load_factor * distributed_cabin_weight * (x_position - lav) ** 2
-                            + moment_to_compensate_with_lift / wing_centroid * x_position
-                        )
+                    bending = (
+                        load_factor * distributed_cabin_weight * (x_position - lav) ** 2
+                        + moment_to_compensate_with_lift / wing_centroid * x_position
+                    )
                 horizontal_bending_vector_front[np.where(x_vector_front == x_position)[0]] = bending
 
             # Calculation of x_h_bend

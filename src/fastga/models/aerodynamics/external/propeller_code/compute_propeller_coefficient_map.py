@@ -14,16 +14,15 @@
 
 import logging
 
-import numpy as np
-
-import openmdao.api as om
-
 import fastoad.api as oad
+import numpy as np
+import openmdao.api as om
 from fastoad.module_management.constants import ModelDomain
 from stdatm import Atmosphere
 
-from fastga.models.aerodynamics.external.xfoil.xfoil_polar import XfoilPolar
 from fastga.models.aerodynamics.external.neuralfoil.neuralfoil_polar import NeuralfoilPolar
+from fastga.models.aerodynamics.external.xfoil.xfoil_polar import XfoilPolar
+
 from .propeller_core import PropellerCoreModule
 
 _LOGGER = logging.getLogger(__name__)

@@ -21,8 +21,8 @@ from stdatm import AtmosphereWithPartials
 
 from .constants import (
     SERVICE_HTP_MASS,
-    SUBMODEL_HTP_MASS_LEGACY,
     SUBMODEL_HTP_MASS_GD,
+    SUBMODEL_HTP_MASS_LEGACY,
     SUBMODEL_HTP_MASS_TORENBEEK,
 )
 

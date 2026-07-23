@@ -14,18 +14,16 @@ FAST - Copyright (c) 2016 ONERA ISAE.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import logging
 import os
 from copy import deepcopy
 
-import logging
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
+import pandas as pd
 from scipy.constants import g
 from scipy.optimize import fsolve
-import pandas as pd
-import fastoad.api as oad
-
-
 from stdatm import Atmosphere
 
 # Definition of Fast-ga custom fields

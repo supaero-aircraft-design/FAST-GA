@@ -12,16 +12,15 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-from scipy.constants import g
-from typing import Union, List, Optional, Tuple
+from fastoad.constants import EngineSetting
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
-import fastoad.api as oad
-from fastoad.constants import EngineSetting
-
+from scipy.constants import g
 from stdatm import Atmosphere
 
 from fastga.command.api import list_inputs, list_outputs
@@ -63,18 +62,17 @@ class ComputeTORotationLimitGroup(om.Group):
     @staticmethod
     def get_io_names(
         component: om.ExplicitComponent,
-        excludes: Optional[Union[str, List[str]]] = None,
-        iotypes: Optional[Union[str, Tuple[str, str]]] = ("inputs", "outputs"),
-    ) -> List[str]:
+        excludes: str | list[str] | None = None,
+        iotypes: str | tuple[str, str] | None = ("inputs", "outputs"),
+    ) -> list[str]:
         list_names = []
         if isinstance(iotypes, tuple):
             list_names.extend(list_inputs(component))
             list_names.extend(list_outputs(component))
+        elif iotypes == "inputs":
+            list_names.extend(list_inputs(component))
         else:
-            if iotypes == "inputs":
-                list_names.extend(list_inputs(component))
-            else:
-                list_names.extend(list_outputs(component))
+            list_names.extend(list_outputs(component))
         if excludes is not None:
             list_names = [x for x in list_names if x not in excludes]
 

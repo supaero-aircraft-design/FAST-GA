@@ -17,15 +17,13 @@ Test module for basicIC_engine.py
 
 import time
 
-import pytest
-
-import numpy as np
-
 import fastoad.api as oad
+import numpy as np
+import pytest
 from fastoad.constants import EngineSetting
 from stdatm import Atmosphere
 
-from ..basicTP_engine import BasicTPEngine, CACHE_MAX_SIZE
+from ..basicTP_engine import CACHE_MAX_SIZE, BasicTPEngine
 
 INVALID_SFC = 0.0
 

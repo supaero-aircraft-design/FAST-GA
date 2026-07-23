@@ -16,9 +16,10 @@ wing geometry.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 
 from ..constants import SERVICE_WING_HEIGHT, SUBMODEL_WING_HEIGHT_LEGACY
 

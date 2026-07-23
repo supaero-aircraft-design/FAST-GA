@@ -434,13 +434,13 @@ class ThermodynamicEquilibriumDesignPoint(om.ImplicitComponent):
             / 1000.0
         )
         jacobian["fuel_mass_flow", "compressor_bleed_ratio"] = (
-            -np.diag((cp_4 * total_temperature_4 - cp_3 * total_temperature_3)) / 1000.0
+            -np.diag(cp_4 * total_temperature_4 - cp_3 * total_temperature_3) / 1000.0
         )
         jacobian["fuel_mass_flow", "cooling_bleed_ratio"] = (
-            -np.diag((cp_4 * total_temperature_4 - cp_3 * total_temperature_3)) / 1000.0
+            -np.diag(cp_4 * total_temperature_4 - cp_3 * total_temperature_3) / 1000.0
         )
         jacobian["fuel_mass_flow", "pressurization_bleed_ratio"] = (
-            -np.diag((cp_4 * total_temperature_4 - cp_3 * total_temperature_3)) / 1000.0
+            -np.diag(cp_4 * total_temperature_4 - cp_3 * total_temperature_3) / 1000.0
         )
 
         # -----------------------------------------------------------------------------------------#
