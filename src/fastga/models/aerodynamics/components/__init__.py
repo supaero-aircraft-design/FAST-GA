@@ -15,7 +15,7 @@
 # flake8: noqa
 
 from .airfoil_lift_curve_slope import ComputeAirfoilLiftCurveSlope
-from .compute_L_D_max import ComputeLDMax
+from .compute_l_d_max import ComputeLDMax
 from .compute_cl_extreme import ComputeAircraftMaxCl
 from .compute_cl_extreme_htp import ComputeExtremeCLHtp
 from .compute_cl_extreme_wing import ComputeExtremeCLWing

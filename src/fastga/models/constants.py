@@ -14,6 +14,17 @@ Module for management of options and factorizing their definition.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from aenum import IntEnum
+
 CABIN_SIZING_OPTION = "cabin_sizing"
-FUSELAGE_WET_AREA_OPTION = "fuselage_wet_area"
 PAYLOAD_FROM_NPAX = "payload_from_npax"
+
+
+class PropulsionLayout(IntEnum):
+    """
+    Enumeration of possible propulsion layout.
+    """
+
+    UNDER_THE_WING = 1
+    IN_THE_REAR = 2
+    IN_THE_NOSE = 3

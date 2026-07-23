@@ -260,7 +260,7 @@ class DynamicEquilibrium(om.ExplicitComponent):
         a22 = x_htp - x_cg
         b2 = (cm0_wing + delta_cm + (cm_alpha_fus / cl_alpha_wing) * cl0_wing) * l0_wing
 
-        a = np.array([[a11, a12], [float(a21), float(a22)]])
+        a = np.array([[a11, a12], [a21.item(), a22.item()]])
         b = np.array([b1, b2])
         inv_a = np.linalg.inv(a)
         cl_array = np.dot(inv_a, b)
@@ -268,11 +268,11 @@ class DynamicEquilibrium(om.ExplicitComponent):
         # Return equilibrated lift coefficients if low speed maximum clean Cl not exceeded
         # otherwise only cl_wing, 3rd term is an error flag returned by the function
         if cl_array[0] < cl_max_clean:
-            cl_wing_return = float(cl_array[0])
-            cl_htp_return = float(cl_array[1])
+            cl_wing_return = cl_array[0].item()
+            cl_htp_return = cl_array[1].item()
             error = False
         else:
-            cl_wing_return = float(mass * g * load_factor / (q * wing_area))
+            cl_wing_return = (mass * g * load_factor / (q * wing_area)).item()
             cl_htp_return = 0.0
             error = True
 
@@ -407,17 +407,17 @@ class DynamicEquilibrium(om.ExplicitComponent):
         )
         drag = q * cd * wing_area
         # Divide the results by characteristic number to have homogeneous responses
-        f1 = float(
+        f1 = (
             thrust * np.cos(alpha - alpha_eng) - mass * g * np.sin(gamma) - drag - mass * dvx_dt
-        ) / (float(mass) / 10.0)
-        f2 = float(cl_wing_blown - (cl_wing + delta_cl)) / float(cl_max_clean)
+        ) / (mass / 10.0)
+        f2 = cl_wing_blown - (cl_wing + delta_cl) / cl_max_clean
 
         self.cl_wing_sol = cl_wing_blown
         self.cl_tail_sol = cl_htp
         self.delta_e_sol = delta_e
         self.cd_aircraft_sol = cd
 
-        return np.array([f1, f2])
+        return np.array([f1.item(), f2.item()])
 
     def compute_flight_point_drag(
         self,

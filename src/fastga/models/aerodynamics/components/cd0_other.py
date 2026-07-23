@@ -16,6 +16,8 @@ import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
 
+from fastga.models.constants import PropulsionLayout
+
 from ..constants import SUBMODEL_CD0_OTHER
 
 
@@ -62,10 +64,7 @@ class Cd0Other(om.ExplicitComponent):
         wing_area = inputs["data:geometry:wing:area"]
 
         # COWLING (only if engine in fuselage): cx_cowl*wing_area assumed typical (Gudmundsson p739)
-        if prop_layout == 3.0:
-            cd0_cowling = 0.0267 / wing_area
-        else:
-            cd0_cowling = 0.0
+        cd0_cowling = 0.0267 / wing_area if prop_layout == PropulsionLayout.IN_THE_NOSE else 0.0
         # Cooling (piston engine only)
         # Gudmundsson p739. Sum of other components (not calculated here), cx_other*wing_area
         # assumed typical
@@ -87,10 +86,9 @@ class Cd0Other(om.ExplicitComponent):
         prop_layout = inputs["data:geometry:propulsion:engine:layout"]
         wing_area = inputs["data:geometry:wing:area"]
 
-        if prop_layout == 3.0:
-            d_cd0_cowl_d_wing_area = -0.0267 / wing_area**2.0
-        else:
-            d_cd0_cowl_d_wing_area = 0.0
+        d_cd0_cowl_d_wing_area = (
+            -0.0267 / wing_area**2.0 if prop_layout == PropulsionLayout.IN_THE_NOSE else 0.0
+        )
 
         if self.options["low_speed_aero"]:
             partials[

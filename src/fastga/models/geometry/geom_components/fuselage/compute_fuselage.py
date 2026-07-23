@@ -18,7 +18,7 @@ component.
 import fastoad.api as oad
 import openmdao.api as om
 
-from fastga.models.options import CABIN_SIZING_OPTION
+from fastga.models.constants import CABIN_SIZING_OPTION
 
 from .components import (
     ComputeFuselageGeometryBasic,

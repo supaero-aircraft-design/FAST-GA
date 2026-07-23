@@ -16,9 +16,10 @@ import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
 
+from fastga.models.constants import PropulsionLayout
 from fastga.models.geometry.profiles.get_profile import get_profile
 
-from ..constants import SUBMODEL_CD0_WING
+from ..constants import LIMIT_MACH_COMPRESSIBILITY_EFFECT, SUBMODEL_CD0_WING
 
 
 @oad.RegisterSubmodel(SUBMODEL_CD0_WING, "fastga.submodel.aerodynamics.wing.cd0.legacy")
@@ -85,20 +86,18 @@ class Cd0Wing(om.ExplicitComponent):
             file_name=self.options["wing_airfoil_file"],
         )
         relative_thickness = profile.get_relative_thickness()
-        index = int(
-            np.where(relative_thickness["thickness"] == np.max(relative_thickness["thickness"]))[0]
-        )
+        index = np.argmax(relative_thickness["thickness"])
         x_t_max = relative_thickness["x"][index]
-        # Root: 45% NLF
+        # Root: 45% natural laminar flow
         x_trans = 0.45
         x0_turbulent = 36.9 * x_trans**0.625 * (1 / (unit_reynolds * l2_wing)) ** 0.375
         cf_root = 0.074 / (unit_reynolds * l2_wing) ** 0.2 * (1 - (x_trans - x0_turbulent)) ** 0.8
-        # Tip: 55% NLF
+        # Tip: 55% natural laminar flow
         x_trans = 0.55
         x0_turbulent = 36.9 * x_trans**0.625 * (1 / (unit_reynolds * l4_wing)) ** 0.375
         cf_tip = 0.074 / (unit_reynolds * l4_wing) ** 0.2 * (1 - (x_trans - x0_turbulent)) ** 0.8
 
-        if engine_layout == 1.0:
+        if engine_layout == PropulsionLayout.UNDER_THE_WING:
             # Wing fully turbulent behind the propeller
             cf_turbulent = 0.074 / (unit_reynolds * l2_wing) ** 0.2
             cf_wing = (
@@ -112,7 +111,7 @@ class Cd0Wing(om.ExplicitComponent):
             ) / (span / 2.0 - y1_wing)
 
         form_factor = 1 + 0.6 / x_t_max * thickness + 100 * thickness**4
-        if mach > 0.2:
+        if mach > LIMIT_MACH_COMPRESSIBILITY_EFFECT:
             form_factor = form_factor * 1.34 * mach**0.18 * (np.cos(sweep_25 * np.pi / 180)) ** 0.28
         cd0_wing = form_factor * cf_wing * wet_area_wing / wing_area
 

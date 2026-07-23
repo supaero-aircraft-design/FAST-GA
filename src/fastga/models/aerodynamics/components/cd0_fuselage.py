@@ -67,7 +67,7 @@ class Cd0Fuselage(om.ExplicitComponent):
 
         # Local Reynolds:
         reynolds = unit_reynolds * length
-        # 5% NLF
+        # 5% natural laminar flow
         x_trans = 0.05
         # Roots
         x0_turbulent = 36.9 * x_trans**0.625 * reynolds**-0.375

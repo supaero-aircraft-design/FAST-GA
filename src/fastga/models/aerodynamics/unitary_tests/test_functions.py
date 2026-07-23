@@ -12,21 +12,18 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import glob
 import logging
 import os
-import os.path as pth
+import pathlib
 import shutil
-import tempfile
 import time
-from pathlib import Path
 from platform import system
-from tempfile import TemporaryDirectory
 
 import numpy as np
 import openmdao.api as om
 import pytest
 
+from fastga.command.api import _create_tmp_directory
 from fastga.models.aerodynamics.aerodynamics_high_speed import AerodynamicsHighSpeed
 from fastga.models.aerodynamics.aerodynamics_low_speed import AerodynamicsLowSpeed
 from fastga.models.aerodynamics.components import (
@@ -114,23 +111,12 @@ from fastga.models.aerodynamics.load_factor import LoadFactor
 from tests.testing_utilities import get_indep_var_comp, list_inputs, run_system
 from tests.xfoil_exe.get_xfoil import get_xfoil_path
 
-RESULTS_FOLDER = pth.join(pth.dirname(__file__), "results")
-DATA_FOLDER = pth.join(pth.dirname(__file__), "data")
+RESULTS_FOLDER = pathlib.Path(__file__).parent / "results"
+DATA_FOLDER = pathlib.Path(__file__).parent / "data"
 TMP_SAVE_FOLDER = "test_save"
 xfoil_path = None if system() == "Windows" else get_xfoil_path()
 
 _LOGGER = logging.getLogger(__name__)
-
-
-def _create_tmp_directory() -> TemporaryDirectory:
-    """Provide temporary directory for calculation!"""
-    for tmp_base_path in [None, pth.join(str(Path.home()), ".fast")]:
-        if tmp_base_path is not None:
-            os.makedirs(tmp_base_path, exist_ok=True)
-        tmp_directory = tempfile.TemporaryDirectory(prefix="x", dir=tmp_base_path)
-        break
-
-    return tmp_directory
 
 
 def reshape_curve(y, cl):
@@ -160,7 +146,7 @@ def polar_result_transfer():
 
     tmp_folder = _create_tmp_directory()
 
-    files = glob.iglob(pth.join(resources.__path__[0], "*.csv"))
+    files = pathlib.Path(resources.__path__[0]).glob("*.csv")
 
     for file in files:
         if os.path.isfile(file):
@@ -178,7 +164,7 @@ def polar_result_retrieve(tmp_folder):
     # Retrieve the polar results set aside during the test duration if there are some [need
     # writing permission]
 
-    files = glob.iglob(pth.join(tmp_folder.name, "*.csv"))
+    files = pathlib.Path(resources.__path__[0]).glob("*.csv")
 
     for file in files:
         if os.path.isfile(file):
@@ -201,7 +187,7 @@ def polar_result_retrieve(tmp_folder):
 
 
 def compute_reynolds(
-    XML_FILE: str,
+    xml_file_name: str,
     mach_low_speed: float,
     reynolds_low_speed: float,
     mach_high_speed: float,
@@ -210,7 +196,7 @@ def compute_reynolds(
     """Tests high and low speed reynolds calculation!"""
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeUnitReynolds(low_speed_aero=True)), __file__, XML_FILE
+        list_inputs(ComputeUnitReynolds(low_speed_aero=True)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -222,7 +208,7 @@ def compute_reynolds(
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeUnitReynolds(low_speed_aero=False)), __file__, XML_FILE
+        list_inputs(ComputeUnitReynolds(low_speed_aero=False)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -234,8 +220,8 @@ def compute_reynolds(
 
 
 def cd0_high_speed(
-    XML_FILE: str,
-    ENGINE_WRAPPER: str,
+    xml_file_name: str,
+    engine_wrapper_id: str,
     cd0_wing: float,
     cd0_fus: float,
     cd0_ht: float,
@@ -248,10 +234,12 @@ def cd0_high_speed(
     """Tests drag coefficient @ high speed!"""
     # Research independent input value in .xml file
     # noinspection PyTypeChecker
-    ivc = get_indep_var_comp(list_inputs(Cd0(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE)
+    ivc = get_indep_var_comp(
+        list_inputs(Cd0(propulsion_id=engine_wrapper_id)), __file__, xml_file_name
+    )
 
     # noinspection PyTypeChecker
-    problem = run_system(Cd0(propulsion_id=ENGINE_WRAPPER), ivc)
+    problem = run_system(Cd0(propulsion_id=engine_wrapper_id), ivc)
     assert problem["data:aerodynamics:wing:cruise:CD0"] == pytest.approx(cd0_wing, abs=1e-5)
     assert problem["data:aerodynamics:fuselage:cruise:CD0"] == pytest.approx(cd0_fus, abs=1e-5)
     assert problem["data:aerodynamics:horizontal_tail:cruise:CD0"] == pytest.approx(
@@ -275,17 +263,13 @@ def cd0_high_speed(
     # Exclude check on wing, ht and nacelles Cd0 partials as it is computed by fd for now
     problem.check_partials(
         compact_print=True,
-        excludes=[
-            "data:aerodynamics:wing:*",
-            "data:aerodynamics:horizontal_tail:*",
-            "data:aerodynamics:nacelles:*",
-        ],
+        excludes=["*cd0_wing*", "*cd0_ht*", "*cd0_nacelle*"],
     )
 
 
 def cd0_low_speed(
-    XML_FILE: str,
-    ENGINE_WRAPPER: str,
+    xml_file_name: str,
+    engine_wrapper_id: str,
     cd0_wing: float,
     cd0_fus: float,
     cd0_ht: float,
@@ -299,11 +283,13 @@ def cd0_low_speed(
     # Research independent input value in .xml file
     # noinspection PyTypeChecker
     ivc = get_indep_var_comp(
-        list_inputs(Cd0(propulsion_id=ENGINE_WRAPPER, low_speed_aero=True)), __file__, XML_FILE
+        list_inputs(Cd0(propulsion_id=engine_wrapper_id, low_speed_aero=True)),
+        __file__,
+        xml_file_name,
     )
 
     # noinspection PyTypeChecker
-    problem = run_system(Cd0(propulsion_id=ENGINE_WRAPPER, low_speed_aero=True), ivc)
+    problem = run_system(Cd0(propulsion_id=engine_wrapper_id, low_speed_aero=True), ivc)
     assert problem["data:aerodynamics:wing:low_speed:CD0"] == pytest.approx(cd0_wing, abs=1e-5)
     assert problem["data:aerodynamics:fuselage:low_speed:CD0"] == pytest.approx(cd0_fus, abs=1e-5)
     assert problem["data:aerodynamics:horizontal_tail:low_speed:CD0"] == pytest.approx(
@@ -331,16 +317,12 @@ def cd0_low_speed(
     # Exclude check on wing, ht and nacelles Cd0 partials as it is computed by fd for now
     problem.check_partials(
         compact_print=True,
-        excludes=[
-            "data:aerodynamics:wing:*",
-            "data:aerodynamics:horizontal_tail:*",
-            "data:aerodynamics:nacelles:*",
-        ],
+        excludes=["*cd0_wing*", "*cd0_ht*", "*cd0_nacelle*"],
     )
 
 
 def polar_xfoil(
-    XML_FILE: str,
+    xml_file_name: str,
     mach_high_speed: float,
     reynolds_high_speed: float,
     mach_low_speed: float,
@@ -354,7 +336,7 @@ def polar_xfoil(
     tmp_folder = polar_result_transfer()
 
     # Define high-speed parameters (with .xml file and additional inputs)
-    ivc = get_indep_var_comp(list_inputs(XfoilPolar()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(XfoilPolar()), __file__, xml_file_name)
     ivc.add_output("mach", mach_high_speed)
     ivc.add_output("reynolds", reynolds_high_speed)
 
@@ -377,7 +359,7 @@ def polar_xfoil(
     tmp_folder = polar_result_transfer()
 
     # Define low-speed parameters (with .xml file and additional inputs)
-    ivc = get_indep_var_comp(list_inputs(XfoilPolar()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(XfoilPolar()), __file__, xml_file_name)
     ivc.add_output("mach", mach_low_speed)
     ivc.add_output("reynolds", reynolds_low_speed)
 
@@ -399,7 +381,7 @@ def polar_xfoil(
 
 
 def polar_neuralfoil(
-    XML_FILE: str,
+    xml_file_name: str,
     mach_high_speed: float,
     reynolds_high_speed: float,
     mach_low_speed: float,
@@ -410,7 +392,7 @@ def polar_neuralfoil(
 ):
     """Tests polar execution (NeuralFOIL) @ high and low speed!"""
     # Define high-speed parameters (with .xml file and additional inputs)
-    ivc = get_indep_var_comp(list_inputs(NeuralfoilPolar()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(NeuralfoilPolar()), __file__, xml_file_name)
     ivc.add_output("mach", mach_high_speed)
     ivc.add_output("reynolds", reynolds_high_speed)
 
@@ -425,7 +407,7 @@ def polar_neuralfoil(
     assert np.interp(1.0, cl, cdp) == pytest.approx(cdp_1_high_speed, abs=1e-4)
 
     # Define low-speed parameters (with .xml file and additional inputs)
-    ivc = get_indep_var_comp(list_inputs(NeuralfoilPolar()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(NeuralfoilPolar()), __file__, xml_file_name)
     ivc.add_output("mach", mach_low_speed)
     ivc.add_output("reynolds", reynolds_low_speed)
 
@@ -489,7 +471,7 @@ def polar_interpolation(mach: float):
 
 
 def polar_single_aoa_xfoil(
-    XML_FILE: str,
+    xml_file_name: str,
     mach_low_speed: float,
     reynolds_low_speed: float,
 ):
@@ -502,7 +484,7 @@ def polar_single_aoa_xfoil(
     tmp_folder = polar_result_transfer()
 
     # Define low-speed parameters (with .xml file and additional inputs)
-    ivc = get_indep_var_comp(list_inputs(XfoilPolar()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(XfoilPolar()), __file__, xml_file_name)
     ivc.add_output("mach", mach_low_speed)
     ivc.add_output("reynolds", reynolds_low_speed)
 
@@ -531,7 +513,7 @@ def polar_single_aoa_xfoil(
     tmp_folder = polar_result_transfer()
 
     # Define high-speed parameters (with .xml file and additional inputs)
-    ivc = get_indep_var_comp(list_inputs(XfoilPolar()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(XfoilPolar()), __file__, xml_file_name)
     ivc.add_output("mach", mach_low_speed)
     ivc.add_output("reynolds", reynolds_low_speed)
     # Run problem
@@ -551,7 +533,7 @@ def polar_single_aoa_xfoil(
 
 
 def polar_single_aoa_neuralfoil(
-    XML_FILE: str,
+    xml_file_name: str,
     mach_low_speed: float,
     reynolds_low_speed: float,
     alpha: float,
@@ -567,7 +549,7 @@ def polar_single_aoa_neuralfoil(
     tmp_folder = polar_result_transfer()
 
     # Define high-speed parameters (with .xml file and additional inputs)
-    ivc = get_indep_var_comp(list_inputs(NeuralfoilPolar()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(NeuralfoilPolar()), __file__, xml_file_name)
     ivc.add_output("mach", mach_low_speed)
     ivc.add_output("reynolds", reynolds_low_speed)
     # Run problem
@@ -583,7 +565,7 @@ def polar_single_aoa_neuralfoil(
 
 
 def polar_single_aoa_inv(
-    XML_FILE: str,
+    xml_file_name: str,
     mach_low_speed: float,
     reynolds_low_speed: float,
 ):
@@ -597,7 +579,7 @@ def polar_single_aoa_inv(
     tmp_folder = polar_result_transfer()
 
     # Define low-speed parameters (with .xml file and additional inputs)
-    ivc = get_indep_var_comp(list_inputs(XfoilPolar()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(XfoilPolar()), __file__, xml_file_name)
     ivc.add_output("mach", mach_low_speed)
     ivc.add_output("reynolds", reynolds_low_speed)
 
@@ -629,7 +611,7 @@ def polar_single_aoa_inv(
     tmp_folder = polar_result_transfer()
 
     # Define high-speed parameters (with .xml file and additional inputs)
-    ivc = get_indep_var_comp(list_inputs(XfoilPolar()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(XfoilPolar()), __file__, xml_file_name)
     ivc.add_output("mach", mach_low_speed)
     ivc.add_output("reynolds", reynolds_low_speed)
     # Run problem
@@ -653,7 +635,7 @@ def polar_single_aoa_inv(
 
 
 def polar_ext_folder(
-    XML_FILE: str,
+    xml_file_name: str,
     mach_high_speed: float,
     reynolds_high_speed: float,
     mach_low_speed: float,
@@ -665,12 +647,10 @@ def polar_ext_folder(
     """Tests polar execution (XFOIL) @ high and low speed! with the option airfoil_folder_path"""
     # Transfer saved polar results to temporary folder
     tmp_folder = polar_result_transfer()
-    shutil.copy(
-        pth.join(DATA_FOLDER, "sample_airfoil.af"), pth.join(tmp_folder.name, "sample_airfoil.af")
-    )
+    shutil.copy(DATA_FOLDER / "sample_airfoil.af", tmp_folder.name / "sample_airfoil.af")
 
     # Define high-speed parameters (with .xml file and additional inputs)
-    ivc = get_indep_var_comp(list_inputs(XfoilPolar()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(XfoilPolar()), __file__, xml_file_name)
     ivc.add_output("mach", mach_high_speed)
     ivc.add_output("reynolds", reynolds_high_speed)
 
@@ -696,12 +676,10 @@ def polar_ext_folder(
 
     # Transfer saved polar results to temporary folder
     tmp_folder = polar_result_transfer()
-    shutil.copy(
-        pth.join(DATA_FOLDER, "sample_airfoil.af"), pth.join(tmp_folder.name, "sample_airfoil.af")
-    )
+    shutil.copy(DATA_FOLDER / "sample_airfoil.af", tmp_folder.name / "sample_airfoil.af")
 
     # Define low-speed parameters (with .xml file and additional inputs)
-    ivc = get_indep_var_comp(list_inputs(XfoilPolar()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(XfoilPolar()), __file__, xml_file_name)
     ivc.add_output("mach", mach_low_speed)
     ivc.add_output("reynolds", reynolds_low_speed)
 
@@ -728,19 +706,17 @@ def polar_ext_folder(
 
 
 def polar_ext_folder_inv(
-    XML_FILE: str,
+    xml_file_name: str,
     mach_low_speed: float,
     reynolds_low_speed: float,
 ):
     """Tests polar execution (XFOIL) @ high and low speed! with the option airfoil_folder_path"""
     # Transfer saved polar results to temporary folder
     tmp_folder = polar_result_transfer()
-    shutil.copy(
-        pth.join(DATA_FOLDER, "sample_airfoil.af"), pth.join(tmp_folder.name, "sample_airfoil.af")
-    )
+    shutil.copy(DATA_FOLDER / "sample_airfoil.af", tmp_folder.name / "sample_airfoil.af")
 
     # Define high-speed parameters (with .xml file and additional inputs)
-    ivc = get_indep_var_comp(list_inputs(XfoilPolar()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(XfoilPolar()), __file__, xml_file_name)
     ivc.add_output("mach", mach_low_speed)
     ivc.add_output("reynolds", reynolds_low_speed)
 
@@ -762,16 +738,13 @@ def polar_ext_folder_inv(
     # Check obtained value(s) is/(are) correct
     cl_1 = problem["CL"]
     cdp_1 = problem["CDp"]
-    # cl_1, cdp_1 = reshape_polar(cl, cdp)
 
     # Transfer saved polar results to temporary folder
     tmp_folder = polar_result_transfer()
-    shutil.copy(
-        pth.join(DATA_FOLDER, "sample_airfoil.af"), pth.join(tmp_folder.name, "sample_airfoil.af")
-    )
+    shutil.copy(DATA_FOLDER / "sample_airfoil.af", tmp_folder.name / "sample_airfoil.af")
 
     # Define high-speed parameters (with .xml file and additional inputs)
-    ivc = get_indep_var_comp(list_inputs(XfoilPolar()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(XfoilPolar()), __file__, xml_file_name)
     ivc.add_output("mach", mach_low_speed)
     ivc.add_output("reynolds", reynolds_low_speed)
 
@@ -793,13 +766,12 @@ def polar_ext_folder_inv(
     # Check obtained value(s) is/(are) correct
     cl_2 = problem["CL"]
     cdp_2 = problem["CDp"]
-    # cl_2, cdp_2 = reshape_polar(cl, cdp)
     assert cl_1[0] == pytest.approx(cl_2, abs=1e-4)
     assert cdp_1[0] == pytest.approx(cdp_2, abs=1e-4)
 
 
 def polar_ext_folder_neuralfoil(
-    XML_FILE: str,
+    xml_file_name: str,
     mach_high_speed: float,
     reynolds_high_speed: float,
     mach_low_speed: float,
@@ -812,12 +784,10 @@ def polar_ext_folder_neuralfoil(
     airfoil_folder_path"""
     # Transfer saved polar results to temporary folder
     tmp_folder = polar_result_transfer()
-    shutil.copy(
-        pth.join(DATA_FOLDER, "sample_airfoil.af"), pth.join(tmp_folder.name, "sample_airfoil.af")
-    )
+    shutil.copy(DATA_FOLDER / "sample_airfoil.af", tmp_folder.name / "sample_airfoil.af")
 
     # Define high-speed parameters (with .xml file and additional inputs)
-    ivc = get_indep_var_comp(list_inputs(NeuralfoilPolar()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(NeuralfoilPolar()), __file__, xml_file_name)
     ivc.add_output("mach", mach_high_speed)
     ivc.add_output("reynolds", reynolds_high_speed)
 
@@ -841,12 +811,10 @@ def polar_ext_folder_neuralfoil(
 
     # Transfer saved polar results to temporary folder
     tmp_folder = polar_result_transfer()
-    shutil.copy(
-        pth.join(DATA_FOLDER, "sample_airfoil.af"), pth.join(tmp_folder.name, "sample_airfoil.af")
-    )
+    shutil.copy(DATA_FOLDER / "sample_airfoil.af", tmp_folder.name / "sample_airfoil.af")
 
     # Define low-speed parameters (with .xml file and additional inputs)
-    ivc = get_indep_var_comp(list_inputs(NeuralfoilPolar()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(NeuralfoilPolar()), __file__, xml_file_name)
     ivc.add_output("mach", mach_low_speed)
     ivc.add_output("reynolds", reynolds_low_speed)
 
@@ -871,7 +839,7 @@ def polar_ext_folder_neuralfoil(
 
 
 def airfoil_slope_wt_xfoil(
-    XML_FILE: str,
+    xml_file_name: str,
     wing_airfoil_file: str,
     htp_airfoil_file: str,
     vtp_airfoil_file: str,
@@ -887,11 +855,11 @@ def airfoil_slope_wt_xfoil(
             )
         ),
         __file__,
-        XML_FILE,
+        xml_file_name,
     )
 
-    # Run problem
-    problem = run_system(
+    # Run problem and return for complementary values check
+    return run_system(
         ComputeAirfoilLiftCurveSlope(
             wing_airfoil_file=wing_airfoil_file,
             htp_airfoil_file=htp_airfoil_file,
@@ -900,12 +868,9 @@ def airfoil_slope_wt_xfoil(
         ivc,
     )
 
-    # Return problem for complementary values check
-    return problem
-
 
 def airfoil_slope_wt_neuralfoil(
-    XML_FILE: str,
+    xml_file_name: str,
     wing_airfoil_file: str,
     htp_airfoil_file: str,
     vtp_airfoil_file: str,
@@ -922,11 +887,11 @@ def airfoil_slope_wt_neuralfoil(
             )
         ),
         __file__,
-        XML_FILE,
+        xml_file_name,
     )
 
-    # Run problem
-    problem = run_system(
+    # Run problem and return for complementary values check
+    return run_system(
         ComputeAirfoilLiftCurveSlope(
             wing_airfoil_file=wing_airfoil_file,
             htp_airfoil_file=htp_airfoil_file,
@@ -936,12 +901,9 @@ def airfoil_slope_wt_neuralfoil(
         ivc,
     )
 
-    # Return problem for complementary values check
-    return problem
-
 
 def airfoil_slope_xfoil(
-    XML_FILE: str,
+    xml_file_name: str,
     wing_airfoil_file: str,
     htp_airfoil_file: str,
     vtp_airfoil_file: str,
@@ -954,7 +916,7 @@ def airfoil_slope_xfoil(
     tmp_folder = polar_result_transfer()
 
     problem = airfoil_slope_wt_xfoil(
-        XML_FILE,
+        xml_file_name,
         wing_airfoil_file,
         htp_airfoil_file,
         vtp_airfoil_file,
@@ -976,7 +938,7 @@ def airfoil_slope_xfoil(
 
 
 def airfoil_slope_neuralfoil(
-    XML_FILE: str,
+    xml_file_name: str,
     wing_airfoil_file: str,
     htp_airfoil_file: str,
     vtp_airfoil_file: str,
@@ -989,7 +951,7 @@ def airfoil_slope_neuralfoil(
     tmp_folder = polar_result_transfer()
 
     problem = airfoil_slope_wt_neuralfoil(
-        XML_FILE,
+        xml_file_name,
         wing_airfoil_file,
         htp_airfoil_file,
         vtp_airfoil_file,
@@ -1011,7 +973,8 @@ def airfoil_slope_neuralfoil(
 
 
 def compute_aero(
-    XML_FILE: str,
+    xml_file_name: str,
+    *,
     use_openvsp: bool,
     mach_interpolation: bool,
     low_speed_aero: bool,
@@ -1027,7 +990,7 @@ def compute_aero(
     if use_openvsp:
         # noinspection PyTypeChecker
         ivc = get_indep_var_comp(
-            list_inputs(ComputeAeroOpenVSP(low_speed_aero=low_speed_aero)), __file__, XML_FILE
+            list_inputs(ComputeAeroOpenVSP(low_speed_aero=low_speed_aero)), __file__, xml_file_name
         )
 
         # Run problem twice
@@ -1039,7 +1002,7 @@ def compute_aero(
             compute_mach_interpolation=mach_interpolation,
         )
 
-        problem = run_system(openvsp_comp, ivc)
+        _ = run_system(openvsp_comp, ivc)
         stop = time.time()
         duration_1st_run = stop - start
         start = time.time()
@@ -1055,7 +1018,7 @@ def compute_aero(
     else:
         # noinspection PyTypeChecker
         ivc = get_indep_var_comp(
-            list_inputs(ComputeAeroVLM(low_speed_aero=low_speed_aero)), __file__, XML_FILE
+            list_inputs(ComputeAeroVLM(low_speed_aero=low_speed_aero)), __file__, xml_file_name
         )
 
         # Run problem twice
@@ -1067,7 +1030,7 @@ def compute_aero(
             compute_mach_interpolation=mach_interpolation,
         )
 
-        problem = run_system(vlm_comp, ivc)
+        _ = run_system(vlm_comp, ivc)
         stop = time.time()
         duration_1st_run = stop - start
         start = time.time()
@@ -1098,7 +1061,8 @@ def compute_aero(
 
 
 def compute_aero_neuralfoil(
-    XML_FILE: str,
+    xml_file_name: str,
+    *,
     mach_interpolation: bool,
     low_speed_aero: bool,
 ):
@@ -1114,7 +1078,7 @@ def compute_aero_neuralfoil(
     ivc = get_indep_var_comp(
         list_inputs(ComputeAeroVLM(low_speed_aero=low_speed_aero, use_neuralfoil=True)),
         __file__,
-        XML_FILE,
+        xml_file_name,
     )
 
     # noinspection PyTypeChecker
@@ -1138,7 +1102,8 @@ def compute_aero_neuralfoil(
 
 
 def comp_aero_input_aoa(
-    XML_FILE: str,
+    xml_file_name: str,
+    *,
     use_openvsp: bool,
     mach_interpolation: bool,
     low_speed_aero: bool,
@@ -1154,7 +1119,7 @@ def comp_aero_input_aoa(
     if use_openvsp:
         # noinspection PyTypeChecker
         ivc = get_indep_var_comp(
-            list_inputs(ComputeAeroOpenVSP(low_speed_aero=low_speed_aero)), __file__, XML_FILE
+            list_inputs(ComputeAeroOpenVSP(low_speed_aero=low_speed_aero)), __file__, xml_file_name
         )
 
         # Run problem twice
@@ -1167,7 +1132,7 @@ def comp_aero_input_aoa(
             input_angle_of_attack=10.5,
         )
 
-        problem = run_system(openvsp_comp, ivc)
+        _ = run_system(openvsp_comp, ivc)
         stop = time.time()
         duration_1st_run = stop - start
         start = time.time()
@@ -1184,7 +1149,7 @@ def comp_aero_input_aoa(
     else:
         # noinspection PyTypeChecker
         ivc = get_indep_var_comp(
-            list_inputs(ComputeAeroVLM(low_speed_aero=low_speed_aero)), __file__, XML_FILE
+            list_inputs(ComputeAeroVLM(low_speed_aero=low_speed_aero)), __file__, xml_file_name
         )
 
         # Run problem twice
@@ -1197,7 +1162,7 @@ def comp_aero_input_aoa(
             input_angle_of_attack=10.5,
         )
 
-        problem = run_system(vlm_comp, ivc)
+        _ = run_system(vlm_comp, ivc)
         stop = time.time()
         duration_1st_run = stop - start
         start = time.time()
@@ -1229,7 +1194,8 @@ def comp_aero_input_aoa(
 
 
 def comp_aero_input_aoa_neuralfoil(
-    XML_FILE: str,
+    xml_file_name: str,
+    *,
     mach_interpolation: bool,
     low_speed_aero: bool,
 ):
@@ -1242,7 +1208,7 @@ def comp_aero_input_aoa_neuralfoil(
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeAeroVLM(low_speed_aero=low_speed_aero)), __file__, XML_FILE
+        list_inputs(ComputeAeroVLM(low_speed_aero=low_speed_aero)), __file__, xml_file_name
     )
 
     # Run problem twice
@@ -1256,7 +1222,7 @@ def comp_aero_input_aoa_neuralfoil(
         use_neuralfoil=True,
     )
 
-    problem = run_system(vlm_comp, ivc)
+    _ = run_system(vlm_comp, ivc)
     stop = time.time()
     duration_1st_run = stop - start
     start = time.time()
@@ -1287,8 +1253,7 @@ def comp_aero_input_aoa_neuralfoil(
 
 
 def comp_high_speed_xfoil(
-    XML_FILE: str,
-    use_openvsp: bool,
+    xml_file_name: str,
     cl0_wing: float,
     cl_ref_wing: float,
     cl_alpha_wing: float,
@@ -1300,10 +1265,17 @@ def comp_high_speed_xfoil(
     coeff_k_htp: float,
     cl_alpha_vector: np.ndarray,
     mach_vector: np.ndarray,
+    *,
+    use_openvsp: bool,
 ):
     """Tests components @ high speed!"""
     for mach_interpolation in [True, False]:
-        problem = compute_aero(XML_FILE, use_openvsp, mach_interpolation, False)
+        problem = compute_aero(
+            xml_file_name,
+            use_openvsp=use_openvsp,
+            mach_interpolation=mach_interpolation,
+            low_speed_aero=False,
+        )
 
         # Check obtained value(s) is/(are) correct
         if mach_interpolation:
@@ -1344,7 +1316,7 @@ def comp_high_speed_xfoil(
 
 
 def comp_high_speed_neuralfoil(
-    XML_FILE: str,
+    xml_file_name: str,
     cl0_wing: float,
     cl_ref_wing: float,
     cl_alpha_wing: float,
@@ -1358,7 +1330,7 @@ def comp_high_speed_neuralfoil(
     mach_vector: np.ndarray,
 ):
     """Tests components @ high speed!"""
-    problem = compute_aero_neuralfoil(XML_FILE, True, False)
+    problem = compute_aero_neuralfoil(xml_file_name, mach_interpolation=True, low_speed_aero=False)
 
     # Check obtained value(s) is/(are) correct
     assert problem.get_val(
@@ -1397,13 +1369,24 @@ def comp_high_speed_neuralfoil(
 
 
 def comp_high_speed_input_aoa_xfoil(
-    XML_FILE: str,
+    xml_file_name: str,
+    *,
     use_openvsp: bool,
 ):
     """Tests components @ high speed!"""
     for mach_interpolation in [True, False]:
-        problem = compute_aero(XML_FILE, use_openvsp, mach_interpolation, False)
-        problem_input_aoa = comp_aero_input_aoa(XML_FILE, use_openvsp, mach_interpolation, False)
+        problem = compute_aero(
+            xml_file_name,
+            use_openvsp=use_openvsp,
+            mach_interpolation=mach_interpolation,
+            low_speed_aero=False,
+        )
+        problem_input_aoa = comp_aero_input_aoa(
+            xml_file_name,
+            use_openvsp=use_openvsp,
+            mach_interpolation=mach_interpolation,
+            low_speed_aero=False,
+        )
         # Check obtained value(s) is/(are) correct
         if mach_interpolation:
             assert problem[
@@ -1445,12 +1428,16 @@ def comp_high_speed_input_aoa_xfoil(
             )
 
 
-def comp_high_speed_input_aoa_neuralfoil(XML_FILE: str):
+def comp_high_speed_input_aoa_neuralfoil(xml_file_name: str):
     """Tests components @ high speed!"""
     for mach_interpolation in [True, False]:
-        problem = compute_aero_neuralfoil(XML_FILE, mach_interpolation, False)
+        problem = compute_aero_neuralfoil(
+            xml_file_name, mach_interpolation=mach_interpolation, low_speed_aero=False
+        )
         VLMSimpleGeometry._cache.clear()
-        problem_input_aoa = comp_aero_input_aoa_neuralfoil(XML_FILE, mach_interpolation, False)
+        problem_input_aoa = comp_aero_input_aoa_neuralfoil(
+            xml_file_name, mach_interpolation=mach_interpolation, low_speed_aero=False
+        )
         # Check obtained value(s) is/(are) correct
         if mach_interpolation:
             assert problem[
@@ -1493,8 +1480,7 @@ def comp_high_speed_input_aoa_neuralfoil(XML_FILE: str):
 
 
 def comp_low_speed_xfoil(
-    XML_FILE: str,
-    use_openvsp: bool,
+    xml_file_name: str,
     cl0_wing: float,
     cl_ref_wing: float,
     cl_alpha_wing: float,
@@ -1510,9 +1496,13 @@ def comp_low_speed_xfoil(
     cl_ref_htp: float,
     y_vector_htp: np.ndarray,
     cl_vector_htp: np.ndarray,
+    *,
+    use_openvsp: bool,
 ):
     """Tests components @ low speed!"""
-    problem = compute_aero(XML_FILE, use_openvsp, False, True)
+    problem = compute_aero(
+        xml_file_name, use_openvsp=use_openvsp, mach_interpolation=False, low_speed_aero=True
+    )
 
     # Check obtained value(s) is/(are) correct
     assert problem["data:aerodynamics:wing:low_speed:CL0_clean"] == pytest.approx(
@@ -1563,7 +1553,7 @@ def comp_low_speed_xfoil(
 
 
 def comp_low_speed_neuralfoil(
-    XML_FILE: str,
+    xml_file_name: str,
     cl0_wing: float,
     cl_ref_wing: float,
     cl_alpha_wing: float,
@@ -1581,7 +1571,7 @@ def comp_low_speed_neuralfoil(
     cl_vector_htp: np.ndarray,
 ):
     """Tests components @ low speed!"""
-    problem = compute_aero_neuralfoil(XML_FILE, False, True)
+    problem = compute_aero_neuralfoil(xml_file_name, mach_interpolation=False, low_speed_aero=True)
 
     # Check obtained value(s) is/(are) correct
     assert problem.get_val("data:aerodynamics:wing:low_speed:CL0_clean") == pytest.approx(
@@ -1634,12 +1624,17 @@ def comp_low_speed_neuralfoil(
 
 
 def comp_low_speed_input_aoa_xfoil(
-    XML_FILE: str,
+    xml_file_name: str,
+    *,
     use_openvsp: bool,
 ):
     """Tests components @ low speed!"""
-    problem = compute_aero(XML_FILE, use_openvsp, False, True)
-    problem_input_aoa = comp_aero_input_aoa(XML_FILE, use_openvsp, False, True)
+    problem = compute_aero(
+        xml_file_name, use_openvsp=use_openvsp, mach_interpolation=False, low_speed_aero=True
+    )
+    problem_input_aoa = comp_aero_input_aoa(
+        xml_file_name, use_openvsp=use_openvsp, mach_interpolation=False, low_speed_aero=True
+    )
     # Check obtained value(s) is/(are) correct
 
     assert problem.get_val(
@@ -1666,11 +1661,13 @@ def comp_low_speed_input_aoa_xfoil(
     )
 
 
-def comp_low_speed_input_aoa_neuralfoil(XML_FILE: str):
+def comp_low_speed_input_aoa_neuralfoil(xml_file_name: str):
     """Tests components @ low speed!"""
-    problem = compute_aero_neuralfoil(XML_FILE, False, True)
+    problem = compute_aero_neuralfoil(xml_file_name, mach_interpolation=False, low_speed_aero=True)
     VLMSimpleGeometry._cache.clear()
-    problem_input_aoa = comp_aero_input_aoa_neuralfoil(XML_FILE, False, True)
+    problem_input_aoa = comp_aero_input_aoa_neuralfoil(
+        xml_file_name, mach_interpolation=False, low_speed_aero=True
+    )
     # Check obtained value(s) is/(are) correct
 
     assert problem.get_val(
@@ -1697,10 +1694,10 @@ def comp_low_speed_input_aoa_neuralfoil(XML_FILE: str):
     )
 
 
-def hinge_moment_2d(XML_FILE: str, ch_alpha_2d: float, ch_delta_2d: float):
+def hinge_moment_2d(xml_file_name: str, ch_alpha_2d: float, ch_delta_2d: float):
     """Tests tail hinge-moments"""
     # Research independent input value in .xml file
-    ivc = get_indep_var_comp(list_inputs(Compute2DHingeMomentsTail()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(Compute2DHingeMomentsTail()), __file__, xml_file_name)
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(Compute2DHingeMomentsTail(), ivc)
@@ -1712,10 +1709,10 @@ def hinge_moment_2d(XML_FILE: str, ch_alpha_2d: float, ch_delta_2d: float):
     ) == pytest.approx(ch_delta_2d, abs=1e-4)
 
 
-def hinge_moment_3d(XML_FILE: str, ch_alpha: float, ch_delta: float):
+def hinge_moment_3d(xml_file_name: str, ch_alpha: float, ch_delta: float):
     """Tests tail hinge-moments!"""
     # Research independent input value in .xml file
-    ivc = get_indep_var_comp(list_inputs(Compute3DHingeMomentsTail()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(Compute3DHingeMomentsTail()), __file__, xml_file_name)
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(Compute3DHingeMomentsTail(), ivc)
@@ -1729,11 +1726,11 @@ def hinge_moment_3d(XML_FILE: str, ch_alpha: float, ch_delta: float):
     problem.check_partials(compact_print=True)
 
 
-def hinge_moments(XML_FILE: str, ch_alpha: float, ch_delta: float):
+def hinge_moments(xml_file_name: str, ch_alpha: float, ch_delta: float):
     """Tests tail hinge-moments complete computation!"""
 
     # Research independent input value in .xml file
-    ivc = get_indep_var_comp(list_inputs(ComputeHingeMomentsTail()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeHingeMomentsTail()), __file__, xml_file_name)
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeHingeMomentsTail(), ivc)
@@ -1746,11 +1743,11 @@ def hinge_moments(XML_FILE: str, ch_alpha: float, ch_delta: float):
 
 
 def elevator(
-    XML_FILE: str,
+    xml_file_name: str,
     cl_delta_elev: float,
     cd_delta_elev: float,
 ):
-    ivc = get_indep_var_comp(list_inputs(ComputeDeltaElevator()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeDeltaElevator()), __file__, xml_file_name)
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeDeltaElevator(), ivc)
@@ -1764,7 +1761,7 @@ def elevator(
 
 
 def high_lift(
-    XML_FILE: str,
+    xml_file_name: str,
     delta_cl0_landing: float,
     delta_cl0_landing_2d: float,
     delta_clmax_landing: float,
@@ -1782,7 +1779,7 @@ def high_lift(
 ):
     """Tests high-lift contribution!"""
     # Research independent input value in .xml file
-    ivc = get_indep_var_comp(list_inputs(ComputeDeltaHighLift()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeDeltaHighLift()), __file__, xml_file_name)
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeDeltaHighLift(), ivc)
@@ -1830,14 +1827,16 @@ def high_lift(
     )
 
 
-def wing_extreme_cl_clean_xfoil(XML_FILE: str, cl_max_clean_wing: float, cl_min_clean_wing: float):
+def wing_extreme_cl_clean_xfoil(
+    xml_file_name: str, cl_max_clean_wing: float, cl_min_clean_wing: float
+):
     """Tests maximum minimum lift coefficient for clean wing."""
 
     # Transfer saved polar results to temporary folder
     tmp_folder = polar_result_transfer()
 
     # Research independent input value in .xml file for Openvsp test
-    ivc = get_indep_var_comp(list_inputs(ComputeExtremeCLWing()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeExtremeCLWing()), __file__, xml_file_name)
 
     # Run problem
     problem = run_system(ComputeExtremeCLWing(), ivc)
@@ -1854,7 +1853,7 @@ def wing_extreme_cl_clean_xfoil(XML_FILE: str, cl_max_clean_wing: float, cl_min_
 
 
 def wing_extreme_cl_clean_neuralfoil(
-    XML_FILE: str, cl_max_clean_wing: float, cl_min_clean_wing: float
+    xml_file_name: str, cl_max_clean_wing: float, cl_min_clean_wing: float
 ):
     """Tests maximum minimum lift coefficient for clean wing."""
 
@@ -1863,7 +1862,7 @@ def wing_extreme_cl_clean_neuralfoil(
 
     # Research independent input value in .xml file for Openvsp test
     ivc = get_indep_var_comp(
-        list_inputs(ComputeExtremeCLWing(use_neuralfoil=True)), __file__, XML_FILE
+        list_inputs(ComputeExtremeCLWing(use_neuralfoil=True)), __file__, xml_file_name
     )
 
     # Run problem
@@ -1881,7 +1880,7 @@ def wing_extreme_cl_clean_neuralfoil(
 
 
 def htp_extreme_cl_clean_xfoil(
-    XML_FILE: str,
+    xml_file_name: str,
     cl_max_clean_htp: float,
     cl_min_clean_htp: float,
     alpha_max_clean_htp: float,
@@ -1893,7 +1892,7 @@ def htp_extreme_cl_clean_xfoil(
     tmp_folder = polar_result_transfer()
 
     # Research independent input value in .xml file for Openvsp test
-    ivc = get_indep_var_comp(list_inputs(ComputeExtremeCLHtp()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeExtremeCLHtp()), __file__, xml_file_name)
 
     # Run problem
     problem = run_system(ComputeExtremeCLHtp(), ivc)
@@ -1916,7 +1915,7 @@ def htp_extreme_cl_clean_xfoil(
 
 
 def htp_extreme_cl_clean_neuralfoil(
-    XML_FILE: str,
+    xml_file_name: str,
     cl_max_clean_htp: float,
     cl_min_clean_htp: float,
     alpha_max_clean_htp: float,
@@ -1929,7 +1928,7 @@ def htp_extreme_cl_clean_neuralfoil(
 
     # Research independent input value in .xml file for Openvsp test
     ivc = get_indep_var_comp(
-        list_inputs(ComputeExtremeCLHtp(use_neuralfoil=True)), __file__, XML_FILE
+        list_inputs(ComputeExtremeCLHtp(use_neuralfoil=True)), __file__, xml_file_name
     )
 
     # Run problem
@@ -1953,7 +1952,7 @@ def htp_extreme_cl_clean_neuralfoil(
 
 
 def extreme_cl(
-    XML_FILE: str,
+    xml_file_name: str,
     cl_max_takeoff_wing: float,
     cl_max_landing_wing: float,
 ):
@@ -1962,7 +1961,7 @@ def extreme_cl(
     tmp_folder = polar_result_transfer()
 
     # Research independent input value in .xml file for Openvsp test
-    ivc = get_indep_var_comp(list_inputs(ComputeAircraftMaxCl()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeAircraftMaxCl()), __file__, xml_file_name)
 
     # Run problem
     problem = run_system(ComputeAircraftMaxCl(), ivc)
@@ -1982,11 +1981,11 @@ def extreme_cl(
 
 
 def l_d_max(
-    XML_FILE: str, l_d_max_: float, optimal_cl: float, optimal_cd: float, optimal_alpha: float
+    xml_file_name: str, l_d_max_: float, optimal_cl: float, optimal_cd: float, optimal_alpha: float
 ):
     """Tests best lift/drag component!"""
     # Define independent input value (openVSP)
-    ivc = get_indep_var_comp(list_inputs(ComputeLDMax()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeLDMax()), __file__, xml_file_name)
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeLDMax(), ivc)
@@ -2004,10 +2003,10 @@ def l_d_max(
     problem.check_partials(compact_print=True)
 
 
-def cnbeta(XML_FILE: str, cn_beta_fus: float):
+def cnbeta(xml_file_name: str, cn_beta_fus: float):
     """Tests cn beta fuselage"""
     # Research independent input value in .xml file
-    ivc = get_indep_var_comp(list_inputs(ComputeCnBetaFuselage()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeCnBetaFuselage()), __file__, xml_file_name)
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeCnBetaFuselage(), ivc)
@@ -2017,8 +2016,9 @@ def cnbeta(XML_FILE: str, cn_beta_fus: float):
 
 
 def slipstream_openvsp(
-    XML_FILE: str,
-    ENGINE_WRAPPER: str,
+    xml_file_name: str,
+    engine_wrapper_id: str,
+    *,
     low_speed_aero: bool,
 ):
     # Create result temporary directory
@@ -2030,38 +2030,36 @@ def slipstream_openvsp(
         list_inputs(
             ComputeSlipstreamOpenvsp(
                 low_speed_aero=low_speed_aero,
-                propulsion_id=ENGINE_WRAPPER,
+                propulsion_id=engine_wrapper_id,
                 result_folder_path=results_folder.name,
             )
         ),
         __file__,
-        XML_FILE,
+        xml_file_name,
     )
-    # Run problem and check obtained value(s) is/(are) correct
+    # Run problem and check obtained value(s) is/(are) correct and return for complementary values
+    # check
     # noinspection PyTypeChecker
-    problem = run_system(
+    return run_system(
         ComputeSlipstreamOpenvsp(
             low_speed_aero=low_speed_aero,
-            propulsion_id=ENGINE_WRAPPER,
+            propulsion_id=engine_wrapper_id,
             result_folder_path=results_folder.name,
         ),
         ivc,
     )
 
-    # Return problem for complementary values check
-    return problem
-
 
 def slipstream_openvsp_cruise(
-    XML_FILE: str,
-    ENGINE_WRAPPER: str,
+    xml_file_name: str,
+    engine_wrapper_id: str,
     y_vector_prop_on: np.ndarray,
     cl_vector_prop_on: np.ndarray,
     ct: float,
     delta_cl: float,
 ):
     # Compute slipstream @ high speed
-    problem = slipstream_openvsp(XML_FILE, ENGINE_WRAPPER, False)
+    problem = slipstream_openvsp(xml_file_name, engine_wrapper_id, low_speed_aero=False)
 
     # Check obtained value(s) is/(are) correct
     y_result_prop_on = problem.get_val(
@@ -2082,15 +2080,15 @@ def slipstream_openvsp_cruise(
 
 
 def slipstream_openvsp_low_speed(
-    XML_FILE: str,
-    ENGINE_WRAPPER: str,
+    xml_file_name: str,
+    engine_wrapper_id: str,
     y_vector_prop_on: np.ndarray,
     cl_vector_prop_on: np.ndarray,
     ct: float,
     delta_cl: float,
 ):
     # Compute slipstream @ high speed
-    problem = slipstream_openvsp(XML_FILE, ENGINE_WRAPPER, True)
+    problem = slipstream_openvsp(xml_file_name, engine_wrapper_id, low_speed_aero=True)
 
     # Check obtained value(s) is/(are) correct
     y_result_prop_on = problem.get_val(
@@ -2111,11 +2109,11 @@ def slipstream_openvsp_low_speed(
 
 
 def compute_mach_interpolation_roskam_xfoil(
-    XML_FILE: str, cl_alpha_vector: np.ndarray, mach_vector: np.ndarray
+    xml_file_name: str, cl_alpha_vector: np.ndarray, mach_vector: np.ndarray
 ):
     """Tests computation of the mach interpolation vector using Roskam's approach!"""
     # Research independent input value in .xml file
-    ivc = get_indep_var_comp(list_inputs(ComputeMachInterpolation()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeMachInterpolation()), __file__, xml_file_name)
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeMachInterpolation(), ivc)
@@ -2126,12 +2124,12 @@ def compute_mach_interpolation_roskam_xfoil(
 
 
 def compute_mach_interpolation_roskam_neuralfoil(
-    XML_FILE: str, cl_alpha_vector: np.ndarray, mach_vector: np.ndarray
+    xml_file_name: str, cl_alpha_vector: np.ndarray, mach_vector: np.ndarray
 ):
     """Tests computation of the mach interpolation vector using Roskam's approach!"""
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeMachInterpolation(use_neuralfoil=True)), __file__, XML_FILE
+        list_inputs(ComputeMachInterpolation(use_neuralfoil=True)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -2143,12 +2141,12 @@ def compute_mach_interpolation_roskam_neuralfoil(
 
 
 def cl_alpha_vt(
-    XML_FILE: str, cl_alpha_vt_ls: float, k_ar_effective: float, cl_alpha_vt_cruise: float
+    xml_file_name: str, cl_alpha_vt_ls: float, k_ar_effective: float, cl_alpha_vt_cruise: float
 ):
     """Tests Cl alpha vt!"""
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeClAlphaVerticalTail(low_speed_aero=True)), __file__, XML_FILE
+        list_inputs(ComputeClAlphaVerticalTail(low_speed_aero=True)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -2161,7 +2159,7 @@ def cl_alpha_vt(
     )
 
     # Research independent input value in .xml file
-    ivc = get_indep_var_comp(list_inputs(ComputeClAlphaVerticalTail()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeClAlphaVerticalTail()), __file__, xml_file_name)
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeClAlphaVerticalTail(), ivc)
@@ -2170,11 +2168,11 @@ def cl_alpha_vt(
     ) == pytest.approx(cl_alpha_vt_cruise, rel=1e-3)
 
 
-def cy_delta_r(XML_FILE: str, cy_delta_r_: float, cy_delta_r_cruise):
+def cy_delta_r(xml_file_name: str, cy_delta_r_: float, cy_delta_r_cruise):
     """Tests cy delta of the rudder!"""
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeCyDeltaRudder(low_speed_aero=True)), __file__, XML_FILE
+        list_inputs(ComputeCyDeltaRudder(low_speed_aero=True)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -2184,7 +2182,7 @@ def cy_delta_r(XML_FILE: str, cy_delta_r_: float, cy_delta_r_cruise):
     ) == pytest.approx(cy_delta_r_, abs=1e-4)
 
     # Research independent input value in .xml file
-    ivc = get_indep_var_comp(list_inputs(ComputeCyDeltaRudder()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeCyDeltaRudder()), __file__, xml_file_name)
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeCyDeltaRudder(), ivc)
@@ -2194,12 +2192,14 @@ def cy_delta_r(XML_FILE: str, cy_delta_r_: float, cy_delta_r_cruise):
 
 
 def effective_efficiency(
-    XML_FILE: str, effective_efficiency_low_speed: float, effective_efficiency_cruise: float
+    xml_file_name: str, effective_efficiency_low_speed: float, effective_efficiency_cruise: float
 ):
     """Tests effective efficiency of the propeller!"""
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeEffectiveEfficiencyPropeller(low_speed_aero=True)), __file__, XML_FILE
+        list_inputs(ComputeEffectiveEfficiencyPropeller(low_speed_aero=True)),
+        __file__,
+        xml_file_name,
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -2209,7 +2209,9 @@ def effective_efficiency(
     ) == pytest.approx(effective_efficiency_low_speed, abs=1e-4)
 
     # Research independent input value in .xml file
-    ivc = get_indep_var_comp(list_inputs(ComputeEffectiveEfficiencyPropeller()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeEffectiveEfficiencyPropeller()), __file__, xml_file_name
+    )
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeEffectiveEfficiencyPropeller(), ivc)
@@ -2218,10 +2220,10 @@ def effective_efficiency(
     ) == pytest.approx(effective_efficiency_cruise, abs=1e-4)
 
 
-def cm_alpha_fus(XML_FILE: str, cm_alpha_fus_: float):
+def cm_alpha_fus(xml_file_name: str, cm_alpha_fus_: float):
     """Tests cm alpha of the fuselage"""
     # Research independent input value in .xml file
-    ivc = get_indep_var_comp(list_inputs(ComputeCmAlphaFuselage()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeCmAlphaFuselage()), __file__, xml_file_name)
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeCmAlphaFuselage(), ivc)
@@ -2232,54 +2234,59 @@ def cm_alpha_fus(XML_FILE: str, cm_alpha_fus_: float):
     problem.check_partials(compact_print=True)
 
 
-def high_speed_connection(XML_FILE: str, ENGINE_WRAPPER: str, use_openvsp: bool):
+def high_speed_connection(xml_file_name: str, engine_wrapper_id: str, *, use_openvsp: bool):
     """Tests high speed components connection!"""
     # Transfer saved polar results to temporary folder
     tmp_folder = polar_result_transfer()
 
     # load all inputs
     ivc = get_indep_var_comp(
-        list_inputs(AerodynamicsHighSpeed(propulsion_id=ENGINE_WRAPPER, use_openvsp=use_openvsp)),
+        list_inputs(
+            AerodynamicsHighSpeed(propulsion_id=engine_wrapper_id, use_openvsp=use_openvsp)
+        ),
         __file__,
-        XML_FILE,
+        xml_file_name,
     )
 
     # noinspection PyTypeChecker
-    run_system(AerodynamicsHighSpeed(propulsion_id=ENGINE_WRAPPER, use_openvsp=use_openvsp), ivc)
+    run_system(AerodynamicsHighSpeed(propulsion_id=engine_wrapper_id, use_openvsp=use_openvsp), ivc)
 
     # Retrieve polar results from temporary folder
     polar_result_retrieve(tmp_folder)
 
 
-def low_speed_connection(XML_FILE: str, ENGINE_WRAPPER: str, use_openvsp: bool):
+def low_speed_connection(xml_file_name: str, engine_wrapper_id: str, *, use_openvsp: bool):
     """Tests low speed components connection!"""
     # Transfer saved polar results to temporary folder
     tmp_folder = polar_result_transfer()
 
     # load all inputs
     ivc = get_indep_var_comp(
-        list_inputs(AerodynamicsLowSpeed(propulsion_id=ENGINE_WRAPPER, use_openvsp=use_openvsp)),
+        list_inputs(AerodynamicsLowSpeed(propulsion_id=engine_wrapper_id, use_openvsp=use_openvsp)),
         __file__,
-        XML_FILE,
+        xml_file_name,
     )
 
     # noinspection PyTypeChecker
-    run_system(AerodynamicsLowSpeed(propulsion_id=ENGINE_WRAPPER, use_openvsp=use_openvsp), ivc)
+    run_system(AerodynamicsLowSpeed(propulsion_id=engine_wrapper_id, use_openvsp=use_openvsp), ivc)
 
     # Retrieve polar results from temporary folder
     polar_result_retrieve(tmp_folder)
 
 
 def v_n_diagram(
-    XML_FILE: str, ENGINE_WRAPPER: str, velocity_vect: np.ndarray, load_factor_vect: np.ndarray
+    xml_file_name: str,
+    engine_wrapper_id: str,
+    velocity_vect: np.ndarray,
+    load_factor_vect: np.ndarray,
 ):
     # load all inputs
     ivc = get_indep_var_comp(
-        list_inputs(ComputeVNAndVH(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE
+        list_inputs(ComputeVNAndVH(propulsion_id=engine_wrapper_id)), __file__, xml_file_name
     )
     # Run problem with VLM and check obtained value(s) is/(are) correct
     # noinspection PyTypeChecker
-    problem = run_system(ComputeVNAndVH(propulsion_id=ENGINE_WRAPPER), ivc)
+    problem = run_system(ComputeVNAndVH(propulsion_id=engine_wrapper_id), ivc)
     assert (
         np.max(
             np.abs(
@@ -2303,8 +2310,8 @@ def v_n_diagram(
 
 
 def load_factor(
-    XML_FILE: str,
-    ENGINE_WRAPPER: str,
+    xml_file_name: str,
+    engine_wrapper_id: str,
     load_factor_ultimate: float,
     load_factor_ultimate_mtow: float,
     load_factor_ultimate_mzfw: float,
@@ -2315,10 +2322,10 @@ def load_factor(
 ):
     # load all inputs
     ivc = get_indep_var_comp(
-        list_inputs(LoadFactor(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE
+        list_inputs(LoadFactor(propulsion_id=engine_wrapper_id)), __file__, xml_file_name
     )
 
-    problem = run_system(LoadFactor(propulsion_id=ENGINE_WRAPPER), ivc)
+    problem = run_system(LoadFactor(propulsion_id=engine_wrapper_id), ivc)
 
     assert problem.get_val(
         "data:mission:sizing:cs23:sizing_factor:ultimate_aircraft"
@@ -2344,13 +2351,13 @@ def load_factor(
 
 
 def propeller_xfoil(
-    XML_FILE: str,
-    thrust_SL: np.ndarray,
-    thrust_SL_limit: np.ndarray,
-    efficiency_SL: np.ndarray,
-    thrust_CL: np.ndarray,
-    thrust_CL_limit: np.ndarray,
-    efficiency_CL: np.ndarray,
+    xml_file_name: str,
+    thrust_sl: np.ndarray,
+    thrust_sl_limit: np.ndarray,
+    efficiency_sl: np.ndarray,
+    thrust_cl: np.ndarray,
+    thrust_cl_limit: np.ndarray,
+    efficiency_cl: np.ndarray,
     speed: np.ndarray,
 ):
     # Transfer saved polar results to temporary folder
@@ -2366,7 +2373,7 @@ def propeller_xfoil(
             )
         ),
         __file__,
-        XML_FILE,
+        xml_file_name,
     )
 
     # Run problem
@@ -2385,39 +2392,39 @@ def propeller_xfoil(
     # Check obtained value(s) is/(are) correct
     assert problem.get_val(
         "data:aerodynamics:propeller:sea_level:thrust", units="N"
-    ) == pytest.approx(thrust_SL, abs=1)
+    ) == pytest.approx(thrust_sl, abs=1)
     assert problem.get_val(
         "data:aerodynamics:propeller:sea_level:thrust_limit", units="N"
-    ) == pytest.approx(thrust_SL_limit, abs=1)
+    ) == pytest.approx(thrust_sl_limit, abs=1)
     assert problem.get_val(
         "data:aerodynamics:propeller:sea_level:speed", units="m/s"
     ) == pytest.approx(speed, abs=1e-2)
     assert problem.get_val("data:aerodynamics:propeller:sea_level:efficiency") == pytest.approx(
-        efficiency_SL, abs=1e-5
+        efficiency_sl, abs=1e-5
     )
 
     assert problem.get_val(
         "data:aerodynamics:propeller:cruise_level:thrust", units="N"
-    ) == pytest.approx(thrust_CL, abs=1)
+    ) == pytest.approx(thrust_cl, abs=1)
     assert problem.get_val(
         "data:aerodynamics:propeller:cruise_level:thrust_limit", units="N"
-    ) == pytest.approx(thrust_CL_limit, abs=1)
+    ) == pytest.approx(thrust_cl_limit, abs=1)
     assert problem.get_val(
         "data:aerodynamics:propeller:cruise_level:speed", units="m/s"
     ) == pytest.approx(speed, abs=1e-2)
     assert problem.get_val("data:aerodynamics:propeller:cruise_level:efficiency") == pytest.approx(
-        efficiency_CL, abs=1e-5
+        efficiency_cl, abs=1e-5
     )
 
 
 def propeller_neuralfoil(
-    XML_FILE: str,
-    thrust_SL: np.ndarray,
-    thrust_SL_limit: np.ndarray,
-    efficiency_SL: np.ndarray,
-    thrust_CL: np.ndarray,
-    thrust_CL_limit: np.ndarray,
-    efficiency_CL: np.ndarray,
+    xml_file_name: str,
+    thrust_sl: np.ndarray,
+    thrust_sl_limit: np.ndarray,
+    efficiency_sl: np.ndarray,
+    thrust_cl: np.ndarray,
+    thrust_cl_limit: np.ndarray,
+    efficiency_cl: np.ndarray,
     speed: np.ndarray,
 ):
     # Transfer saved polar results to temporary folder
@@ -2434,7 +2441,7 @@ def propeller_neuralfoil(
             )
         ),
         __file__,
-        XML_FILE,
+        xml_file_name,
     )
 
     # Run problem
@@ -2454,33 +2461,33 @@ def propeller_neuralfoil(
     # Check obtained value(s) is/(are) correct
     assert problem.get_val(
         "data:aerodynamics:propeller:sea_level:thrust", units="N"
-    ) == pytest.approx(thrust_SL, abs=1)
+    ) == pytest.approx(thrust_sl, abs=1)
     assert problem.get_val(
         "data:aerodynamics:propeller:sea_level:thrust_limit", units="N"
-    ) == pytest.approx(thrust_SL_limit, abs=1)
+    ) == pytest.approx(thrust_sl_limit, abs=1)
     assert problem.get_val(
         "data:aerodynamics:propeller:sea_level:speed", units="m/s"
     ) == pytest.approx(speed, abs=1e-2)
     assert problem.get_val("data:aerodynamics:propeller:sea_level:efficiency") == pytest.approx(
-        efficiency_SL, abs=1e-5
+        efficiency_sl, abs=1e-5
     )
 
     assert problem.get_val(
         "data:aerodynamics:propeller:cruise_level:thrust", units="N"
-    ) == pytest.approx(thrust_CL, abs=1)
+    ) == pytest.approx(thrust_cl, abs=1)
     assert problem.get_val(
         "data:aerodynamics:propeller:cruise_level:thrust_limit", units="N"
-    ) == pytest.approx(thrust_CL_limit, abs=1)
+    ) == pytest.approx(thrust_cl_limit, abs=1)
     assert problem.get_val(
         "data:aerodynamics:propeller:cruise_level:speed", units="m/s"
     ) == pytest.approx(speed, abs=1e-2)
     assert problem.get_val("data:aerodynamics:propeller:cruise_level:efficiency") == pytest.approx(
-        efficiency_CL, abs=1e-5
+        efficiency_cl, abs=1e-5
     )
 
 
 def non_equilibrated_cl_cd_polar(
-    XML_FILE: str,
+    xml_file_name: str,
     cl_polar_ls_: np.ndarray,
     cd_polar_ls_: np.ndarray,
     cl_polar_cruise_: np.ndarray,
@@ -2489,7 +2496,7 @@ def non_equilibrated_cl_cd_polar(
     """Tests non-equilibrated cl/cd polar of the aircraft"""
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeNonEquilibratedPolar(low_speed_aero=True)), __file__, XML_FILE
+        list_inputs(ComputeNonEquilibratedPolar(low_speed_aero=True)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -2502,7 +2509,7 @@ def non_equilibrated_cl_cd_polar(
     )
 
     ivc = get_indep_var_comp(
-        list_inputs(ComputeNonEquilibratedPolar(low_speed_aero=False)), __file__, XML_FILE
+        list_inputs(ComputeNonEquilibratedPolar(low_speed_aero=False)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -2516,7 +2523,7 @@ def non_equilibrated_cl_cd_polar(
 
 
 def equilibrated_cl_cd_polar(
-    XML_FILE: str,
+    xml_file_name: str,
     cl_polar_ls_: np.ndarray,
     cd_polar_ls_: np.ndarray,
     cl_polar_cruise_: np.ndarray,
@@ -2525,7 +2532,9 @@ def equilibrated_cl_cd_polar(
     """Tests equilibrated cl/cd polar of the aircraft"""
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeEquilibratedPolar(low_speed_aero=True, cg_ratio=0.5)), __file__, XML_FILE
+        list_inputs(ComputeEquilibratedPolar(low_speed_aero=True, cg_ratio=0.5)),
+        __file__,
+        xml_file_name,
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -2540,7 +2549,7 @@ def equilibrated_cl_cd_polar(
     ivc = get_indep_var_comp(
         list_inputs(ComputeEquilibratedPolar(low_speed_aero=False, cg_ratio=0.5)),
         __file__,
-        XML_FILE,
+        xml_file_name,
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -2554,12 +2563,12 @@ def equilibrated_cl_cd_polar(
 
 
 def cy_beta_fus(
-    XML_FILE: str,
+    xml_file_name: str,
     cy_beta_fus_: float,
 ):
     """Tests cy beta of the fuselage"""
     # Research independent input value in .xml file
-    ivc = get_indep_var_comp(list_inputs(ComputeCyBetaFuselage()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeCyBetaFuselage()), __file__, xml_file_name)
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeCyBetaFuselage(), ivc)
@@ -2571,14 +2580,14 @@ def cy_beta_fus(
 
 
 def downwash_gradient(
-    XML_FILE: str,
+    xml_file_name: str,
     downwash_gradient_ls_: float,
     downwash_gradient_cruise_: float,
 ):
     """Tests cy beta of the fuselage"""
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(DownWashGradientComputation(low_speed_aero=True)), __file__, XML_FILE
+        list_inputs(DownWashGradientComputation(low_speed_aero=True)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -2592,7 +2601,7 @@ def downwash_gradient(
     """Tests cy beta of the fuselage"""
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(DownWashGradientComputation(low_speed_aero=False)), __file__, XML_FILE
+        list_inputs(DownWashGradientComputation(low_speed_aero=False)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -2605,13 +2614,13 @@ def downwash_gradient(
 
 
 def lift_aoa_rate_derivative(
-    XML_FILE: str,
+    xml_file_name: str,
     cl_aoa_dot_low_speed_: float,
     cl_aoa_dot_cruise_: float,
 ):
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeCLAlphaDotAircraft(low_speed_aero=True)), __file__, XML_FILE
+        list_inputs(ComputeCLAlphaDotAircraft(low_speed_aero=True)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -2624,7 +2633,7 @@ def lift_aoa_rate_derivative(
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeCLAlphaDotAircraft(low_speed_aero=False)), __file__, XML_FILE
+        list_inputs(ComputeCLAlphaDotAircraft(low_speed_aero=False)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -2637,13 +2646,15 @@ def lift_aoa_rate_derivative(
 
 
 def lift_pitch_velocity_derivative_ht(
-    XML_FILE: str,
+    xml_file_name: str,
     cl_q_ht_low_speed_: float,
     cl_q_ht_cruise_: float,
 ):
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeCLPitchVelocityHorizontalTail(low_speed_aero=True)), __file__, XML_FILE
+        list_inputs(ComputeCLPitchVelocityHorizontalTail(low_speed_aero=True)),
+        __file__,
+        xml_file_name,
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -2656,7 +2667,9 @@ def lift_pitch_velocity_derivative_ht(
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeCLPitchVelocityHorizontalTail(low_speed_aero=False)), __file__, XML_FILE
+        list_inputs(ComputeCLPitchVelocityHorizontalTail(low_speed_aero=False)),
+        __file__,
+        xml_file_name,
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -2669,13 +2682,13 @@ def lift_pitch_velocity_derivative_ht(
 
 
 def lift_pitch_velocity_derivative_wing(
-    XML_FILE: str,
+    xml_file_name: str,
     cl_q_wing_low_speed_: float,
     cl_q_wing_cruise_: float,
 ):
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeCLPitchVelocityWing(low_speed_aero=True)), __file__, XML_FILE
+        list_inputs(ComputeCLPitchVelocityWing(low_speed_aero=True)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -2688,7 +2701,7 @@ def lift_pitch_velocity_derivative_wing(
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeCLPitchVelocityWing(low_speed_aero=False)), __file__, XML_FILE
+        list_inputs(ComputeCLPitchVelocityWing(low_speed_aero=False)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -2701,13 +2714,13 @@ def lift_pitch_velocity_derivative_wing(
 
 
 def lift_pitch_velocity_derivative_aircraft(
-    XML_FILE: str,
+    xml_file_name: str,
     cl_q_low_speed_: float,
     cl_q_cruise_: float,
 ):
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeCLPitchVelocityAircraft(low_speed_aero=True)), __file__, XML_FILE
+        list_inputs(ComputeCLPitchVelocityAircraft(low_speed_aero=True)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -2720,7 +2733,7 @@ def lift_pitch_velocity_derivative_aircraft(
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeCLPitchVelocityAircraft(low_speed_aero=False)), __file__, XML_FILE
+        list_inputs(ComputeCLPitchVelocityAircraft(low_speed_aero=False)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -2733,11 +2746,11 @@ def lift_pitch_velocity_derivative_aircraft(
 
 
 def side_force_sideslip_derivative_wing(
-    XML_FILE: str,
+    xml_file_name: str,
     cy_beta_wing_: float,
 ):
     # Research independent input value in .xml file
-    ivc = get_indep_var_comp(list_inputs(ComputeCyBetaWing()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeCyBetaWing()), __file__, xml_file_name)
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeCyBetaWing(), ivc)
@@ -2749,13 +2762,13 @@ def side_force_sideslip_derivative_wing(
 
 
 def side_force_sideslip_derivative_vt(
-    XML_FILE: str,
+    xml_file_name: str,
     cy_beta_vt_low_speed_: float,
     cy_beta_vt_cruise_: float,
 ):
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeCyBetaVerticalTail(low_speed_aero=True)), __file__, XML_FILE
+        list_inputs(ComputeCyBetaVerticalTail(low_speed_aero=True)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -2768,7 +2781,7 @@ def side_force_sideslip_derivative_vt(
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeCyBetaVerticalTail(low_speed_aero=False)), __file__, XML_FILE
+        list_inputs(ComputeCyBetaVerticalTail(low_speed_aero=False)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -2781,14 +2794,14 @@ def side_force_sideslip_derivative_vt(
 
 
 def side_force_sideslip_aircraft(
-    XML_FILE: str,
+    xml_file_name: str,
     cy_beta_low_speed_: float,
 ):
     # Only testing the low speed case since the high can't run on its own (fuselage and wing
     # contribution are independent of mach number and are thus only computed at low speed)
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeCYBetaAircraft(low_speed_aero=True)), __file__, XML_FILE
+        list_inputs(ComputeCYBetaAircraft(low_speed_aero=True)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -2801,13 +2814,13 @@ def side_force_sideslip_aircraft(
 
 
 def side_force_yaw_rate_aircraft(
-    XML_FILE: str,
+    xml_file_name: str,
     cy_yaw_rate_low_speed_: float,
     cy_yaw_rate_cruise_: float,
 ):
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeCyYawRateAircraft(low_speed_aero=True)), __file__, XML_FILE
+        list_inputs(ComputeCyYawRateAircraft(low_speed_aero=True)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -2820,7 +2833,7 @@ def side_force_yaw_rate_aircraft(
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeCyYawRateAircraft(low_speed_aero=False)), __file__, XML_FILE
+        list_inputs(ComputeCyYawRateAircraft(low_speed_aero=False)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -2833,13 +2846,13 @@ def side_force_yaw_rate_aircraft(
 
 
 def side_force_roll_rate_aircraft(
-    XML_FILE: str,
+    xml_file_name: str,
     cy_roll_rate_low_speed_: float,
     cy_roll_rate_cruise_: float,
 ):
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeCyRollRateAircraft(low_speed_aero=True)), __file__, XML_FILE
+        list_inputs(ComputeCyRollRateAircraft(low_speed_aero=True)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -2852,7 +2865,7 @@ def side_force_roll_rate_aircraft(
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeCyRollRateAircraft(low_speed_aero=False)), __file__, XML_FILE
+        list_inputs(ComputeCyRollRateAircraft(low_speed_aero=False)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -2865,13 +2878,13 @@ def side_force_roll_rate_aircraft(
 
 
 def roll_moment_side_slip_wing(
-    XML_FILE: str,
+    xml_file_name: str,
     cl_beta_wing_low_speed_: float,
     cl_beta_wing_cruise_: float,
 ):
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeClBetaWing(low_speed_aero=True)), __file__, XML_FILE
+        list_inputs(ComputeClBetaWing(low_speed_aero=True)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -2882,7 +2895,7 @@ def roll_moment_side_slip_wing(
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeClBetaWing(low_speed_aero=False)), __file__, XML_FILE
+        list_inputs(ComputeClBetaWing(low_speed_aero=False)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -2893,13 +2906,13 @@ def roll_moment_side_slip_wing(
 
 
 def roll_moment_side_slip_ht(
-    XML_FILE: str,
+    xml_file_name: str,
     cl_beta_ht_low_speed_: float,
     cl_beta_ht_cruise_: float,
 ):
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeClBetaHorizontalTail(low_speed_aero=True)), __file__, XML_FILE
+        list_inputs(ComputeClBetaHorizontalTail(low_speed_aero=True)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -2910,7 +2923,7 @@ def roll_moment_side_slip_ht(
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeClBetaHorizontalTail(low_speed_aero=False)), __file__, XML_FILE
+        list_inputs(ComputeClBetaHorizontalTail(low_speed_aero=False)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -2921,13 +2934,13 @@ def roll_moment_side_slip_ht(
 
 
 def roll_moment_side_slip_vt(
-    XML_FILE: str,
+    xml_file_name: str,
     cl_beta_vt_low_speed_: float,
     cl_beta_vt_cruise_: float,
 ):
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeClBetaVerticalTail(low_speed_aero=True)), __file__, XML_FILE
+        list_inputs(ComputeClBetaVerticalTail(low_speed_aero=True)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -2940,7 +2953,7 @@ def roll_moment_side_slip_vt(
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeClBetaVerticalTail(low_speed_aero=False)), __file__, XML_FILE
+        list_inputs(ComputeClBetaVerticalTail(low_speed_aero=False)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -2953,13 +2966,13 @@ def roll_moment_side_slip_vt(
 
 
 def roll_moment_side_slip_aircraft(
-    XML_FILE: str,
+    xml_file_name: str,
     cl_beta_low_speed_: float,
     cl_beta_cruise_: float,
 ):
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeClBetaAircraft(low_speed_aero=True)), __file__, XML_FILE
+        list_inputs(ComputeClBetaAircraft(low_speed_aero=True)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -2976,7 +2989,7 @@ def roll_moment_side_slip_aircraft(
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeClBetaAircraft(low_speed_aero=False)), __file__, XML_FILE
+        list_inputs(ComputeClBetaAircraft(low_speed_aero=False)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -2993,13 +3006,13 @@ def roll_moment_side_slip_aircraft(
 
 
 def roll_moment_roll_rate_wing(
-    XML_FILE: str,
+    xml_file_name: str,
     cl_p_wing_low_speed_: float,
     cl_p_wing_cruise_: float,
 ):
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeClRollRateWing(low_speed_aero=True)), __file__, XML_FILE
+        list_inputs(ComputeClRollRateWing(low_speed_aero=True)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -3010,7 +3023,7 @@ def roll_moment_roll_rate_wing(
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeClRollRateWing(low_speed_aero=False)), __file__, XML_FILE
+        list_inputs(ComputeClRollRateWing(low_speed_aero=False)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -3021,13 +3034,13 @@ def roll_moment_roll_rate_wing(
 
 
 def roll_moment_roll_rate_ht(
-    XML_FILE: str,
+    xml_file_name: str,
     cl_p_ht_low_speed_: float,
     cl_p_ht_cruise_: float,
 ):
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeClRollRateHorizontalTail(low_speed_aero=True)), __file__, XML_FILE
+        list_inputs(ComputeClRollRateHorizontalTail(low_speed_aero=True)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -3038,7 +3051,7 @@ def roll_moment_roll_rate_ht(
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeClRollRateHorizontalTail(low_speed_aero=False)), __file__, XML_FILE
+        list_inputs(ComputeClRollRateHorizontalTail(low_speed_aero=False)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -3049,13 +3062,13 @@ def roll_moment_roll_rate_ht(
 
 
 def roll_moment_roll_rate_vt(
-    XML_FILE: str,
+    xml_file_name: str,
     cl_p_vt_low_speed_: float,
     cl_p_vt_cruise_: float,
 ):
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeClRollRateVerticalTail(low_speed_aero=True)), __file__, XML_FILE
+        list_inputs(ComputeClRollRateVerticalTail(low_speed_aero=True)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -3068,7 +3081,7 @@ def roll_moment_roll_rate_vt(
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeClRollRateVerticalTail(low_speed_aero=False)), __file__, XML_FILE
+        list_inputs(ComputeClRollRateVerticalTail(low_speed_aero=False)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -3081,13 +3094,13 @@ def roll_moment_roll_rate_vt(
 
 
 def roll_moment_roll_rate_aircraft(
-    XML_FILE: str,
+    xml_file_name: str,
     cl_p_low_speed_: float,
     cl_p_cruise_: float,
 ):
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeClRollRateAircraft(low_speed_aero=True)), __file__, XML_FILE
+        list_inputs(ComputeClRollRateAircraft(low_speed_aero=True)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -3104,7 +3117,7 @@ def roll_moment_roll_rate_aircraft(
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeClRollRateAircraft(low_speed_aero=False)), __file__, XML_FILE
+        list_inputs(ComputeClRollRateAircraft(low_speed_aero=False)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -3121,13 +3134,13 @@ def roll_moment_roll_rate_aircraft(
 
 
 def roll_moment_yaw_rate_wing(
-    XML_FILE: str,
+    xml_file_name: str,
     cl_r_wing_low_speed_: float,
     cl_r_wing_cruise_: float,
 ):
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeClYawRateWing(low_speed_aero=True)), __file__, XML_FILE
+        list_inputs(ComputeClYawRateWing(low_speed_aero=True)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -3141,7 +3154,7 @@ def roll_moment_yaw_rate_wing(
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeClYawRateWing(low_speed_aero=False)), __file__, XML_FILE
+        list_inputs(ComputeClYawRateWing(low_speed_aero=False)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -3155,13 +3168,13 @@ def roll_moment_yaw_rate_wing(
 
 
 def roll_moment_yaw_rate_vt(
-    XML_FILE: str,
+    xml_file_name: str,
     cl_r_vt_low_speed_: float,
     cl_r_vt_cruise_: float,
 ):
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeClYawRateVerticalTail(low_speed_aero=True)), __file__, XML_FILE
+        list_inputs(ComputeClYawRateVerticalTail(low_speed_aero=True)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -3174,7 +3187,7 @@ def roll_moment_yaw_rate_vt(
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeClYawRateVerticalTail(low_speed_aero=False)), __file__, XML_FILE
+        list_inputs(ComputeClYawRateVerticalTail(low_speed_aero=False)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -3186,13 +3199,13 @@ def roll_moment_yaw_rate_vt(
 
 
 def roll_moment_yaw_rate_aircraft(
-    XML_FILE: str,
+    xml_file_name: str,
     cl_r_low_speed_: float,
     cl_r_cruise_: float,
 ):
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeClYawRateAircraft(low_speed_aero=True)), __file__, XML_FILE
+        list_inputs(ComputeClYawRateAircraft(low_speed_aero=True)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -3206,7 +3219,7 @@ def roll_moment_yaw_rate_aircraft(
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeClYawRateAircraft(low_speed_aero=False)), __file__, XML_FILE
+        list_inputs(ComputeClYawRateAircraft(low_speed_aero=False)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -3220,13 +3233,13 @@ def roll_moment_yaw_rate_aircraft(
 
 
 def roll_authority_aileron(
-    XML_FILE: str,
+    xml_file_name: str,
     cl_delta_a_low_speed_: float,
     cl_delta_a_cruise_: float,
 ):
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeClDeltaAileron(low_speed_aero=True)), __file__, XML_FILE
+        list_inputs(ComputeClDeltaAileron(low_speed_aero=True)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -3239,7 +3252,7 @@ def roll_authority_aileron(
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeClDeltaAileron(low_speed_aero=False)), __file__, XML_FILE
+        list_inputs(ComputeClDeltaAileron(low_speed_aero=False)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -3252,13 +3265,13 @@ def roll_authority_aileron(
 
 
 def roll_moment_rudder(
-    XML_FILE: str,
+    xml_file_name: str,
     cl_delta_r_low_speed_: float,
     cl_delta_r_cruise_: float,
 ):
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeClDeltaRudder(low_speed_aero=True)), __file__, XML_FILE
+        list_inputs(ComputeClDeltaRudder(low_speed_aero=True)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -3271,7 +3284,7 @@ def roll_moment_rudder(
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeClDeltaRudder(low_speed_aero=False)), __file__, XML_FILE
+        list_inputs(ComputeClDeltaRudder(low_speed_aero=False)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -3284,13 +3297,13 @@ def roll_moment_rudder(
 
 
 def pitch_moment_pitch_rate_wing(
-    XML_FILE: str,
+    xml_file_name: str,
     cm_q_wing_low_speed_: float,
     cm_q_wing_cruise_: float,
 ):
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeCMPitchVelocityWing(low_speed_aero=True)), __file__, XML_FILE
+        list_inputs(ComputeCMPitchVelocityWing(low_speed_aero=True)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -3301,7 +3314,7 @@ def pitch_moment_pitch_rate_wing(
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeCMPitchVelocityWing(low_speed_aero=False)), __file__, XML_FILE
+        list_inputs(ComputeCMPitchVelocityWing(low_speed_aero=False)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -3312,13 +3325,15 @@ def pitch_moment_pitch_rate_wing(
 
 
 def pitch_moment_pitch_rate_ht(
-    XML_FILE: str,
+    xml_file_name: str,
     cm_q_ht_low_speed_: float,
     cm_q_ht_cruise_: float,
 ):
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeCMPitchVelocityHorizontalTail(low_speed_aero=True)), __file__, XML_FILE
+        list_inputs(ComputeCMPitchVelocityHorizontalTail(low_speed_aero=True)),
+        __file__,
+        xml_file_name,
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -3331,7 +3346,9 @@ def pitch_moment_pitch_rate_ht(
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeCMPitchVelocityHorizontalTail(low_speed_aero=False)), __file__, XML_FILE
+        list_inputs(ComputeCMPitchVelocityHorizontalTail(low_speed_aero=False)),
+        __file__,
+        xml_file_name,
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -3344,13 +3361,13 @@ def pitch_moment_pitch_rate_ht(
 
 
 def pitch_moment_pitch_rate_aircraft(
-    XML_FILE: str,
+    xml_file_name: str,
     cm_q_low_speed_: float,
     cm_q_cruise_: float,
 ):
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeCMPitchVelocityAircraft(low_speed_aero=True)), __file__, XML_FILE
+        list_inputs(ComputeCMPitchVelocityAircraft(low_speed_aero=True)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -3364,7 +3381,7 @@ def pitch_moment_pitch_rate_aircraft(
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeCMPitchVelocityAircraft(low_speed_aero=False)), __file__, XML_FILE
+        list_inputs(ComputeCMPitchVelocityAircraft(low_speed_aero=False)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -3378,13 +3395,13 @@ def pitch_moment_pitch_rate_aircraft(
 
 
 def pitch_moment_aoa_rate_derivative(
-    XML_FILE: str,
+    xml_file_name: str,
     cm_aoa_dot_low_speed_: float,
     cm_aoa_dot_cruise_: float,
 ):
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeCMAlphaDotAircraft(low_speed_aero=True)), __file__, XML_FILE
+        list_inputs(ComputeCMAlphaDotAircraft(low_speed_aero=True)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -3397,7 +3414,7 @@ def pitch_moment_aoa_rate_derivative(
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeCMAlphaDotAircraft(low_speed_aero=False)), __file__, XML_FILE
+        list_inputs(ComputeCMAlphaDotAircraft(low_speed_aero=False)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -3410,13 +3427,13 @@ def pitch_moment_aoa_rate_derivative(
 
 
 def yaw_moment_sideslip_derivative_vt(
-    XML_FILE: str,
+    xml_file_name: str,
     cn_beta_vt_low_speed_: float,
     cn_beta_vt_cruise_: float,
 ):
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeCnBetaVerticalTail(low_speed_aero=True)), __file__, XML_FILE
+        list_inputs(ComputeCnBetaVerticalTail(low_speed_aero=True)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -3429,7 +3446,7 @@ def yaw_moment_sideslip_derivative_vt(
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeCnBetaVerticalTail(low_speed_aero=False)), __file__, XML_FILE
+        list_inputs(ComputeCnBetaVerticalTail(low_speed_aero=False)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -3442,14 +3459,14 @@ def yaw_moment_sideslip_derivative_vt(
 
 
 def yaw_moment_sideslip_aircraft(
-    XML_FILE: str,
+    xml_file_name: str,
     cn_beta_low_speed_: float,
 ):
     # Only testing the low speed case since the high can't run on its own (fuselage is
     # independent of mach number and are thus only computed at low speed)
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeCnBetaAircraft(low_speed_aero=True)), __file__, XML_FILE
+        list_inputs(ComputeCnBetaAircraft(low_speed_aero=True)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -3462,13 +3479,13 @@ def yaw_moment_sideslip_aircraft(
 
 
 def yaw_moment_aileron(
-    XML_FILE: str,
+    xml_file_name: str,
     cn_delta_a_low_speed_: float,
     cn_delta_a_cruise_: float,
 ):
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeCnDeltaAileron(low_speed_aero=True)), __file__, XML_FILE
+        list_inputs(ComputeCnDeltaAileron(low_speed_aero=True)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -3481,7 +3498,7 @@ def yaw_moment_aileron(
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeCnDeltaAileron(low_speed_aero=False)), __file__, XML_FILE
+        list_inputs(ComputeCnDeltaAileron(low_speed_aero=False)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -3494,13 +3511,13 @@ def yaw_moment_aileron(
 
 
 def yaw_moment_rudder(
-    XML_FILE: str,
+    xml_file_name: str,
     cn_delta_r_low_speed_: float,
     cn_delta_r_cruise_: float,
 ):
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeCnDeltaRudder(low_speed_aero=True)), __file__, XML_FILE
+        list_inputs(ComputeCnDeltaRudder(low_speed_aero=True)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -3513,7 +3530,7 @@ def yaw_moment_rudder(
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeCnDeltaRudder(low_speed_aero=False)), __file__, XML_FILE
+        list_inputs(ComputeCnDeltaRudder(low_speed_aero=False)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -3526,13 +3543,13 @@ def yaw_moment_rudder(
 
 
 def yaw_moment_roll_rate_wing(
-    XML_FILE: str,
+    xml_file_name: str,
     cn_p_wing_low_speed_: float,
     cn_p_wing_cruise_: float,
 ):
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeCnRollRateWing(low_speed_aero=True)), __file__, XML_FILE
+        list_inputs(ComputeCnRollRateWing(low_speed_aero=True)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -3543,7 +3560,7 @@ def yaw_moment_roll_rate_wing(
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeCnRollRateWing(low_speed_aero=False)), __file__, XML_FILE
+        list_inputs(ComputeCnRollRateWing(low_speed_aero=False)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -3556,13 +3573,13 @@ def yaw_moment_roll_rate_wing(
 
 
 def yaw_moment_roll_rate_vt(
-    XML_FILE: str,
+    xml_file_name: str,
     cn_p_vt_low_speed_: float,
     cn_p_vt_cruise_: float,
 ):
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeCnRollRateVerticalTail(low_speed_aero=True)), __file__, XML_FILE
+        list_inputs(ComputeCnRollRateVerticalTail(low_speed_aero=True)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -3575,7 +3592,7 @@ def yaw_moment_roll_rate_vt(
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeCnRollRateVerticalTail(low_speed_aero=False)), __file__, XML_FILE
+        list_inputs(ComputeCnRollRateVerticalTail(low_speed_aero=False)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -3588,13 +3605,13 @@ def yaw_moment_roll_rate_vt(
 
 
 def yaw_moment_roll_rate_aircraft(
-    XML_FILE: str,
+    xml_file_name: str,
     cn_p_low_speed_: float,
     cn_p_cruise_: float,
 ):
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeCnRollRateAircraft(low_speed_aero=True)), __file__, XML_FILE
+        list_inputs(ComputeCnRollRateAircraft(low_speed_aero=True)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -3608,7 +3625,7 @@ def yaw_moment_roll_rate_aircraft(
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeCnRollRateAircraft(low_speed_aero=False)), __file__, XML_FILE
+        list_inputs(ComputeCnRollRateAircraft(low_speed_aero=False)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -3622,13 +3639,13 @@ def yaw_moment_roll_rate_aircraft(
 
 
 def yaw_moment_yaw_rate_wing(
-    XML_FILE: str,
+    xml_file_name: str,
     cn_r_wing_low_speed_: float,
     cn_r_wing_cruise_: float,
 ):
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeCnYawRateWing(low_speed_aero=True)), __file__, XML_FILE
+        list_inputs(ComputeCnYawRateWing(low_speed_aero=True)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -3641,7 +3658,7 @@ def yaw_moment_yaw_rate_wing(
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeCnYawRateWing(low_speed_aero=False)), __file__, XML_FILE
+        list_inputs(ComputeCnYawRateWing(low_speed_aero=False)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -3654,13 +3671,13 @@ def yaw_moment_yaw_rate_wing(
 
 
 def yaw_moment_yaw_rate_vt(
-    XML_FILE: str,
+    xml_file_name: str,
     cn_r_vt_low_speed_: float,
     cn_r_vt_cruise_: float,
 ):
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeCnYawRateVerticalTail(low_speed_aero=True)), __file__, XML_FILE
+        list_inputs(ComputeCnYawRateVerticalTail(low_speed_aero=True)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -3673,7 +3690,7 @@ def yaw_moment_yaw_rate_vt(
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeCnYawRateVerticalTail(low_speed_aero=False)), __file__, XML_FILE
+        list_inputs(ComputeCnYawRateVerticalTail(low_speed_aero=False)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -3686,13 +3703,13 @@ def yaw_moment_yaw_rate_vt(
 
 
 def yaw_moment_yaw_rate_aircraft(
-    XML_FILE: str,
+    xml_file_name: str,
     cn_r_low_speed_: float,
     cn_r_cruise_: float,
 ):
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeCnYawRateAircraft(low_speed_aero=True)), __file__, XML_FILE
+        list_inputs(ComputeCnYawRateAircraft(low_speed_aero=True)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -3706,7 +3723,7 @@ def yaw_moment_yaw_rate_aircraft(
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeCnYawRateAircraft(low_speed_aero=False)), __file__, XML_FILE
+        list_inputs(ComputeCnYawRateAircraft(low_speed_aero=False)), __file__, xml_file_name
     )
 
     # Run problem and check obtained value(s) is/(are) correct

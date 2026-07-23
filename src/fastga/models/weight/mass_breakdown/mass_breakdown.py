@@ -17,7 +17,7 @@ Main components for mass breakdown.
 import fastoad.api as oad
 import openmdao.api as om
 
-from fastga.models.options import PAYLOAD_FROM_NPAX
+from fastga.models.constants import PAYLOAD_FROM_NPAX
 from fastga.models.weight.mass_breakdown.update_mlw_and_mzfw import UpdateMLWandMZFW
 
 from .constants import (

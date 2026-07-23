@@ -162,9 +162,9 @@ class ComputeEquilibratedPolar(DynamicEquilibrium):
             )
             if previous_step[-1]:
                 break
-            cl_wing = float(previous_step[2])
-            cl_tail = float(previous_step[3])
-            thrust = float(previous_step[1])
+            cl_wing = previous_step[2]
+            cl_tail = previous_step[3]
+            thrust = previous_step[1]
             cl_array = np.append(cl_array, cl_wing + cl_tail)
             cd = thrust / (0.5 * atm.density * v_tas**2 * wing_area)
             cd_array = np.append(cd_array, cd)

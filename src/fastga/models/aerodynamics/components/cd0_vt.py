@@ -16,7 +16,7 @@ import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
 
-from ..constants import SUBMODEL_CD0_VT
+from ..constants import LIMIT_MACH_COMPRESSIBILITY_EFFECT, SUBMODEL_CD0_VT
 
 
 @oad.RegisterSubmodel(SUBMODEL_CD0_VT, "fastga.submodel.aerodynamics.vertical_tail.cd0.legacy")
@@ -73,13 +73,13 @@ class Cd0VerticalTail(om.ExplicitComponent):
             mach = inputs["data:aerodynamics:cruise:mach"]
             unit_reynolds = inputs["data:aerodynamics:cruise:unit_reynolds"]
 
-        # Root: 50% NLF
+        # Root: 50% natural laminar flow
         x_trans = 0.5
         x0_turbulent = 36.9 * x_trans**0.625 * (1 / (unit_reynolds * root_chord)) ** 0.375
         cf_root = (
             0.074 / (unit_reynolds * root_chord) ** 0.2 * (1 - (x_trans - x0_turbulent)) ** 0.8
         )
-        # Tip: 50% NLF
+        # Tip: 50% natural laminar flow
         x_trans = 0.5
         x0_turbulent = 36.9 * x_trans**0.625 * (1 / (unit_reynolds * tip_chord)) ** 0.375
         cf_tip = 0.074 / (unit_reynolds * tip_chord) ** 0.2 * (1 - (x_trans - x0_turbulent)) ** 0.8
@@ -87,7 +87,7 @@ class Cd0VerticalTail(om.ExplicitComponent):
         cf_vt = (cf_root + cf_tip) * 0.5
         form_factor = 1 + 0.6 / x_t_max * thickness + 100 * thickness**4
         form_factor = form_factor * 1.05  # Due to hinged elevator (Raymer)
-        if mach > 0.2:
+        if mach > LIMIT_MACH_COMPRESSIBILITY_EFFECT:
             form_factor = form_factor * 1.34 * mach**0.18 * (np.cos(sweep_25_vt)) ** 0.28
         interference_factor = 1.05
         cd0 = form_factor * interference_factor * cf_vt * wet_area_vt / wing_area
@@ -97,7 +97,7 @@ class Cd0VerticalTail(om.ExplicitComponent):
         else:
             outputs["data:aerodynamics:vertical_tail:cruise:CD0"] = cd0
 
-    def compute_partials(self, inputs, partials, discrete_inputs=None):
+    def compute_partials(self, inputs, partials, discrete_inputs=None):  # noqa: PLR0915, better for readability
         tip_chord = inputs["data:geometry:vertical_tail:tip:chord"]
         root_chord = inputs["data:geometry:vertical_tail:root:chord"]
         sweep_25_vt = inputs["data:geometry:vertical_tail:sweep_25"]
@@ -183,7 +183,7 @@ class Cd0VerticalTail(om.ExplicitComponent):
         d_ff_d_location = -1.05 * 0.6 / x_t_max**2.0 * thickness
         d_ff_d_thickness = 1.05 * (0.6 / x_t_max + 4.0 * 100 * thickness**3.0)
 
-        if mach > 0.2:
+        if mach > LIMIT_MACH_COMPRESSIBILITY_EFFECT:
             mach_correction = 1.34 * mach**0.18 * (np.cos(sweep_25_vt)) ** 0.28
             d_mach_correction_d_mach = 0.18 * 1.34 * mach**-0.82 * (np.cos(sweep_25_vt)) ** 0.28
             d_mach_correction_d_sweep = (

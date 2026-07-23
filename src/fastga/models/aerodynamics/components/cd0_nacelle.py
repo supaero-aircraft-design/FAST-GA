@@ -21,6 +21,7 @@ import openmdao.api as om
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
 
+from fastga.models.constants import PropulsionLayout
 from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
 from fastga.utils.options_checkers import check_propulsion_id
 
@@ -64,7 +65,7 @@ class Cd0Nacelle(om.ExplicitComponent):
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         propulsion_model = FuelEngineSet(self._engine_wrapper.get_model(inputs), 1.0)
         engine_number = inputs["data:geometry:propulsion:engine:count"]
-        prop_layout = inputs["data:geometry:propulsion:engine:layout"]
+        prop_layout = inputs["data:geometry:propulsion:engine:layout"].item()
         l0_wing = inputs["data:geometry:wing:MAC:length"]
         wing_area = inputs["data:geometry:wing:area"]
         if self.options["low_speed_aero"]:
@@ -76,9 +77,9 @@ class Cd0Nacelle(om.ExplicitComponent):
 
         drag_force = propulsion_model.compute_drag(mach, unit_reynolds, l0_wing)
 
-        if (prop_layout == 1.0) or (prop_layout == 2.0):
+        if prop_layout in {PropulsionLayout.UNDER_THE_WING, PropulsionLayout.IN_THE_REAR}:
             cd0 = drag_force / wing_area * engine_number
-        elif prop_layout == 3.0:
+        elif prop_layout == PropulsionLayout.IN_THE_NOSE:
             cd0 = 0.0
         else:
             cd0 = 0.0

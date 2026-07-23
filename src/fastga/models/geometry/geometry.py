@@ -26,7 +26,7 @@ from fastga.models.geometry.geom_components.fuselage.compute_fuselage import (
     ComputeFuselageAlternate,
     ComputeFuselageLegacy,
 )
-from fastga.models.options import CABIN_SIZING_OPTION
+from fastga.models.constants import CABIN_SIZING_OPTION
 
 from .constants import (
     SERVICE_AIRCRAFT_WET_AREA,

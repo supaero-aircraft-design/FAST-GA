@@ -18,8 +18,8 @@ import json
 import logging
 import os
 import os.path as pth
+import shutil
 import warnings
-from distutils.dir_util import copy_tree
 from importlib.resources import path
 from pathlib import Path
 
@@ -621,7 +621,7 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
         self.stderr = pth.join(target_directory, STDERR_FILE_NAME)
         # Copy resource in working (target) directory
         # noinspection PyTypeChecker
-        copy_tree(pth.dirname(openvsp3201.__file__), target_directory, verbose=0)
+        shutil.copytree(pth.dirname(openvsp3201.__file__), target_directory, dirs_exist_ok=True)
         if self.options["airfoil_folder_path"] is None:
             if comp_opt == "wing":
                 copy_resource(airfoil_folder, self.options["wing_airfoil_file"], target_directory)
