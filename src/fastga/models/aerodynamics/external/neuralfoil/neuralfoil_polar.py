@@ -15,15 +15,23 @@ Computation of the airfoil aerodynamic properties using Neuralfoil from :cite:`n
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-import os
+import pathlib
 import tempfile
-from pathlib import Path
 
 import neuralfoil as nf
 import numpy as np
 import openmdao.api as om
 
 from fastga.models.aerodynamics import airfoil_folder
+from fastga.models.aerodynamics.constants import (
+    MAX_DEVIATION_ACCEPTED,
+    MAX_RELATIVE_THICKNESS,
+    MIN_AOA_RANGE_COVERED,
+    MIN_COORDINATE_NUMBER,
+    MIN_LENGTH_AOA_ARRAY,
+    X_COORDINATE_PRECISION,
+    Y_COORDINATE_PRECISION,
+)
 
 from ...constants import (
     ALPHA_STEP,
@@ -116,7 +124,9 @@ class NeuralfoilPolar(om.ExplicitComponent):
         alpha = self.options[OPTION_ALPHA_START]
         if self.options["airfoil_folder_path"] is None:
             self.options["airfoil_folder_path"] = airfoil_folder.__path__[0]
-        airfoil_path = Path(self.options["airfoil_folder_path"]) / self.options["airfoil_file"]
+        airfoil_path = (
+            pathlib.Path(self.options["airfoil_folder_path"]) / self.options["airfoil_file"]
+        )
         airfoil_path = self._create_temp_airfoil_file(airfoil_path)
 
         if multiple_aoa:
@@ -153,8 +163,8 @@ class NeuralfoilPolar(om.ExplicitComponent):
             outputs["CL_min_2D"] = cl_min_2d
             outputs["CD_min_2D"] = cd_min_2d
 
-        if os.path.exists(airfoil_path):
-            os.remove(airfoil_path)
+        if airfoil_path.exists():
+            airfoil_path.unlink()
 
     @staticmethod
     def _fix_calculation_result_length(computed_result):
@@ -202,9 +212,9 @@ class NeuralfoilPolar(om.ExplicitComponent):
             alpha = self._take_second_half(alpha)
             lift_coeff = self._take_second_half(lift_coeff)
 
-        if len(alpha) > 2:
+        if len(alpha) > MIN_LENGTH_AOA_ARRAY:
             covered_range = max(alpha) - min(alpha)
-            if np.abs(covered_range / alpha_range) >= 0.4:
+            if np.abs(covered_range / alpha_range) >= MIN_AOA_RANGE_COVERED:
 
                 def lift_fct(x):
                     return (lift_coeff[1] - lift_coeff[0]) / (alpha[1] - alpha[0]) * (
@@ -212,10 +222,11 @@ class NeuralfoilPolar(om.ExplicitComponent):
                     ) + lift_coeff[0]
 
                 delta = np.abs(lift_coeff - lift_fct(alpha))
-                return max(lift_coeff[delta <= 0.3]), False
+                return max(lift_coeff[delta <= MAX_DEVIATION_ACCEPTED]), False
 
         _LOGGER.warning(
-            "2D CL max not found, less than 40%% of angle range computed: using default value %f",
+            "2D CL max not found, less than %f%% of angle range computed: using default value %f",
+            MIN_AOA_RANGE_COVERED * 100.0,
             DEFAULT_2D_CL_MAX,
         )
         return DEFAULT_2D_CL_MAX, True
@@ -234,9 +245,9 @@ class NeuralfoilPolar(om.ExplicitComponent):
             alpha = self._take_first_half(alpha)
             lift_coeff = self._take_first_half(lift_coeff)
 
-        if len(alpha) > 2:
+        if len(alpha) > MIN_LENGTH_AOA_ARRAY:
             covered_range = max(alpha) - min(alpha)
-            if covered_range / alpha_range >= 0.4:
+            if covered_range / alpha_range >= MIN_AOA_RANGE_COVERED:
 
                 def lift_fct(x):
                     return (lift_coeff[1] - lift_coeff[0]) / (alpha[1] - alpha[0]) * (
@@ -244,15 +255,16 @@ class NeuralfoilPolar(om.ExplicitComponent):
                     ) + lift_coeff[0]
 
                 delta = np.abs(lift_coeff - lift_fct(alpha))
-                return min(lift_coeff[delta <= 0.3]), False
+                return min(lift_coeff[delta <= MAX_DEVIATION_ACCEPTED]), False
 
         _LOGGER.warning(
-            "2D CL min not found, less than 40%% of angle range computed: using default value %f",
+            "2D CL min not found, less than %f%% of angle range computed: using default value %f",
+            MIN_AOA_RANGE_COVERED * 100.0,
             DEFAULT_2D_CL_MIN,
         )
         return DEFAULT_2D_CL_MIN, True
 
-    def _create_temp_airfoil_file(self, original_file_path):
+    def _create_temp_airfoil_file(self, original_file_path: pathlib.Path) -> pathlib.Path:  # noqa: PLR0912
         """
         Convert an airfoil coordinate file to Selig format and create a temporary file.
 
@@ -277,25 +289,23 @@ class NeuralfoilPolar(om.ExplicitComponent):
         def is_coordinate_line(line):
             """Check if line contains valid airfoil coordinate pair (x, y)."""
             parts = line.strip().split()
-            if len(parts) != 2:
+            if len(parts) != 2:  # noqa: PLR2004, we expect two coordinates.
                 return False
             try:
                 x, y = float(parts[0]), float(parts[1])
                 # Additional check: coordinates should be reasonable airfoil values
                 # x typically 0-1, y typically -0.5 to 0.5
-                if not (0.0 <= x <= 1.0 and -0.5 <= y <= 0.5):
-                    return False
-                return True
+                return 0.0 <= x <= 1.0 and -MAX_RELATIVE_THICKNESS <= y <= MAX_RELATIVE_THICKNESS
             except ValueError:
                 return False
 
         # Read and filter coordinate lines from file
-        with open(original_file_path) as f:
+        with original_file_path.open() as f:
             coord_lines = [line.strip() for line in f if is_coordinate_line(line)]
 
         # Convert string coordinates to float tuples
         coords = [tuple(map(float, line.split())) for line in coord_lines]
-        if len(coords) < 3:
+        if len(coords) < MIN_COORDINATE_NUMBER:
             raise ValueError("Insufficient coordinate points.")
 
         # Separate upper and lower surfaces based on y values
@@ -305,11 +315,11 @@ class NeuralfoilPolar(om.ExplicitComponent):
         leading_edge_points = []  # Collect points at (0,0)
 
         for pt in coords:
-            if pt[1] > 1e-8:  # Clearly positive y - upper surface
+            if pt[1] > Y_COORDINATE_PRECISION:  # Clearly positive y - upper surface
                 upper_coords.append(pt)
-            elif pt[1] < -1e-8:  # Clearly negative y - lower surface
+            elif pt[1] < -Y_COORDINATE_PRECISION:  # Clearly negative y - lower surface
                 lower_coords.append(pt)
-            elif abs(pt[0]) < 1e-6:  # Leading edge point (0,0)
+            elif abs(pt[0]) < X_COORDINATE_PRECISION:  # Leading edge point (0,0)
                 leading_edge_points.append(pt)
             else:  # All other points with near-zero y
                 upper_coords.append(pt)
@@ -333,7 +343,7 @@ class NeuralfoilPolar(om.ExplicitComponent):
 
         for pt in upper:
             # Check if point is approximately x=1.0 (trailing edge)
-            if abs(pt[0] - 1.0) < 1e-6:
+            if abs(pt[0] - 1.0) < X_COORDINATE_PRECISION:
                 trailing_edge_points.append(pt)
             else:
                 upper_filtered.append(pt)
@@ -341,12 +351,12 @@ class NeuralfoilPolar(om.ExplicitComponent):
         # Consolidate trailing edge points: keep one at beginning of upper surface
         # Move extras to end of lower surface to maintain proper airfoil closure
         if len(trailing_edge_points) > 1:
-            upper = [trailing_edge_points[0]] + upper_filtered  # First [1,0] at beginning
+            upper = [trailing_edge_points[0], *upper_filtered]  # First [1,0] at beginning
             lower.extend(trailing_edge_points[1:2])  # Move rest to end of lower
         elif len(trailing_edge_points) == 1:
-            upper = [trailing_edge_points[0]] + upper_filtered  # Put [1,0] at beginning
+            upper = [trailing_edge_points[0], *upper_filtered]  # Put [1,0] at beginning
         else:
-            upper = [(1.0, 0.0)] + upper_filtered  # No trailing edge points found, add one at [1,0]
+            upper = [(1.0, 0.0), *upper_filtered]  # No trailing edge points found, add one at [1,0]
 
         # Generate Selig format: name line, upper coordinates, blank line, lower coordinates
         selig_lines = ["ConvertedAirfoil"]
@@ -355,12 +365,11 @@ class NeuralfoilPolar(om.ExplicitComponent):
         selig_lines += [f"{x:.7f} {y:.7f}" for x, y in lower]
 
         # Create temporary file and write Selig format data
-        tmp_file = tempfile.NamedTemporaryFile(mode="w+", suffix=".af", delete=False)
-        tmp_file.write("\n".join(selig_lines))
-        tmp_file_path = tmp_file.name
-        tmp_file.close()
+        with tempfile.NamedTemporaryFile(mode="w+", suffix=".af", delete=False) as tmp_file:
+            tmp_file.write("\n".join(selig_lines))
+            tmp_file_path = tmp_file.name
 
-        return tmp_file_path
+        return pathlib.Path(tmp_file_path)
 
     def _take_second_half(self, arr):
         """

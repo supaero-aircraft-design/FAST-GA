@@ -90,12 +90,7 @@ class ComputeClAlphaVerticalTail(FigureDigitization):
 
         lambda_vt = inputs["data:geometry:vertical_tail:aspect_ratio"] * k_ar_effective
 
-        if span_vt / avg_fus_depth < 2.0:
-            kv = 0.75
-        elif span_vt / avg_fus_depth < 3.5:
-            kv = np.interp(float(span_vt / avg_fus_depth), [2.0, 3.5], [0.75, 1.0])
-        else:
-            kv = 1.0
+        kv = np.interp(span_vt / avg_fus_depth, [2.0, 3.5], [0.75, 1.0])
 
         cl_alpha_vt = (
             kv

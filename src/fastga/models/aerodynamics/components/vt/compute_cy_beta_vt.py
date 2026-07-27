@@ -17,6 +17,9 @@ import openmdao.api as om
 
 from fastga.models.aerodynamics.constants import SUBMODEL_CY_BETA_VT
 
+CORRELATION_LOWER_BOUND = 2.0
+CORRELATION_UPPER_BOUND = 3.5
+
 
 @oad.RegisterSubmodel(
     SUBMODEL_CY_BETA_VT, "fastga.submodel.aerodynamics.vertical_tail.side_force_beta.legacy"
@@ -73,9 +76,9 @@ class ComputeCyBetaVerticalTail(om.ExplicitComponent):
         else:
             cl_alpha_vt = inputs["data:aerodynamics:vertical_tail:cruise:CL_alpha"]
 
-        if vt_span / avg_fus_depth < 2.0:
+        if vt_span / avg_fus_depth < CORRELATION_LOWER_BOUND:
             k_v = 0.75
-        elif vt_span / avg_fus_depth < 3.5:
+        elif vt_span / avg_fus_depth < CORRELATION_UPPER_BOUND:
             k_v = 0.418 + 0.166 * vt_span / avg_fus_depth
         else:
             k_v = 1.0
@@ -94,7 +97,7 @@ class ComputeCyBetaVerticalTail(om.ExplicitComponent):
         else:
             outputs["data:aerodynamics:vertical_tail:cruise:Cy_beta"] = cy_beta_vt
 
-    def compute_partials(self, inputs, partials, discrete_inputs=None):
+    def compute_partials(self, inputs, partials, discrete_inputs=None):  # noqa: PLR0915
         wing_ar = inputs["data:geometry:wing:aspect_ratio"]
         wing_area = inputs["data:geometry:wing:area"]
         wing_sweep_25 = inputs["data:geometry:wing:sweep_25"]
@@ -111,11 +114,11 @@ class ComputeCyBetaVerticalTail(om.ExplicitComponent):
         else:
             cl_alpha_vt = inputs["data:aerodynamics:vertical_tail:cruise:CL_alpha"]
 
-        if vt_span / avg_fus_depth < 2.0:
+        if vt_span / avg_fus_depth < CORRELATION_LOWER_BOUND:
             k_v = 0.75
             d_k_v_d_span = 0.0
             d_k_v_d_hf = 0.0
-        elif vt_span / avg_fus_depth < 3.5:
+        elif vt_span / avg_fus_depth < CORRELATION_UPPER_BOUND:
             k_v = 0.418 + 0.166 * vt_span / avg_fus_depth
             d_k_v_d_span = 0.166
             d_k_v_d_hf = -0.166 * vt_span / avg_fus_depth**2.0

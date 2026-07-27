@@ -89,7 +89,8 @@ class ComputeEffectiveEfficiencyPropeller(om.ExplicitComponent):
                 wet_area_cowling = inputs["data:geometry:fuselage:wet_area"]
                 friction_drag_coeff = inputs["data:aerodynamics:fuselage:low_speed:CD0"]
                 warnings.warn(
-                    f"Propulsion layout {engine_layout} not implemented in model, replaced by layout 3!"
+                    f"Propulsion layout {engine_layout} not implemented in model, replaced by "
+                    f"layout 3!"
                 )
         else:
             altitude = inputs["data:mission:sizing:main_route:cruise:altitude"]

@@ -13,7 +13,6 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-import os
 import pathlib
 import shutil
 import time
@@ -149,13 +148,13 @@ def polar_result_transfer():
     files = pathlib.Path(resources.__path__[0]).glob("*.csv")
 
     for file in files:
-        if os.path.isfile(file):
+        if file.is_file():
             shutil.copy(file, tmp_folder.name)
             # noinspection PyBroadException
             try:
-                os.remove(file)
+                file.unlink()
             except OSError:
-                _LOGGER.info("Cannot remove %s file!" % file)
+                _LOGGER.info(f"Cannot remove {file.as_posix()} file!")
 
     return tmp_folder
 
@@ -167,20 +166,20 @@ def polar_result_retrieve(tmp_folder):
     files = pathlib.Path(resources.__path__[0]).glob("*.csv")
 
     for file in files:
-        if os.path.isfile(file):
+        if file.is_file():
             # noinspection PyBroadException
             try:
                 shutil.copy(file, resources.__path__[0])
             except (OSError, shutil.SameFileError) as e:
                 if isinstance(e, OSError):
                     _LOGGER.info(
-                        "Cannot copy %s file to %s! Likely due to permission error"
-                        % (file, tmp_folder.name)
+                        f"Cannot copy {file.as_posix()} file to {tmp_folder.name}! "
+                        f"Likely due to permission error"
                     )
                 else:
                     _LOGGER.info(
-                        "Cannot copy %s file to %s! Likely because the file already exists in the "
-                        "target directory " % (file, tmp_folder.name)
+                       f"Cannot copy {file.as_posix()} file to {tmp_folder.name}! Likely because "
+                       f"the file already exists in the target directory"
                     )
 
     tmp_folder.cleanup()

@@ -410,7 +410,7 @@ class DynamicEquilibrium(om.ExplicitComponent):
         f1 = (
             thrust * np.cos(alpha - alpha_eng) - mass * g * np.sin(gamma) - drag - mass * dvx_dt
         ) / (mass / 10.0)
-        f2 = cl_wing_blown - (cl_wing + delta_cl) / cl_max_clean
+        f2 = (cl_wing_blown - (cl_wing + delta_cl)) / cl_max_clean
 
         self.cl_wing_sol = cl_wing_blown
         self.cl_tail_sol = cl_htp

@@ -27,6 +27,8 @@ ENGINE_WRAPPER_BE76 = "test.wrapper.aerodynamics.beechcraft.dummy_engine"
 ENGINE_WRAPPER_TBM900 = "test.wrapper.aerodynamics.daher.dummy_engine"
 ENGINE_WRAPPER_SR22 = "test.wrapper.aerodynamics.cirrus.dummy_engine"
 
+MACH_BREAK = 0.15  # Dummy value for a change in SFC
+
 
 # Beechcraft BE76 dummy engine ###############################################################
 ##############################################################################################
@@ -63,7 +65,7 @@ class DummyEngineBE76(AbstractFuelPropulsion):
         return [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
     def compute_drag(self, mach, unit_reynolds, wing_mac):
-        if mach < 0.15:
+        if mach < MACH_BREAK:
             return 0.01934377
         return 0.01771782
 
@@ -141,7 +143,7 @@ class DummyEngineSR22(AbstractFuelPropulsion):
         return [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
     def compute_drag(self, mach, unit_reynolds, wing_mac):
-        if mach < 0.15:
+        if mach < MACH_BREAK:
             return 0.01934377
         return 0.01771782
 
@@ -215,7 +217,7 @@ class DummyEngineTBM900(AbstractFuelPropulsion):
         return [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
     def compute_drag(self, mach, unit_reynolds, wing_mac):
-        if mach < 0.15:
+        if mach < MACH_BREAK:
             return 0.01934377
         return 0.01771782
 

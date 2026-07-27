@@ -27,11 +27,16 @@ from scipy.constants import foot, g, knot, lbf
 from scipy.interpolate import make_interp_spline
 from stdatm import Atmosphere
 
+from fastga.models.constants import AircraftCategory
 from fastga.utils.options_checkers import check_propulsion_id
 
 from ..constants import SUBMODEL_VH
 
 DOMAIN_PTS_NB = 19  # number of (V,n) calculated for the flight domain
+GUST_INTENSITY_REDUCTION_ALTITUDE = 20000.0  # In ft
+MAXIMUM_GUST_ALTITUDE = 50000.0  # In ft
+MEDIAN_WING_LOADING = 20.0  # In psf
+HIGH_WING_LOADING = 100.0  # In psf
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -257,8 +262,9 @@ class ComputeVN(om.ExplicitComponent):
             load_factor_array_mzfw
         )
 
+    # TODO: this function would need to be reworked and split in many smaller components
     # noinspection PyUnusedLocal
-    def flight_domain(self, inputs, mass, altitude, design_vc, design_n_ps=0.0, design_n_ng=0.0):
+    def flight_domain(self, inputs, mass, altitude, design_vc, design_n_ps=0.0, design_n_ng=0.0):  # noqa: PLR0912, PLR0915
         """
         Function that computes the flight domain of the aircraft represented in the inputs for a
         given mass, altitude, cruise equivalent airspeed and design load factors
@@ -338,24 +344,19 @@ class ComputeVN(om.ExplicitComponent):
         cl_alpha_fct = make_interp_spline(v_interp, cl_alpha_interp, k=2)
 
         # We will now establish the minimum limit maneuvering load factors outside of gust load
-        # factors. Th designer can take higher load factor if he so wish. As will later be done
-        # for the the cruising speed, we will simply ensure that the designer choice agrees with
+        # factors. The designer can take higher load factor if he so wish. As will later be done
+        # for the cruising speed, we will simply ensure that the designer choice agrees with
         # certifications The limit load factor can be found in section CS 23.337 (a) and (b)
         # https://www.easa.europa.eu/sites/default/files/dfu/CS-23%20Amendment%204.pdf
         # https://www.astm.org/Standards/F3116.htm
 
-        if category == 1.0:
-            n_lim_1 = 6.0  # For aerobatic GA aircraft
-        else:
-            n_lim_1 = 3.80  # For non aerobatic GA aircraft
+        n_lim_1 = 6.0 if category == AircraftCategory.AEROBATIC else 3.8
         n_lim_2 = 2.1 + 24000.0 / (mtow_lbf + 10000.0)  # CS 23.337 (a)
         n_lim_ps_min = min(n_lim_1, n_lim_2)  # CS 23.337 (a)
         n_lim_ps = max(n_lim_ps_min, design_n_ps)
 
-        if category == 1.0:
-            n_lim_ng_max = -0.5 * n_lim_ps  # CS 23.337 (b)
-        else:
-            n_lim_ng_max = -0.4 * n_lim_ps  # CS 23.337 (b)
+        n_lim_ng_max = -0.5 * n_lim_ps if category == AircraftCategory.AEROBATIC else -0.4
+        # CS 23.337 (b)
         n_lim_ng = min(n_lim_ng_max, design_n_ng)
 
         load_factor_array.append(float(n_lim_ps))
@@ -371,11 +372,11 @@ class ComputeVN(om.ExplicitComponent):
         # take into account the case of the commuter nor do we implement the reduction of gust
         # intensity with the location of the gust center
 
-        if altitude <= 20000.0:
+        if altitude <= GUST_INTENSITY_REDUCTION_ALTITUDE:
             u_de_vc = 50.0  # [ft/s]
             u_de_vd = 25.0  # [ft/s]
             u_de_vmg = 66.0  # [ft/s]
-        elif 20000.0 < altitude < 50000.0:
+        elif GUST_INTENSITY_REDUCTION_ALTITUDE < altitude < MAXIMUM_GUST_ALTITUDE:
             u_de_vc = 66.7 - 0.000833 * altitude  # [ft/s]
             u_de_vd = 33.4 - 0.000417 * altitude  # [ft/s]
             u_de_vmg = 84.7 - 0.000933 * altitude  # [ft/s]
@@ -482,17 +483,17 @@ class ComputeVN(om.ExplicitComponent):
         # https://www.easa.europa.eu/sites/default/files/dfu/CS-23%20Amendment%204.pdf
         # https://www.astm.org/Standards/F3116.htm
 
-        if category == 1.0:
-            if mtow_loading_psf < 20.0:
+        if category == AircraftCategory.AEROBATIC:
+            if mtow_loading_psf < MEDIAN_WING_LOADING:
                 k_c = 36.0
-            elif mtow_loading_psf < 100.0:
+            elif mtow_loading_psf < HIGH_WING_LOADING:
                 # Linear variation from 33.0 to 28.6
                 k_c = 36.0 + (mtow_loading_psf - 20.0) * (28.6 - 36.0) / (100.0 - 20.0)
             else:
                 k_c = 28.6
-        elif mtow_loading_psf < 20.0:
+        elif mtow_loading_psf < MEDIAN_WING_LOADING:
             k_c = 33.0
-        elif mtow_loading_psf < 100.0:
+        elif mtow_loading_psf < HIGH_WING_LOADING:
             # Linear variation from 33.0 to 28.6
             k_c = 33.0 + (mtow_loading_psf - 20.0) * (28.6 - 33.0) / (100.0 - 20.0)
         else:
@@ -540,25 +541,25 @@ class ComputeVN(om.ExplicitComponent):
 
         vd_min_1 = 1.25 * vc  # [m/s]
 
-        if category == 1.0:
-            if mtow_loading_psf < 20.0:
+        if category == AircraftCategory.AEROBATIC:
+            if mtow_loading_psf < MEDIAN_WING_LOADING:
                 k_d = 1.55
-            elif mtow_loading_psf < 100.0:
+            elif mtow_loading_psf < HIGH_WING_LOADING:
                 # Linear variation from 1.55 to 1.35
                 k_d = 1.55 + (mtow_loading_psf - 20.0) * (1.35 - 1.55) / (100.0 - 20.0)
             else:
                 k_d = 1.35
-        elif category == 2.0:
-            if mtow_loading_psf < 20.0:
+        elif category == AircraftCategory.UTILITY:
+            if mtow_loading_psf < MEDIAN_WING_LOADING:
                 k_d = 1.50
-            elif mtow_loading_psf < 100.0:
+            elif mtow_loading_psf < HIGH_WING_LOADING:
                 # Linear variation from 1.5 to 1.35
                 k_d = 1.50 + (mtow_loading_psf - 20.0) * (1.35 - 1.50) / (100.0 - 20.0)
             else:
                 k_d = 1.35
-        elif mtow_loading_psf < 20.0:
+        elif mtow_loading_psf < MEDIAN_WING_LOADING:
             k_d = 1.4
-        elif mtow_loading_psf < 100.0:
+        elif mtow_loading_psf < HIGH_WING_LOADING:
             # Linear variation from 1.4 to 1.35
             k_d = 1.4 + (mtow_loading_psf - 20.0) * (1.35 - 1.4) / (100.0 - 20.0)
         else:
@@ -638,10 +639,10 @@ class ComputeVN(om.ExplicitComponent):
         # that impeach the Vc from being at a value such that one one of the conditions for the
         # minimum speed was above the Vc creating a problem with point (2). This case may however
         # never appear in practice as it would suppose that the Vc chosen is above the stall line
-        # which is more than certainly avoided by the correlation between Vc_min and W/S in CS
-        # 23.335 (a)
+        # which is more than certainly avoided by the correlation between Vc_min and W/S in CS 23
+        # paragraph 23.335 (a)
 
-        if (level == 4.0) or (category == 4.0):
+        if (level == 4.0) or (category == AircraftCategory.COMMUTER):  # noqa: PLR2004, they are literaly levels
             # We first need to compute the intersection of the stall line with the gust line
             # given by the gust of maximum intensity. Similar calculation were already done in
             # case the maneuvering speed is dictated by the Vc gust line so the computation will
@@ -661,10 +662,7 @@ class ComputeVN(om.ExplicitComponent):
             # the minimum value found above, it will either be on the stall line or at the
             # maximum design load factor
 
-            if vmg == vmg_min_1:  # On the gust line
-                n_vmg = load_factor_gust_p(u_de_vmg, vmg_min_1)  # [-]
-            else:
-                n_vmg = n_vc_ps  # [-]
+            n_vmg = load_factor_gust_p(u_de_vmg, vmg_min_1) if vmg == vmg_min_1 else n_vc_ps
 
         else:
             vmg = 0.0  # [m/s]

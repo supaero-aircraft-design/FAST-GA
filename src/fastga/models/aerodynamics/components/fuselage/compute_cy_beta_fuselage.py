@@ -48,10 +48,7 @@ class ComputeCyBetaFuselage(om.ExplicitComponent):
 
         z2_ratio = 2.0 * z2_wing / ave_fuse_diameter
 
-        if z2_ratio >= 0:
-            k_i = 1 + 0.49 * z2_ratio
-        else:
-            k_i = 1 - 0.85 * z2_ratio
+        k_i = 1 + 0.49 * z2_ratio if z2_ratio >= 0 else 1 - 0.85 * z2_ratio
 
         # Station x0 is assumed to be in the cylindrical part of the fuselage
         s_0_fus = np.pi * (ave_fuse_diameter / 2) ** 2

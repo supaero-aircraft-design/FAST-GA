@@ -28,3 +28,23 @@ class PropulsionLayout(IntEnum):
     UNDER_THE_WING = 1
     IN_THE_REAR = 2
     IN_THE_NOSE = 3
+
+
+class AircraftCategory(IntEnum):
+    """
+    Enumeration for possible aircraft category in the CS-23
+    """
+
+    AEROBATIC = 1
+    UTILITY = 2
+    NORMAL = 3
+    COMMUTER = 4
+
+
+class FlapType(IntEnum):
+    """
+    Enumeration for implemented flap type
+    """
+
+    PLAIN_FLAP = 0
+    SINGLE_SLOTTED = 1

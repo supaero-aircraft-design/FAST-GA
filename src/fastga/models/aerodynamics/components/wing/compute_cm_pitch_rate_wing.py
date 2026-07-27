@@ -15,7 +15,7 @@ import fastoad.api as oad
 import numpy as np
 
 from ..figure_digitization import FigureDigitization
-from ...constants import SUBMODEL_CM_Q_WING
+from ...constants import LIMIT_MACH_COMPRESSIBILITY_EFFECT, SUBMODEL_CM_Q_WING
 
 
 @oad.RegisterSubmodel(
@@ -84,7 +84,7 @@ class ComputeCMPitchVelocityWing(FigureDigitization):
             )
         )
 
-        if mach > 0.2:
+        if mach > LIMIT_MACH_COMPRESSIBILITY_EFFECT:
             a1_coeff = (wing_ar**3.0 * np.tan(wing_sweep_25) ** 2.0) / (
                 wing_ar * np.sqrt(1.0 - (mach * np.cos(wing_sweep_25)) ** 2.0)
                 + 6.0 * np.cos(wing_sweep_25)

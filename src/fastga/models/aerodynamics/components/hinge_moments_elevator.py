@@ -135,12 +135,9 @@ class Compute2DHingeMomentsTail(FigureDigitization):
         # repartition for the hinge line) We will also assume that the thickness ratio of the
         # elevator is the same as the tail and that it has a round nose
 
-        balance_ratio = np.sqrt((1.0 / 3.0) ** 2.0 - (tail_thickness_ratio * 5.0 / 4) ** 2.0)
-
-        if balance_ratio < 0.15:
-            balance_ratio = 0.15
-        elif balance_ratio > 0.5:
-            balance_ratio = 0.5
+        balance_ratio = np.clip(
+            np.sqrt((1.0 / 3.0) ** 2.0 - (tail_thickness_ratio * 5.0 / 4) ** 2.0), 0.15, 0.5
+        )
 
         k_ch_alpha_balance = np.interp(balance_ratio, [0.15, 0.50], [0.93, 0.2])
 

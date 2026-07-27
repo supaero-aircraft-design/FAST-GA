@@ -31,7 +31,7 @@ def test_interpolation_data_type():
             try:
                 array = string_to_array(entry)
 
-            except Exception:
+            except ValueError:
                 assert False, "Could not convert data extracted from the csv to an array"
 
             if label in ["alpha", "cl", "cd", "cdp", "cm"]:

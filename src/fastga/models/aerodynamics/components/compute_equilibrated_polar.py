@@ -26,7 +26,7 @@ class ComputeEquilibratedPolar(DynamicEquilibrium):
         self.options.declare("low_speed_aero", default=False, types=bool)
         self.options.declare("cg_ratio", default=-0.0, types=float)
 
-    def setup(self):
+    def setup(self):  # noqa: PLR0915, a lot of inputs and outputs are required for this component
         self.add_input("data:geometry:wing:MAC:leading_edge:x:local", val=np.nan, units="m")
         self.add_input("data:geometry:wing:MAC:length", np.nan, units="m")
         self.add_input("data:geometry:wing:root:virtual_chord", np.nan, units="m")
@@ -146,7 +146,6 @@ class ComputeEquilibratedPolar(DynamicEquilibrium):
         x_cg = x_cg_aft + cg_ratio * (x_cg_fwd - x_cg_aft)
 
         mass_array = np.linspace(0.1 * mtow, 1.15 * init_mass_guess, POLAR_POINT_COUNT)
-        # previous_step = ()
         for mass in mass_array:
             previous_step = self.dynamic_equilibrium(
                 inputs,

@@ -122,15 +122,15 @@ if __name__ == "__main__":
     # Create interactive plot
     fig = go.Figure()
     fig.add_trace(
-        go.Scatter(x=x_0_25, y=k_fus, mode="markers", name="Data points", marker=dict(color="blue"))
+        go.Scatter(x=x_0_25, y=k_fus, mode="markers", name="Data points", marker={"color": "blue"})
     )
     fig.add_trace(
         go.Scatter(
             x=x_smooth,
             y=y_smooth,
             mode="lines",
-            name=f"Polynomial (R² = {r2_polynomial:.3f})",
-            line=dict(color="red"),
+            name=f"Polynomial (R2 = {r2_polynomial:.3f})",
+            line={"color": "red"},
         )
     )
 
@@ -144,7 +144,7 @@ if __name__ == "__main__":
         y=min(k_fus),
         text=function_text,
         showarrow=False,
-        font=dict(size=12, color="blue"),
+        font={"size": 12, "color": "blue"},
         xanchor="right",
         yanchor="bottom",
     )

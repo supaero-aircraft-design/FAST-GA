@@ -15,6 +15,8 @@
 import fastoad.api as oad
 import numpy as np
 
+from fastga.models.constants import FlapType
+
 from .figure_digitization import FigureDigitization
 from ..constants import SUBMODEL_DELTA_HIGH_LIFT
 
@@ -242,11 +244,9 @@ class ComputeDeltaHighLift(FigureDigitization):
             float(wing_thickness_ratio), float(flap_chord_ratio)
         )
 
-        delta_cm_flap = (
+        return (
             k_delta * aspect_ratio_wing / 1.5 * np.tan(sweep_25) + k_p * delta_cm_delta_cl_ref
         ) * delta_cl_ref
-
-        return delta_cm_flap
 
     @staticmethod
     def _get_flaps_delta_cd(
@@ -263,7 +263,7 @@ class ComputeDeltaHighLift(FigureDigitization):
         :return: increment of drag coefficient.
         """
 
-        if flap_type == 0.0:  # Plain flap
+        if flap_type == FlapType.PLAIN_FLAP:  # Plain flap
             k1_0_12 = (
                 -21.09 * chord_ratio**3 + 14.091 * chord_ratio**2 + 3.165 * chord_ratio - 0.00103
             )
@@ -285,7 +285,7 @@ class ComputeDeltaHighLift(FigureDigitization):
                 - 1.4729e-3
             )
 
-        elif flap_type == 1.0:  # slotted flap
+        elif flap_type == FlapType.SINGLE_SLOTTED:  # slotted flap
             k1_0_12 = (
                 179.32 * chord_ratio**4
                 - 111.6 * chord_ratio**3
@@ -374,9 +374,7 @@ class ComputeDeltaHighLift(FigureDigitization):
                 [0.12, 0.21, 0.30],
                 [float(k2_0_12), float(k2_0_21), float(k2_0_30)],
             )
-        delta_cd_flaps = flap_chord_contribution * flap_deflection_contribution * area_ratio
-
-        return delta_cd_flaps
+        return flap_chord_contribution * flap_deflection_contribution * area_ratio
 
     def _compute_delta_cl_airfoil_2d(self, inputs, angle: float, mach: float) -> float:
         """
@@ -393,7 +391,7 @@ class ComputeDeltaHighLift(FigureDigitization):
         cl_alpha_airfoil_wing = inputs["data:aerodynamics:wing:airfoil:CL_alpha"]
 
         # 2D flap lift coefficient
-        if flap_type == 1:  # Slotted flap
+        if flap_type == FlapType.SINGLE_SLOTTED:  # Slotted flap
             alpha_flap = self.k_prime_single_slotted(float(angle), float(flap_chord_ratio))
             delta_cl_airfoil = 2 * np.pi / np.sqrt(1 - mach**2) * alpha_flap * (angle * np.pi / 180)
         else:  # Plain flap
@@ -428,7 +426,7 @@ class ComputeDeltaHighLift(FigureDigitization):
         flap_motion_factor = self.k3_max_lift(float(flap_angle), float(flap_type))
 
         k_planform = (1.0 - 0.08 * np.cos(sweep_25) ** 2.0) * np.cos(sweep_25) ** (3.0 / 4.0)
-        delta_cl_max_flaps = (
+        return (
             base_increment
             * flap_chord_factor
             * flap_angle_factor
@@ -436,8 +434,6 @@ class ComputeDeltaHighLift(FigureDigitization):
             * k_planform
             * flap_area_ratio
         )
-
-        return delta_cl_max_flaps
 
     @staticmethod
     def _compute_flap_area_ratio(inputs) -> float:
@@ -458,6 +454,4 @@ class ComputeDeltaHighLift(FigureDigitization):
             wing_span / 2.0 - y2_wing
         ) * (wing_root_chord * (2 - (1 - wing_taper_ratio) * flap_span_ratio)) * 0.5
 
-        flap_area_ratio = 2 * flap_area / wing_area
-
-        return flap_area_ratio
+        return 2 * flap_area / wing_area

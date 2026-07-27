@@ -16,8 +16,9 @@ import atexit
 import copy
 import json
 import logging
+import pathlib
 import warnings
-from pathlib import Path
+from typing import ClassVar
 
 import numpy as np
 import openmdao.api as om
@@ -36,6 +37,7 @@ from ...constants import (
 DEFAULT_NX = 19
 DEFAULT_NY1 = 3
 DEFAULT_NY2 = 14
+COMPRESSIBILITY_MACH = 0.4
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -55,7 +57,7 @@ class _NumpyJSONEncoder(json.JSONEncoder):
 class VLMSimpleGeometry(om.ExplicitComponent):
     """Computation of the aerodynamics properties using the in-house VLM code."""
 
-    _cache: dict = {}
+    _cache: ClassVar[dict] = {}
 
     # File the cache should be saved to (only set when a `result_file_name` is
     # configured).
@@ -70,15 +72,15 @@ class VLMSimpleGeometry(om.ExplicitComponent):
     _atexit_registered: bool = False
 
     @staticmethod
-    def _resolve_cache_path(folder_path: str | Path, file_name: str) -> Path:
+    def _resolve_cache_path(folder_path: str | pathlib.Path, file_name: str) -> pathlib.Path:
         """
         Turns the `result_folder_path`/`result_file_name` options into the full cache
         file path.
         """
-        return (Path(folder_path) / file_name).resolve()
+        return (pathlib.Path(folder_path) / file_name).resolve()
 
     @classmethod
-    def load_cache(cls, folder_path: str | Path) -> None:
+    def load_cache(cls, folder_path: str | pathlib.Path) -> None:
         """
         Loads a previously saved VLM result cache from disk and merges it into the in-memory cache.
 
@@ -86,13 +88,13 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             which the cache file lives.
         """
 
-        search_folder = Path(folder_path).resolve()
+        search_folder = pathlib.Path(folder_path).resolve()
         cls._cache_loaded_from = str(search_folder)
 
         no_vlm_cache = True
         for file in search_folder.glob("*.json"):
             try:
-                with open(file, encoding="utf-8") as cache_fp:
+                with file.open(encoding="utf-8") as cache_fp:
                     saved_cache = json.load(cache_fp)
             except (json.JSONDecodeError, OSError) as exc:
                 # The result folder may contain JSON files unrelated to the VLM cache.
@@ -129,7 +131,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
     @classmethod
     def save_cache(
         cls,
-        folder_path: str | Path | None = None,
+        folder_path: str | pathlib.Path | None = None,
         file_name: str | None = None,
     ) -> None:
         """
@@ -144,13 +146,13 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         if folder_path and file_name:
             path = cls._resolve_cache_path(folder_path, file_name)
         elif cls._cache_file is not None:
-            path = Path(cls._cache_file)
+            path = pathlib.Path(cls._cache_file)
         else:
             _LOGGER.warning("save_cache() called with no folder_path and none set; skipping.")
             return
 
         path.parent.mkdir(parents=True, exist_ok=True)
-        with open(path, "w", encoding="utf8") as cache_fp:
+        with path.open("w", encoding="utf8") as cache_fp:
             json.dump(cls._cache, cache_fp, cls=_NumpyJSONEncoder, indent=2)
 
         cls._cache_file = str(path)
@@ -170,7 +172,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         resolved = (
             VLMSimpleGeometry._resolve_cache_path(folder_path, file_name).parent
             if file_name
-            else Path(folder_path).resolve()
+            else pathlib.Path(folder_path).resolve()
         )
 
         # Prevent reloading the cache if it's already been loaded from the same path.
@@ -411,8 +413,8 @@ class VLMSimpleGeometry(om.ExplicitComponent):
                 mach,
                 0.0,
                 flaps_angle=0.0,
-                use_airfoil=True,
                 saved_wing_result=self.saved_wing_0,
+                use_airfoil=True,
             )
             self.saved_wing_0 = None
             _, htp_aoa, _ = self.compute_aircraft(
@@ -421,8 +423,8 @@ class VLMSimpleGeometry(om.ExplicitComponent):
                 mach,
                 aoa_angle,
                 flaps_angle=0.0,
-                use_airfoil=True,
                 saved_wing_result=self.saved_wing_aoa,
+                use_airfoil=True,
             )
             self.saved_wing_aoa = None
 
@@ -557,6 +559,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         mach: float,
         aoa_angle: float,
         flaps_angle: float | None = 0.0,
+        *,
         use_airfoil: bool | None = True,
     ):
         """
@@ -626,7 +629,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             wing_cl_vect.append(cl_span)
 
         # Return values
-        wing = {
+        return {
             "y_vector": wing_y_vect,
             "cl_vector": wing_cl_vect,
             "chord_vector": wing_chord_vect,
@@ -638,14 +641,13 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             "coeff_e": wing_e,
         }
 
-        return wing
-
     def compute_htp(
         self,
         inputs,
         altitude: float,
         mach: float,
         aoa_angle: float,
+        *,
         use_airfoil: bool | None = True,
     ):
         """
@@ -708,7 +710,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             htp_cl_vect.append(cl_span)
 
         # Return values
-        htp = {
+        return {
             "y_vector": htp_y_vect,
             "cl_vector": htp_cl_vect,
             "cd_vector": [],
@@ -719,8 +721,6 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             "coeff_e": htp_e,
         }
 
-        return htp
-
     def compute_aircraft(
         self,
         inputs,
@@ -728,8 +728,9 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         mach: float,
         aoa_angle: float,
         flaps_angle: float | None = 0.0,
-        use_airfoil: bool | None = True,
         saved_wing_result: dict | None = None,
+        *,
+        use_airfoil: bool | None = True,
     ):
         """
         VLM computation for the complete aircraft.
@@ -1156,7 +1157,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         """Store VLM results in the in-memory cache."""
         self._cache[key]["vlm"][str(mach)] = dict(zip(RESULT_LABELS, results))
 
-    def post_processing_wing(
+    def post_processing_wing(  # noqa: PLR0913
         self,
         width_max,
         span_wing,
@@ -1203,7 +1204,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         chord_vector_wing = wing_aoa["chord_vector"]
         cdp_foil = self._interpolate_cdp(cl_wing_airfoil, cdp_wing_airfoil, cl_x_wing)
         # Mach correction
-        if mach <= 0.4:
+        if mach <= COMPRESSIBILITY_MACH:
             coeff_e = wing_aoa["coeff_e"]
         else:
             coeff_e = wing_aoa["coeff_e"] * (-0.001521 * ((mach - 0.05) / 0.3 - 1) ** 10.82 + 1)
@@ -1226,7 +1227,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             coeff_k_wing,
         )
 
-    def post_processing_htp_ac(
+    def post_processing_htp_ac(  # noqa: PLR0913
         self,
         beta,
         aspect_ratio_htp,
@@ -1258,7 +1259,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         cl_alpha_htp = float((cl_aoa_htp - cl_0_htp) / (aoa_angle * np.pi / 180))
         cdp_foil = self._interpolate_cdp(cl_htp_airfoil, cdp_htp_airfoil, htp_aoa["cl"] / beta)
         # Mach correction
-        if mach <= 0.4:
+        if mach <= COMPRESSIBILITY_MACH:
             coeff_e = htp_aoa["coeff_e"]
         else:
             coeff_e = htp_aoa["coeff_e"] * (-0.001521 * ((mach - 0.05) / 0.3 - 1) ** 10.82 + 1)
@@ -1367,7 +1368,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         return resized_vectors
 
     @staticmethod
-    def aic_computation(x_1, y_1, x_2, y_2, x_c, y_c, n_x, n_y):
+    def aic_computation(x_1, y_1, x_2, y_2, x_c, y_c, n_x, n_y):  # noqa: PLR0915
         """
                 ^
               y |                Points defining the panel
@@ -1455,7 +1456,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         return aic, aic_wake
 
     @staticmethod
-    def panel_point_calculation(
+    def panel_point_calculation(  # noqa: PLR0913
         x_panel,
         y_panel,
         x_le,

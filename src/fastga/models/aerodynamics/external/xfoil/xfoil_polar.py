@@ -14,12 +14,11 @@
 
 import logging
 import os
-import os.path as pth
+import pathlib
 import shutil
 import sys
 import warnings
 from importlib.resources import path
-from pathlib import Path
 from tempfile import TemporaryDirectory
 
 import numpy as np
@@ -31,6 +30,11 @@ from openmdao.components.external_code_comp import ExternalCodeComp
 from openmdao.utils.file_wrap import InputFileGenerator
 
 from fastga.command.api import string_to_array
+from fastga.models.aerodynamics.constants import (
+    MAX_DEVIATION_ACCEPTED,
+    MIN_AOA_RANGE_COVERED,
+    MIN_LENGTH_AOA_ARRAY,
+)
 from fastga.models.aerodynamics.external.xfoil import xfoil699
 from fastga.models.geometry.profiles.get_profile import get_profile
 
@@ -50,6 +54,7 @@ OPTION_RESULT_POLAR_FILENAME = "result_polar_filename"
 OPTION_RESULT_FOLDER_PATH = "result_folder_path"
 OPTION_XFOIL_EXE_PATH = "xfoil_exe_path"
 OPTION_ITER_LIMIT = "iter_limit"
+MACH_PRECISION = 0.03
 
 _INPUT_FILE_NAME = "polar_session.txt"
 _STDOUT_FILE_NAME = "polar_calc.log"
@@ -129,7 +134,7 @@ class XfoilPolar(ExternalCodeComp):
         # let void to avoid logger error on "The command cannot be empty"
         pass
 
-    def compute(self, inputs, outputs):
+    def compute(self, inputs, outputs):  # noqa: PLR0912, PLR0915
         """
         Function that computes airfoil aerodynamics with XFoil and returns the different 2D
         aerodynamic parameters.
@@ -155,7 +160,7 @@ class XfoilPolar(ExternalCodeComp):
         result_file = self._define_result_file_path()
         multiple_aoa = not self.options["single_AoA"]
 
-        if pth.exists(result_file):
+        if result_file.exists():
             no_file = False
             interpolated_result, data_saved = self._interpolation_for_exist_data(
                 result_file, mach, reynolds
@@ -201,8 +206,8 @@ class XfoilPolar(ExternalCodeComp):
                         data.to_csv(result_file)
                     except PermissionError:
                         warnings.warn(
-                            "Unable to save XFoil results to *.csv file: writing permission denied "
-                            "for %s folder!" % local_resources.__path__[0]
+                            f"Unable to save XFoil results to *.csv file: writing permission denied"
+                            f" for {local_resources.__path__[0]} folder!"
                         )
 
             # Getting output files if needed
@@ -214,8 +219,8 @@ class XfoilPolar(ExternalCodeComp):
             try:
                 tmp_directory.cleanup()
             except PermissionError:
-                for file_path in os.listdir(tmp_directory.name):
-                    if os.path.isfile(file_path):
+                for file_path in pathlib.Path(tmp_directory.name).iterdir():
+                    if file_path.is_file():
                         # noinspection PyBroadException
                         try:
                             file = os.open(file_path, os.O_WRONLY)
@@ -283,10 +288,7 @@ class XfoilPolar(ExternalCodeComp):
 
         # Check the computation options and select different script templates
         if not single_aoa:
-            if inviscid:
-                input_file_name = "polar_session_inv.txt"
-            else:
-                input_file_name = "polar_session.txt"
+            input_file_name = "polar_session_inv.txt" if inviscid else "polar_session.txt"
         elif inviscid:
             input_file_name = "polar_session_single_AoA_inv.txt"
         else:
@@ -295,7 +297,7 @@ class XfoilPolar(ExternalCodeComp):
         # input command to run XFoil
         with path(local_resources, input_file_name) as input_template_path:
             parser.set_template_file(str(input_template_path))
-            parser.set_generated_file(self.stdin)
+            parser.set_generated_file(self.stdin.as_posix())
             if not inviscid:
                 parser.mark_anchor("RE")
                 parser.transfer_var(float(reynolds), 1, 1)
@@ -320,15 +322,14 @@ class XfoilPolar(ExternalCodeComp):
             parser.transfer_var(tmp_result_file_path, 0, 1)
             parser.generate()
 
-    def _read_polar(self, xfoil_result_file_path: str) -> np.ndarray:
+    def _read_polar(self, xfoil_result_file_path: pathlib.Path) -> np.ndarray:
         """
         :param xfoil_result_file_path:
         :return: numpy array with XFoil polar results
         """
-        if os.path.isfile(xfoil_result_file_path):
+        if xfoil_result_file_path.is_file():
             dtypes = [(name, "f8") for name in self._xfoil_output_names]
-            result_array = np.genfromtxt(xfoil_result_file_path, skip_header=12, dtype=dtypes)
-            return result_array
+            return np.genfromtxt(xfoil_result_file_path, skip_header=12, dtype=dtypes)
 
         _LOGGER.error("XFOIL results file not found")
         return np.array([])
@@ -342,9 +343,9 @@ class XfoilPolar(ExternalCodeComp):
         otherwise
         """
         alpha_range = self.options[OPTION_ALPHA_END] - self.options[OPTION_ALPHA_START]
-        if len(alpha) > 2:
+        if len(alpha) > MIN_LENGTH_AOA_ARRAY:
             covered_range = max(alpha) - min(alpha)
-            if np.abs(covered_range / alpha_range) >= 0.4:
+            if np.abs(covered_range / alpha_range) >= MIN_AOA_RANGE_COVERED:
 
                 def lift_fct(x):
                     return (lift_coeff[1] - lift_coeff[0]) / (alpha[1] - alpha[0]) * (
@@ -352,10 +353,11 @@ class XfoilPolar(ExternalCodeComp):
                     ) + lift_coeff[0]
 
                 delta = np.abs(lift_coeff - lift_fct(alpha))
-                return max(lift_coeff[delta <= 0.3]), False
+                return max(lift_coeff[delta <= MAX_DEVIATION_ACCEPTED]), False
 
         _LOGGER.warning(
-            "2D CL max not found, less than 40%% of angle range computed: using default value %f",
+            "2D CL max not found, less than %f%% of angle range computed: using default value %f",
+            MIN_AOA_RANGE_COVERED * 100.0,
             DEFAULT_2D_CL_MAX,
         )
         return DEFAULT_2D_CL_MAX, True
@@ -369,9 +371,9 @@ class XfoilPolar(ExternalCodeComp):
         otherwise
         """
         alpha_range = self.options[OPTION_ALPHA_END] - self.options[OPTION_ALPHA_START]
-        if len(alpha) > 2:
+        if len(alpha) > MIN_LENGTH_AOA_ARRAY:
             covered_range = max(alpha) - min(alpha)
-            if covered_range / alpha_range >= 0.4:
+            if covered_range / alpha_range >= MIN_AOA_RANGE_COVERED:
 
                 def lift_fct(x):
                     return (lift_coeff[1] - lift_coeff[0]) / (alpha[1] - alpha[0]) * (
@@ -379,10 +381,11 @@ class XfoilPolar(ExternalCodeComp):
                     ) + lift_coeff[0]
 
                 delta = np.abs(lift_coeff - lift_fct(alpha))
-                return min(lift_coeff[delta <= 0.3]), False
+                return min(lift_coeff[delta <= MAX_DEVIATION_ACCEPTED]), False
 
         _LOGGER.warning(
-            "2D CL min not found, less than 40%% of angle range computed: using default value %f",
+            "2D CL min not found, less than %f%% of angle range computed: using default value %f",
+            MIN_AOA_RANGE_COVERED * 100.0,
             DEFAULT_2D_CL_MIN,
         )
         return DEFAULT_2D_CL_MIN, True
@@ -408,24 +411,30 @@ class XfoilPolar(ExternalCodeComp):
         directory as possible.
         """
         tmp_candidates = []
-        for tmp_base_path in [None, pth.join(str(Path.home()), ".fast")]:
+        for tmp_base_path in [None, pathlib.Path.home() / ".fast"]:
             if tmp_base_path is not None:
-                os.makedirs(tmp_base_path, exist_ok=True)
+                tmp_base_path.mkdir(parents=True)
             tmp_directory = TemporaryDirectory(prefix="x", dir=tmp_base_path)
             tmp_candidates.append(tmp_directory.name)
-            tmp_profile_file_path = pth.join(tmp_directory.name, _TMP_PROFILE_FILE_NAME)
-            tmp_result_file_path = pth.join(tmp_directory.name, _TMP_RESULT_FILE_NAME)
+            tmp_profile_file_path = pathlib.Path(tmp_directory.name) / _TMP_PROFILE_FILE_NAME
+            tmp_result_file_path = pathlib.Path(tmp_directory.name) / _TMP_RESULT_FILE_NAME
 
-            if max(len(tmp_profile_file_path), len(tmp_result_file_path)) <= _XFOIL_PATH_LIMIT:
+            if (
+                max(len(tmp_profile_file_path.as_posix()), len(tmp_result_file_path.as_posix()))
+                <= _XFOIL_PATH_LIMIT
+            ):
                 # tmp_directory is OK. Stop there
                 break
             # tmp_directory has a too long path. Erase and continue...
             tmp_directory.cleanup()
 
-        if max(len(tmp_profile_file_path), len(tmp_result_file_path)) > _XFOIL_PATH_LIMIT:
+        if (
+            max(len(tmp_profile_file_path.as_posix()), len(tmp_result_file_path.as_posix()))
+            > _XFOIL_PATH_LIMIT
+        ):
             raise OSError(
-                "Could not create a tmp directory where file path will respects XFOIL "
-                "limitation (%i): tried %s" % (_XFOIL_PATH_LIMIT, tmp_candidates)
+                f"Could not create a tmp directory where file path will respects XFOIL "
+                f"limitation ({_XFOIL_PATH_LIMIT}): tried {tmp_candidates}"
             )
 
         return tmp_directory
@@ -445,7 +454,7 @@ class XfoilPolar(ExternalCodeComp):
         # Create result folder first (if it must fail, let it fail as soon as possible)
         result_folder_path = self.options[OPTION_RESULT_FOLDER_PATH]
         if result_folder_path != "":
-            os.makedirs(result_folder_path, exist_ok=True)
+            pathlib.Path(result_folder_path).mkdir(parents=True)
 
         # Pre-processing (populating temp directory)
         # XFoil exe
@@ -457,15 +466,15 @@ class XfoilPolar(ExternalCodeComp):
             # otherwise, copy the embedded resource in tmp dir
             # noinspection PyTypeChecker
             copy_resource(xfoil699, XFOIL_EXE_NAME, tmp_directory.name)
-            self.options["command"] = [pth.join(tmp_directory.name, XFOIL_EXE_NAME)]
+            self.options["command"] = [pathlib.Path(tmp_directory.name) / XFOIL_EXE_NAME]
 
         # I/O files
-        self.stdin = pth.join(tmp_directory.name, _INPUT_FILE_NAME)
-        self.stdout = pth.join(tmp_directory.name, _STDOUT_FILE_NAME)
-        self.stderr = pth.join(tmp_directory.name, _STDERR_FILE_NAME)
+        self.stdin = pathlib.Path(tmp_directory.name) / _INPUT_FILE_NAME
+        self.stdout = pathlib.Path(tmp_directory.name) / _STDOUT_FILE_NAME
+        self.stderr = pathlib.Path(tmp_directory.name) / _STDERR_FILE_NAME
 
         # profile file
-        tmp_profile_file_path = pth.join(tmp_directory.name, _TMP_PROFILE_FILE_NAME)
+        tmp_profile_file_path = pathlib.Path(tmp_directory.name) / _TMP_PROFILE_FILE_NAME
         profile = get_profile(
             airfoil_folder_path=self.options["airfoil_folder_path"],
             file_name=self.options["airfoil_file"],
@@ -481,7 +490,7 @@ class XfoilPolar(ExternalCodeComp):
         )
 
         # standard input file
-        tmp_result_file_path = pth.join(tmp_directory.name, _TMP_RESULT_FILE_NAME)
+        tmp_result_file_path = pathlib.Path(tmp_directory.name) / _TMP_RESULT_FILE_NAME
         self._write_script_file(
             reynolds,
             mach,
@@ -505,14 +514,14 @@ class XfoilPolar(ExternalCodeComp):
             try:
                 result_array_p = self._read_polar(tmp_result_file_path)
             except:  # noqa: E722
-                raise TimeoutError("<p>Error: %s</p>" % error)
+                raise TimeoutError(f"<p>Error: {error}</p>")
         result_array_n = np.array([])
 
         if self.options[OPTION_COMP_NEG_AIR_SYM]:
-            os.remove(self.stdin)
-            os.remove(self.stdout)
-            os.remove(self.stderr)
-            os.remove(tmp_result_file_path)
+            self.stdin.unlink()
+            self.stdout.unlink()
+            self.stderr.unlink()
+            pathlib.Path(tmp_result_file_path).unlink()
             alpha_start = min(-1 * self.options[OPTION_ALPHA_START], -ALPHA_STEP)
             self._write_script_file(
                 reynolds,
@@ -534,7 +543,7 @@ class XfoilPolar(ExternalCodeComp):
                 try:
                     result_array_n = self._read_polar(tmp_result_file_path)
                 except:  # noqa: E722
-                    raise TimeoutError("<p>Error: %s</p>" % e)
+                    raise TimeoutError(f"<p>Error: {e}</p>")
 
         return (
             result_array_p,
@@ -568,7 +577,7 @@ class XfoilPolar(ExternalCodeComp):
 
         # Look for existing mach or one close enough
         saved_mach_list = data_saved.loc["mach", :].to_numpy().astype(float)
-        index_near_mach = np.where(abs(saved_mach_list - mach) < 0.03)[0]
+        index_near_mach = np.where(abs(saved_mach_list - mach) < MACH_PRECISION)[0]
         near_mach = []
         distance_to_mach = []
         # Check if there is a velocity (Mach) value that is close to this one
@@ -649,7 +658,7 @@ class XfoilPolar(ExternalCodeComp):
 
         return interpolated_result, data_saved
 
-    def _define_result_file_path(self):
+    def _define_result_file_path(self) -> pathlib.Path:
         """
         Each computation option (airfoil name, max AOA, single AOA, ...) will lead to unique file
         name for stored results. We can thus check if results already exists if the file name
@@ -664,25 +673,16 @@ class XfoilPolar(ExternalCodeComp):
         else:
             negative_angle_tag = ""
 
-        if self.options["single_AoA"]:
-            single_aoa_tag = "_1_AOA"
-        else:
-            single_aoa_tag = ""
-
-        if self.options["inviscid_calculation"]:
-            inviscid_tag = "_inv"
-        else:
-            inviscid_tag = ""
+        single_aoa_tag = "_1_AOA" if self.options["single_AoA"] else ""
+        inviscid_tag = "_inv" if self.options["inviscid_calculation"] else ""
 
         naming = negative_angle_tag + single_aoa_tag + inviscid_tag
 
-        result_file = pth.join(
-            pth.split(os.path.realpath(__file__))[0],
-            "resources",
-            self.options["airfoil_file"].replace(".af", naming) + ".csv",
+        return (
+            pathlib.Path(__file__).resolve().parent
+            / "resources"
+            / (self.options["airfoil_file"].replace(".af", naming) + ".csv")
         )
-
-        return result_file
 
     def _post_processing_fill_value(self, result_array_p, result_array_n):
         """
@@ -786,13 +786,13 @@ class XfoilPolar(ExternalCodeComp):
         """
 
         # Extract results
-        cl_max_2d = string_to_array(interpolated_result.loc["cl_max_2d", :].values[0])
-        cl_min_2d = string_to_array(interpolated_result.loc["cl_min_2d", :].values[0])
-        alpha = string_to_array(interpolated_result.loc["alpha", :].values[0])
-        cl = string_to_array(interpolated_result.loc["cl", :].values[0])
-        cd = string_to_array(interpolated_result.loc["cd", :].values[0])
-        cdp = string_to_array(interpolated_result.loc["cdp", :].values[0])
-        cm = string_to_array(interpolated_result.loc["cm", :].values[0])
+        cl_max_2d = string_to_array(interpolated_result.loc["cl_max_2d", :].to_numpy()[0])
+        cl_min_2d = string_to_array(interpolated_result.loc["cl_min_2d", :].to_numpy()[0])
+        alpha = string_to_array(interpolated_result.loc["alpha", :].to_numpy()[0])
+        cl = string_to_array(interpolated_result.loc["cl", :].to_numpy()[0])
+        cd = string_to_array(interpolated_result.loc["cd", :].to_numpy()[0])
+        cdp = string_to_array(interpolated_result.loc["cdp", :].to_numpy()[0])
+        cm = string_to_array(interpolated_result.loc["cm", :].to_numpy()[0])
         cd_min_2d = np.min(cd)
 
         # Modify vector length if necessary
@@ -812,7 +812,7 @@ class XfoilPolar(ExternalCodeComp):
 
         return alpha, cl, cd, cdp, cm, cl_max_2d, cl_min_2d, cd_min_2d
 
-    def _give_data_labels(
+    def _give_data_labels(  # noqa: PLR0913
         self, alpha, cl, cd, cdp, cm, cl_max_2d, cl_min_2d, cd_min_2d, mach, reynolds
     ):
         """
@@ -845,17 +845,19 @@ class XfoilPolar(ExternalCodeComp):
         ]
         return results, labels
 
-    def _get_output_files(self, result_folder_path, tmp_result_file_path):
-        if pth.exists(tmp_result_file_path):
-            polar_file_path = pth.join(
-                result_folder_path, self.options[OPTION_RESULT_POLAR_FILENAME]
+    def _get_output_files(
+            self, result_folder_path: pathlib.Path, tmp_result_file_path: pathlib.Path
+    ):
+        if tmp_result_file_path.exists():
+            polar_file_path = (
+                result_folder_path / self.options[OPTION_RESULT_POLAR_FILENAME]
             )
             shutil.move(tmp_result_file_path, polar_file_path)
 
-        if pth.exists(self.stdout):
-            stdout_file_path = pth.join(result_folder_path, _STDOUT_FILE_NAME)
+        if self.stdout.exists():
+            stdout_file_path = result_folder_path / _STDOUT_FILE_NAME
             shutil.move(self.stdout, stdout_file_path)
 
-        if pth.exists(self.stderr):
-            stderr_file_path = pth.join(result_folder_path, _STDERR_FILE_NAME)
+        if self.stderr.exists():
+            stderr_file_path = result_folder_path / _STDERR_FILE_NAME
             shutil.move(self.stderr, stderr_file_path)

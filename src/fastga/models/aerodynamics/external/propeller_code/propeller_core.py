@@ -104,7 +104,7 @@ class PropellerCoreModule(om.ExplicitComponent):
         self.theta_min = phi_75 - 10.0
         self.theta_max = phi_75 + 25.0
 
-    def compute_pitch_performance(
+    def compute_pitch_performance(  # noqa: PLR0913
         self,
         inputs,
         theta_75,
@@ -229,7 +229,7 @@ class PropellerCoreModule(om.ExplicitComponent):
         return thrust, eta, torque
 
     @staticmethod
-    def bem_theory(
+    def bem_theory(  # noqa: PLR0913
         speed_vect: np.array,
         radius: float,
         chord: float,
@@ -362,10 +362,8 @@ class PropellerCoreModule(om.ExplicitComponent):
 
         # Calculate speed composition and relative air angle (in deg.)
         v_ax = v_inf + v_i
-        # Needed for the computation of the hub lost factor
-        # phi = np.atan(v_ax / (omega * radius - v_t) * np.cos(sweep * np.pi / 180.0))
 
-        # f_tip is the tip loose factor
+        # f_tip is the tip loss factor
         f_tip = (
             2
             / np.pi
@@ -382,20 +380,6 @@ class PropellerCoreModule(om.ExplicitComponent):
             )
         )
 
-        # f_hub is the hub loose factor FIXME: to be activated in future versions
-        # if phi > 0.0:
-        #     f_hub = min(
-        #         1.0,
-        #         2
-        #         / np.pi
-        #         * np.acos(
-        #             np.exp(
-        #                  -blades_number / 2 * (radius - radius_min) / (radius * np.sin(phi))
-        #             )
-        #         ),
-        #     )
-        # else:
-        #     f_hub = 1.0
         f_hub = 1.0
 
         # Calculate force and momentum
@@ -409,7 +393,7 @@ class PropellerCoreModule(om.ExplicitComponent):
 
         return output
 
-    def delta(
+    def delta(  # noqa: PLR0913
         self,
         speed_vect: np.array,
         radius: float,

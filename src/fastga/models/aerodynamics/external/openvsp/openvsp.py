@@ -16,12 +16,12 @@ import ast
 import atexit
 import json
 import logging
-import os
 import os.path as pth
+import pathlib
 import shutil
 import warnings
 from importlib.resources import path
-from pathlib import Path
+from typing import ClassVar
 
 import numpy as np
 
@@ -33,6 +33,7 @@ from stdatm import Atmosphere
 
 # noinspection PyProtectedMember
 from fastga.command.api import _create_tmp_directory
+from fastga.models.constants import PropulsionLayout
 from fastga.utils.options_checkers import check_propulsion_id
 from fastga.utils.resource_management.copy import copy_resource_from_path
 
@@ -91,7 +92,7 @@ class _NumpyJSONEncoder(json.JSONEncoder):
 class OpenVSPSimpleGeometry(ExternalCodeComp):
     """Execution of OpenVSP for clean surfaces."""
 
-    _cache: dict = {}
+    _cache: ClassVar[dict] = {}
 
     # File the cache should be saved to (only set when a `result_file_name` is
     # configured).
@@ -106,30 +107,31 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
     _atexit_registered: bool = False
 
     @staticmethod
-    def _resolve_cache_path(folder_path: str | Path, file_name: str) -> Path:
+    def _resolve_cache_path(folder_path: str | pathlib.Path, file_name: str) -> pathlib.Path:
         """
         Turns the `result_folder_path`/`result_file_name` options into the full cache
         file path.
         """
-        return (Path(folder_path) / file_name).resolve()
+        return (pathlib.Path(folder_path) / file_name).resolve()
 
     @classmethod
-    def load_cache(cls, folder_path: str | Path) -> None:
+    def load_cache(cls, folder_path: str | pathlib.Path) -> None:
         """
-        Loads a previously saved OpenVSP result cache from disk and merges it into the in-memory cache.
+        Loads a previously saved OpenVSP result cache from disk and merges it into the in-memory
+        cache.
 
         :param folder_path: the result folder (e.g. `result_folder_path`) inside
             which the cache file lives.
         """
 
-        search_folder = Path(folder_path).resolve()
+        search_folder = pathlib.Path(folder_path).resolve()
         cls._cache_loaded_from = str(search_folder)
 
         no_openvsp_cache = True
 
         for file in search_folder.glob("*.json"):
             try:
-                with open(file, encoding="utf-8") as cache_fp:
+                with file.open(encoding="utf-8") as cache_fp:
                     saved_cache = json.load(cache_fp)
             except (json.JSONDecodeError, OSError) as exc:
                 # The result folder may contain JSON files unrelated to the OpenVSP cache.
@@ -166,7 +168,7 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
     @classmethod
     def save_cache(
         cls,
-        folder_path: str | Path | None = None,
+        folder_path: str | pathlib.Path | None = None,
         file_name: str | None = None,
     ) -> None:
         """
@@ -181,13 +183,13 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
         if folder_path and file_name:
             path = cls._resolve_cache_path(folder_path, file_name)
         elif cls._cache_file is not None:
-            path = Path(cls._cache_file)
+            path = pathlib.Path(cls._cache_file)
         else:
             _LOGGER.warning("save_cache() called with no folder_path and none set; skipping.")
             return
 
         path.parent.mkdir(parents=True, exist_ok=True)
-        with open(path, "w", encoding="utf8") as cache_fp:
+        with path.open("w", encoding="utf8") as cache_fp:
             json.dump(cls._cache, cache_fp, cls=_NumpyJSONEncoder, indent=2)
 
         cls._cache_file = str(path)
@@ -207,7 +209,7 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
         resolved = (
             self._resolve_cache_path(folder_path, file_name).parent
             if file_name
-            else Path(folder_path).resolve()
+            else pathlib.Path(folder_path).resolve()
         )
 
         # Prevent reloading the cache if it's already been loaded.
@@ -451,7 +453,7 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
         return results[:-1]
 
     def compute_aero(
-        self, inputs, outputs, altitude, mach, aoa_angle, comp_opt="wing", use_cache=False
+        self, inputs, outputs, altitude, mach, aoa_angle, comp_opt="wing", *, use_cache=False
     ):
         """
         Thin cache-checking wrapper around :meth:`_compute_aero_impl`, which does the
@@ -500,16 +502,14 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
 
         condition_key = str(clean_aero_condition)
 
-        result = self.get_or_compute_cached(
+        return self.get_or_compute_cached(
             key,
             CLEAN_AERO_CACHE_NAMESPACE,
             condition_key,
             lambda: self._compute_aero(inputs, outputs, altitude, mach, aoa_angle, comp_opt),
         )
 
-        return result
-
-    def _compute_aero(self, inputs, outputs, altitude, mach, aoa_angle, comp_opt="wing"):
+    def _compute_aero(self, inputs, outputs, altitude, mach, aoa_angle, comp_opt="wing"):  # noqa: PLR0912, PLR0915
         """
         Function that computes in OpenVSP environment the wing, horizontal stablizer(htp),
         and complete aircraft (considering wing and horizontal tail plan) and returns the
@@ -591,7 +591,7 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
         # If a folder path is specified for openvsp .exe, it becomes working directory (target),
         # if not temporary folder is created
         if self.options["openvsp_exe_path"]:
-            target_directory = pth.abspath(self.options["openvsp_exe_path"])
+            target_directory = pathlib.Path(self.options["openvsp_exe_path"]).resolve()
         else:
             tmp_directory = _create_tmp_directory()
             target_directory = tmp_directory.name
@@ -600,28 +600,30 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
         # and aircraft
         if comp_opt == "wing":
             input_file_list = [
-                pth.join(target_directory, INPUT_WING_SCRIPT),
-                pth.join(target_directory, self.options["wing_airfoil_file"]),
+                target_directory / INPUT_WING_SCRIPT,
+                target_directory / self.options["wing_airfoil_file"],
             ]
         elif comp_opt == "htp":
             input_file_list = [
-                pth.join(target_directory, INPUT_HTP_SCRIPT),
-                pth.join(target_directory, self.options["htp_airfoil_file"]),
+                target_directory / INPUT_HTP_SCRIPT,
+                target_directory / self.options["htp_airfoil_file"],
             ]
         else:
             # When in doubt we compute everything
             input_file_list = [
-                pth.join(target_directory, INPUT_AIRCRAFT_SCRIPT),
-                pth.join(target_directory, self.options["wing_airfoil_file"]),
-                pth.join(target_directory, self.options["htp_airfoil_file"]),
+                target_directory / INPUT_AIRCRAFT_SCRIPT,
+                target_directory / self.options["wing_airfoil_file"],
+                target_directory / self.options["htp_airfoil_file"],
             ]
 
         self.options["external_input_files"] = input_file_list
         # Define standard error file by default to avoid error code return
-        self.stderr = pth.join(target_directory, STDERR_FILE_NAME)
+        self.stderr = target_directory / STDERR_FILE_NAME
         # Copy resource in working (target) directory
         # noinspection PyTypeChecker
-        shutil.copytree(pth.dirname(openvsp3201.__file__), target_directory, dirs_exist_ok=True)
+        shutil.copytree(
+            pathlib.Path(openvsp3201.__file__).parent, target_directory, dirs_exist_ok=True
+        )
         if self.options["airfoil_folder_path"] is None:
             if comp_opt == "wing":
                 copy_resource(airfoil_folder, self.options["wing_airfoil_file"], target_directory)
@@ -655,44 +657,42 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
             )
 
         # Create corresponding .bat files (one for each geometry configuration)
-        self.options["command"] = [pth.join(target_directory, "vspscript.bat")]
-        batch_file = open(self.options["command"][0], "w+")
-        batch_file.write("@echo off\n")
+        self.options["command"] = [target_directory / "vspscript.bat"]
+        with self.options["command"][0].open("w+") as batch_file:
+            batch_file.write("@echo off\n")
 
-        if comp_opt == "wing":
-            command = (
-                pth.join(target_directory, VSPSCRIPT_EXE_NAME)
-                + " -script "
-                + pth.join(target_directory, INPUT_WING_SCRIPT)
-                + " >nul 2>nul\n"
-            )
-        elif comp_opt == "htp":
-            command = (
-                pth.join(target_directory, VSPSCRIPT_EXE_NAME)
-                + " -script "
-                + pth.join(target_directory, INPUT_HTP_SCRIPT)
-                + " >nul 2>nul\n"
-            )
-        else:
-            # When in doubt we compute everything
-            command = (
-                pth.join(target_directory, VSPSCRIPT_EXE_NAME)
-                + " -script "
-                + pth.join(target_directory, INPUT_AIRCRAFT_SCRIPT)
-                + " >nul 2>nul\n"
-            )
+            if comp_opt == "wing":
+                command = (
+                    (target_directory / VSPSCRIPT_EXE_NAME).as_posix()
+                    + " -script "
+                    + (target_directory / INPUT_WING_SCRIPT).as_posix()
+                    + " >nul 2>nul\n"
+                )
+            elif comp_opt == "htp":
+                command = (
+                    (target_directory / VSPSCRIPT_EXE_NAME).as_posix()
+                    + " -script "
+                    + (target_directory / INPUT_HTP_SCRIPT).as_posix()
+                    + " >nul 2>nul\n"
+                )
+            else:
+                # When in doubt we compute everything
+                command = (
+                    (target_directory / VSPSCRIPT_EXE_NAME).as_posix()
+                    + " -script "
+                    + (target_directory / INPUT_AIRCRAFT_SCRIPT).as_posix()
+                    + " >nul 2>nul\n"
+                )
 
-        batch_file.write(command)
-        batch_file.close()
+            batch_file.write(command)
 
         # STEP 3/XX - OPEN THE TEMPLATE SCRIPT FOR GEOMETRY GENERATION, MODIFY VALUES AND SAVE TO
         # WORKDIR #################################################################################
         if comp_opt == "wing":
             output_file_list = [
-                pth.join(
-                    target_directory,
-                    INPUT_WING_SCRIPT.replace(".vspscript", "_DegenGeom.csv"),
-                )
+                (
+                    target_directory / INPUT_WING_SCRIPT.replace(".vspscript", "_DegenGeom.csv")
+                ).as_posix()
             ]
             parser = InputFileGenerator()
             with path(local_resources, INPUT_WING_SCRIPT) as input_template_path:
@@ -731,10 +731,9 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
                 parser.generate()
         elif comp_opt == "htp":
             output_file_list = [
-                pth.join(
-                    target_directory,
-                    INPUT_HTP_SCRIPT.replace(".vspscript", "_DegenGeom.csv"),
-                )
+                (
+                    target_directory / INPUT_HTP_SCRIPT.replace(".vspscript", "_DegenGeom.csv")
+                ).as_posix()
             ]
             parser = InputFileGenerator()
             with path(local_resources, INPUT_HTP_SCRIPT) as input_template_path:
@@ -764,10 +763,9 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
         else:
             # When in doubt we compute everything
             output_file_list = [
-                pth.join(
-                    target_directory,
-                    INPUT_AIRCRAFT_SCRIPT.replace(".vspscript", "_DegenGeom.csv"),
-                )
+                (
+                    target_directory / INPUT_AIRCRAFT_SCRIPT.replace(".vspscript", "_DegenGeom.csv")
+                ).as_posix()
             ]
             parser = InputFileGenerator()
             with path(local_resources, INPUT_AIRCRAFT_SCRIPT) as input_template_path:
@@ -837,17 +835,16 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
         ]
         self.options["external_input_files"] = input_file_list
         self.options["external_output_files"] = output_file_list
-        self.options["command"] = [pth.join(target_directory, "vspaero.bat")]
-        batch_file = open(self.options["command"][0], "w+")
-        batch_file.write("@echo off\n")
-        command = (
-            pth.join(target_directory, VSPAERO_EXE_NAME)
-            + " "
-            + input_file_list[1].replace(".vspaero", "")
-            + " >nul 2>nul\n"
-        )
-        batch_file.write(command)
-        batch_file.close()
+        self.options["command"] = target_directory / "vspaero.bat"
+        with self.options["command"][0].open("w+") as batch_file:
+            batch_file.write("@echo off\n")
+            command = (
+                (target_directory / VSPAERO_EXE_NAME).as_posix()
+                + " "
+                + input_file_list[1].replace(".vspaero", "")
+                + " >nul 2>nul\n"
+            )
+            batch_file.write(command)
 
         # STEP 6/XX - OPEN THE TEMPLATE VSPAERO FOR COMPUTATION, MODIFY VALUES AND SAVE TO WORKDIR #
         ############################################################################################
@@ -905,7 +902,7 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
             wing_cl_vect = []
             wing_cd_vect = []
             wing_cm_vect = []
-            with open(output_file_list[0]) as file_stream:
+            with pathlib.Path(output_file_list[0]).open() as file_stream:
                 data = file_stream.readlines()
                 for i, _ in enumerate(data):
                     line = data[i].split()
@@ -928,7 +925,7 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
                         )  # sum CM left/right
                         break
             # Open .polar file and extract data
-            with open(output_file_list[1]) as file_stream:
+            with pathlib.Path(output_file_list[1]).open() as file_stream:
                 data = file_stream.readlines()
                 wing_e = float(data[1].split()[10])
             # Delete temporary directory
@@ -954,7 +951,7 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
             htp_cl_vect = []
             htp_cd_vect = []
             htp_cm_vect = []
-            with open(output_file_list[0]) as lf:
+            with pathlib.Path(output_file_list[0]).open() as lf:
                 data = lf.readlines()
                 for i, _ in enumerate(data):
                     line = data[i].split()
@@ -976,7 +973,7 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
                         )  # sum CM left/right
                         break
             # Open .polar file and extract data
-            with open(output_file_list[1]) as lf:
+            with pathlib.Path(output_file_list[1]).open() as lf:
                 data = lf.readlines()
                 htp_e = float(data[1].split()[10])
             # Delete temporary directory
@@ -1005,7 +1002,7 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
             htp_cl_vect = []
             htp_cd_vect = []
             htp_cm_vect = []
-            with open(output_file_list[0]) as lf:
+            with pathlib.Path(output_file_list[0]).open() as lf:
                 data = lf.readlines()
                 for i in range(len(data)):
                     line = data[i].split()
@@ -1041,7 +1038,7 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
                         )  # sum CM left/right
                         break
             # Open .polar file and extract data
-            with open(output_file_list[1]) as lf:
+            with pathlib.Path(output_file_list[1]).open() as lf:
                 data = lf.readlines()
                 aircraft_cl = float(data[1].split()[4])
                 aircraft_cd0 = float(data[1].split()[5])
@@ -1496,7 +1493,7 @@ class OpenVSPSimpleGeometryDP(OpenVSPSimpleGeometry):
             ),
         )
 
-    def _compute_wing_rotor(self, inputs, outputs, altitude, mach, aoa_angle, thrust, power):
+    def _compute_wing_rotor(self, inputs, outputs, altitude, mach, aoa_angle, thrust, power):  # noqa: PLR0912, PLR0915
         """
         Function that computes in OpenVSP environment the wing with a rotor and returns the
         different aerodynamic parameters.
@@ -1542,7 +1539,7 @@ class OpenVSPSimpleGeometryDP(OpenVSPSimpleGeometry):
         engine_count = int(float(inputs["data:geometry:propulsion:engine:count"]))
         semi_span = span_wing / 2.0
 
-        if engine_config != 1.0:
+        if engine_config != PropulsionLayout.UNDER_THE_WING:
             y_ratio_array = 0.0
         else:
             y_ratio_array = np.array(inputs["data:geometry:propulsion:engine:y_ratio"])
@@ -1603,10 +1600,9 @@ class OpenVSPSimpleGeometryDP(OpenVSPSimpleGeometry):
             else:
                 eng_per_wing = int(engine_count / 2)
 
-            i = 0
             # We put engine on the wings now, later, their position will be described by an array
             # in the xml
-            for y_ratio in y_ratio_array:
+            for idx, y_ratio in enumerate(y_ratio_array):
                 y_engine = y_ratio * semi_span
 
                 if y_engine > y2_wing:  # engine in the tapered part of the wing
@@ -1627,20 +1623,16 @@ class OpenVSPSimpleGeometryDP(OpenVSPSimpleGeometry):
                     x_eng_rel = -delta_x_eng - nac_length
                     x_eng = fa_length - 0.25 * l0_wing - (x0_wing - x_eng_rel)
 
-                if i % 2 == 0:
-                    prop_rpm_loop = -engine_rpm
-                else:
-                    prop_rpm_loop = engine_rpm
+                prop_rpm_loop = -engine_rpm if idx % 2 == 0 else engine_rpm
 
-                motor_pos_x[eng_start + i] = round(float(x_eng), 2)
-                motor_pos_y[eng_start + i] = round(float(y_engine), 2)
-                motor_pos_z[eng_start + i] = round(float(z_wing), 2)
-                motor_rpm_signed[eng_start + i] = float(prop_rpm_loop)
-                motor_pos_x[eng_start + eng_per_wing + i] = round(float(x_eng), 2)
-                motor_pos_y[eng_start + eng_per_wing + i] = round(-float(y_engine), 2)
-                motor_pos_z[eng_start + eng_per_wing + i] = round(float(z_wing), 2)
-                motor_rpm_signed[eng_start + eng_per_wing + i] = -float(prop_rpm_loop)
-                i += 1
+                motor_pos_x[eng_start + idx] = round(float(x_eng), 2)
+                motor_pos_y[eng_start + idx] = round(float(y_engine), 2)
+                motor_pos_z[eng_start + idx] = round(float(z_wing), 2)
+                motor_rpm_signed[eng_start + idx] = float(prop_rpm_loop)
+                motor_pos_x[eng_start + eng_per_wing + idx] = round(float(x_eng), 2)
+                motor_pos_y[eng_start + eng_per_wing + idx] = round(-float(y_engine), 2)
+                motor_pos_z[eng_start + eng_per_wing + idx] = round(float(z_wing), 2)
+                motor_rpm_signed[eng_start + eng_per_wing + idx] = -float(prop_rpm_loop)
 
         # STEP 2/XX - DEFINE WORK DIRECTORY, COPY RESOURCES AND CREATE COMMAND BATCH ###############
         ############################################################################################
@@ -1648,21 +1640,23 @@ class OpenVSPSimpleGeometryDP(OpenVSPSimpleGeometry):
         # If a folder path is specified for openvsp .exe, it becomes working directory (target),
         # if not temporary folder is created
         if self.options["openvsp_exe_path"]:
-            target_directory = pth.abspath(self.options["openvsp_exe_path"])
+            target_directory = pathlib.Path(self.options["openvsp_exe_path"]).resolve()
         else:
             tmp_directory = _create_tmp_directory()
             target_directory = tmp_directory.name
         # Define the list of necessary input files: geometry script and foil file for both wing/HTP
         input_file_list = [
-            pth.join(target_directory, INPUT_WING_ROTOR_SCRIPT),
-            pth.join(target_directory, self.options["wing_airfoil_file"]),
+            target_directory / INPUT_WING_ROTOR_SCRIPT,
+            target_directory / self.options["wing_airfoil_file"],
         ]
         self.options["external_input_files"] = input_file_list
         # Define standard error file by default to avoid error code return
-        self.stderr = pth.join(target_directory, STDERR_FILE_NAME)
+        self.stderr = target_directory / STDERR_FILE_NAME
         # Copy resource in working (target) directory
         # noinspection PyTypeChecker
-        copy_tree(pth.dirname(openvsp3201.__file__), target_directory, verbose=0)
+        shutil.copytree(
+            pathlib.Path(openvsp3201.__file__).parent, target_directory, dirs_exist_ok=True
+        )
         # noinspection PyTypeChecker
         if self.options["airfoil_folder_path"] is None:
             copy_resource(airfoil_folder, self.options["wing_airfoil_file"], target_directory)
@@ -1673,25 +1667,24 @@ class OpenVSPSimpleGeometryDP(OpenVSPSimpleGeometry):
                 target_directory,
             )
         # Create corresponding .bat files (one for each geometry configuration)
-        self.options["command"] = [pth.join(target_directory, "vspscript.bat")]
-        batch_file = open(self.options["command"][0], "w+")
-        batch_file.write("@echo off\n")
-        command = (
-            pth.join(target_directory, VSPSCRIPT_EXE_NAME)
-            + " -script "
-            + pth.join(target_directory, INPUT_WING_ROTOR_SCRIPT)
-            + " >nul 2>nul\n"
-        )
-        batch_file.write(command)
-        batch_file.close()
+        self.options["command"] = [target_directory / "vspscript.bat"]
+        with self.options["command"][0].open("w+") as batch_file:
+            batch_file.write("@echo off\n")
+            command = (
+                (target_directory / VSPSCRIPT_EXE_NAME).as_posix()
+                + " -script "
+                + (target_directory / INPUT_WING_ROTOR_SCRIPT).as_posix()
+                + " >nul 2>nul\n"
+            )
+            batch_file.write(command)
 
         # STEP 3/XX - OPEN THE TEMPLATE SCRIPT FOR GEOMETRY GENERATION, MODIFY VALUES AND SAVE TO
         # WORKDIR ##################################################################################
 
         output_file_list = [
-            pth.join(
-                target_directory, INPUT_WING_ROTOR_SCRIPT.replace(".vspscript", "_DegenGeom.csv")
-            )
+            (
+                target_directory / INPUT_WING_ROTOR_SCRIPT.replace(".vspscript", "_DegenGeom.csv")
+            ).as_posix()
         ]
         parser = InputFileGenerator()
         with path(local_resources, INPUT_WING_ROTOR_SCRIPT) as input_template_path:
@@ -1746,17 +1739,16 @@ class OpenVSPSimpleGeometryDP(OpenVSPSimpleGeometry):
         ]
         self.options["external_input_files"] = input_file_list
         self.options["external_output_files"] = output_file_list
-        self.options["command"] = [pth.join(target_directory, "vspaero.bat")]
-        batch_file = open(self.options["command"][0], "w+")
-        batch_file.write("@echo off\n")
-        command = (
-            pth.join(target_directory, VSPAERO_EXE_NAME)
-            + " "
-            + input_file_list[1].replace(".vspaero", "")
-            + " >nul 2>nul\n"
-        )
-        batch_file.write(command)
-        batch_file.close()
+        self.options["command"] = [target_directory / "vspaero.bat"]
+        with self.options["command"][0].open("w+") as batch_file:
+            batch_file.write("@echo off\n")
+            command = (
+                (target_directory / VSPAERO_EXE_NAME).as_posix()
+                + " "
+                + input_file_list[1].replace(".vspaero", "")
+                + " >nul 2>nul\n"
+            )
+            batch_file.write(command)
 
         # STEP 6/XX - OPEN THE TEMPLATE VSPAERO FOR COMPUTATION, MODIFY VALUES AND SAVE TO WORKDIR #
         ############################################################################################
@@ -1815,7 +1807,7 @@ class OpenVSPSimpleGeometryDP(OpenVSPSimpleGeometry):
                 parser.transfer_var(power_coefficient, 0, 1)
             parser.generate()
 
-        os.remove(pth.join(local_resources.__path__[0], rotor_template_file_name))
+        (pathlib.Path(local_resources.__path__[0]) / rotor_template_file_name).unlink()
 
         # STEP 7/XX - RUN BATCH TO GENERATE AERO OUTPUT FILES (.lod, .polar...) ####################
         ############################################################################################
@@ -1831,7 +1823,7 @@ class OpenVSPSimpleGeometryDP(OpenVSPSimpleGeometry):
         wing_cl_vect = []
         wing_cd_vect = []
         wing_cm_vect = []
-        with open(output_file_list[0]) as lf:
+        with pathlib.Path(output_file_list[0]).open() as lf:
             data = lf.readlines()
             for i in range(len(data)):
                 line = data[i].split()
@@ -1854,15 +1846,15 @@ class OpenVSPSimpleGeometryDP(OpenVSPSimpleGeometry):
                     )  # sum CM left/right
                     break
         # Open .polar file and extract data
-        with open(output_file_list[1]) as lf:
+        with pathlib.Path(output_file_list[1]).open() as lf:
             data = lf.readlines()
             wing_e = float(data[1].split()[10])
         # Delete temporary directory
-        if not (self.options["openvsp_exe_path"]):
+        if not self.options["openvsp_exe_path"]:
             # noinspection PyUnboundLocalVariable
             tmp_directory.cleanup()
         # Return values
-        wing_rotor = {
+        return {
             "y_vector": wing_y_vect,
             "cl_vector": wing_cl_vect,
             "chord_vector": wing_chord_vect,
@@ -1874,7 +1866,6 @@ class OpenVSPSimpleGeometryDP(OpenVSPSimpleGeometry):
             "coeff_e": wing_e,
             "ct": thrust_coefficient,
         }
-        return wing_rotor
 
 
 def generate_wing_rotor_file(engine_count: int):
@@ -1888,47 +1879,43 @@ def generate_wing_rotor_file(engine_count: int):
     """
 
     rotor_template_file_name = "wing_" + str(engine_count) + "_rotor_openvsp_DegenGeom.vspaero"
-    original_template = pth.join(local_resources.__path__[0], "wing_openvsp_DegenGeom.vspaero")
-    new_template = pth.join(local_resources.__path__[0], rotor_template_file_name)
+    original_template = pathlib.Path(local_resources.__path__[0]) / "wing_openvsp_DegenGeom.vspaero"
+    new_template = pathlib.Path(local_resources.__path__[0]) / rotor_template_file_name
 
-    file_to_copy = open(original_template).readlines()
-    file = open(new_template, "w")
-
-    for i, _ in enumerate(file_to_copy):
-        if "NumberOfRotors" in file_to_copy[i]:
-            new_line = list(file_to_copy[i][:])
-            new_line[-2] = str(engine_count)
-            file.write("".join(new_line))
-            for j in range(engine_count):
-                engine_number = str(int(j + 1))
-                file.write("Prop_" + engine_number + "_name\n")
-                file.write("Disc_" + engine_number + "_ID\n")
-                file.write(
-                    "Disc_"
-                    + engine_number
-                    + "_x Disc_"
-                    + engine_number
-                    + "_y Disc_"
-                    + engine_number
-                    + "_z\n"
-                )
-                file.write(
-                    "Disc_"
-                    + engine_number
-                    + "_nx Disc_"
-                    + engine_number
-                    + "_ny Disc_"
-                    + engine_number
-                    + "_nz\n"
-                )
-                file.write("Disc_" + engine_number + "_radius\n")
-                file.write("Disc_" + engine_number + "_hub_radius\n")
-                file.write("Disc_" + engine_number + "_rpm\n")
-                file.write("Disc_" + engine_number + "_CT\n")
-                file.write("Disc_" + engine_number + "_CP\n")
-        else:
-            file.write(file_to_copy[i])
-
-    file.close()
+    with original_template.open("r").readlines() as file_to_copy, new_template.open("w") as file:
+        for i, _ in enumerate(file_to_copy):
+            if "NumberOfRotors" in file_to_copy[i]:
+                new_line = list(file_to_copy[i][:])
+                new_line[-2] = str(engine_count)
+                file.write("".join(new_line))
+                for j in range(engine_count):
+                    engine_number = str(int(j + 1))
+                    file.write("Prop_" + engine_number + "_name\n")
+                    file.write("Disc_" + engine_number + "_ID\n")
+                    file.write(
+                        "Disc_"
+                        + engine_number
+                        + "_x Disc_"
+                        + engine_number
+                        + "_y Disc_"
+                        + engine_number
+                        + "_z\n"
+                    )
+                    file.write(
+                        "Disc_"
+                        + engine_number
+                        + "_nx Disc_"
+                        + engine_number
+                        + "_ny Disc_"
+                        + engine_number
+                        + "_nz\n"
+                    )
+                    file.write("Disc_" + engine_number + "_radius\n")
+                    file.write("Disc_" + engine_number + "_hub_radius\n")
+                    file.write("Disc_" + engine_number + "_rpm\n")
+                    file.write("Disc_" + engine_number + "_CT\n")
+                    file.write("Disc_" + engine_number + "_CP\n")
+            else:
+                file.write(file_to_copy[i])
 
     return rotor_template_file_name
