@@ -297,7 +297,7 @@ class XfoilPolar(ExternalCodeComp):
         # input command to run XFoil
         with path(local_resources, input_file_name) as input_template_path:
             parser.set_template_file(str(input_template_path))
-            parser.set_generated_file(self.stdin.as_posix())
+            parser.set_generated_file(self.stdin)
             if not inviscid:
                 parser.mark_anchor("RE")
                 parser.transfer_var(float(reynolds), 1, 1)
@@ -469,9 +469,9 @@ class XfoilPolar(ExternalCodeComp):
             self.options["command"] = [pathlib.Path(tmp_directory.name) / XFOIL_EXE_NAME]
 
         # I/O files
-        self.stdin = pathlib.Path(tmp_directory.name) / _INPUT_FILE_NAME
-        self.stdout = pathlib.Path(tmp_directory.name) / _STDOUT_FILE_NAME
-        self.stderr = pathlib.Path(tmp_directory.name) / _STDERR_FILE_NAME
+        self.stdin = (pathlib.Path(tmp_directory.name) / _INPUT_FILE_NAME).as_posix()
+        self.stdout = (pathlib.Path(tmp_directory.name) / _STDOUT_FILE_NAME).as_posix()
+        self.stderr = (pathlib.Path(tmp_directory.name) / _STDERR_FILE_NAME).as_posix()
 
         # profile file
         tmp_profile_file_path = pathlib.Path(tmp_directory.name) / _TMP_PROFILE_FILE_NAME
