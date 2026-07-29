@@ -162,10 +162,7 @@ class ComputeTORotationLimit(om.ExplicitComponent):
         weight = mtow * g
         vs1 = np.sqrt(weight / (0.5 * rho * wing_area * cl_max_takeoff))
 
-        if n_engines == 1.0:
-            vr = 1.10 * vs1
-        else:
-            vr = 1.0 * vs1
+        vr = vs1 * 1.1 if n_engines == 1 else vs1 * 1.0
 
         mach_r = vr / sos
 
@@ -173,7 +170,7 @@ class ComputeTORotationLimit(om.ExplicitComponent):
             mach=mach_r, altitude=0.0, engine_setting=EngineSetting.TAKEOFF, thrust_rate=1.0
         )
         propulsion_model.compute_flight_points(flight_point)
-        thrust = float(flight_point.thrust)
+        thrust = flight_point.thrust
 
         x_ht = x_wing_aero_center + lp_ht
 

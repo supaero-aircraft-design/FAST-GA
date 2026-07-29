@@ -169,10 +169,7 @@ class HTPConstraints(om.ExplicitComponent):
         vs0 = np.sqrt(weight / (0.5 * rho * wing_area * cl_max_takeoff))
         vs1 = np.sqrt(weight / (0.5 * rho * wing_area * cl_max_clean))
         # Rotation speed requirement from FAR 23.51 (depends on number of engines)
-        if n_engines == 1:
-            v_r = vs1 * 1.0
-        else:
-            v_r = vs1 * 1.1
+        v_r = vs1 * 1.0 if n_engines == 1 else vs1 * 1.1
         # Definition of max forward gravity center position
         x_cg = x_cg_aft - cg_range * wing_mac
         # Definition of horizontal tail global position
@@ -185,7 +182,7 @@ class HTPConstraints(om.ExplicitComponent):
             thrust_rate=takeoff_t_rate,
         )
         propulsion_model.compute_flight_points(flight_point)
-        thrust = float(flight_point.thrust)
+        thrust = flight_point.thrust
         fact_wheel = (
             (x_lg - x_cg - z_eng * thrust / weight) / wing_mac * (vs0 / v_r) ** 2
         )  # FIXME: not clear if vs0 or vs1 should be used in formula
@@ -205,9 +202,7 @@ class HTPConstraints(om.ExplicitComponent):
             + cl0_takeoff / cl_htp_takeoff * (x_lg - x_wing_aero_center) / wing_mac
         )
         # Calculation of equivalent area
-        area = coeff_vol * wing_area * wing_mac / lp_ht
-
-        return area
+        return coeff_vol * wing_area * wing_mac / lp_ht
 
     def landing(self, inputs):
         propulsion_model = self._engine_wrapper.get_model(inputs)
@@ -259,7 +254,7 @@ class HTPConstraints(om.ExplicitComponent):
             thrust_rate=0.1,
         )  # FIXME: fixed thrust rate (should depend on wished descent rate)
         propulsion_model.compute_flight_points(flight_point)
-        thrust = float(flight_point.thrust)
+        thrust = flight_point.thrust
         fact_wheel = (
             (x_lg - x_cg - z_eng * thrust / weight) / wing_mac * (vs0 / v_r) ** 2
         )  # FIXME: not clear if vs0 or vs1 should be used in formula
@@ -279,9 +274,7 @@ class HTPConstraints(om.ExplicitComponent):
             + cl0_landing / cl_htp_landing * (x_lg - x_wing_aero_center) / wing_mac
         )
         # Calculation of equivalent area
-        area = coeff_vol * wing_area * wing_mac / lp_ht
-
-        return area
+        return coeff_vol * wing_area * wing_mac / lp_ht
 
 
 class _UpdateArea(HTPConstraints):
@@ -343,14 +336,12 @@ class _UpdateArea(HTPConstraints):
         # Limiting cases: Rotating power at takeoff/landing, with the most
         # forward CG position. Returns maximum area.
 
-        # CASE1: TAKE-OFF ##########################################################################
-        # method extracted from Torenbeek 1982 p325
+        # First case: takeoff, method extracted from Torenbeek 1982 p325
 
         # Calculation of take-off minimum speed
         area_1 = self.takeoff_rotation(inputs)
 
-        # CASE2: LANDING ###########################################################################
-        # method extracted from Torenbeek 1982 p325
+        # Second case: landing, method extracted from Torenbeek 1982 p325
 
         # Calculation of equivalent area
         area_2 = self.landing(inputs)
@@ -419,13 +410,13 @@ class _ComputeHTPAreaConstraints(HTPConstraints):
 
         area_htp = inputs["data:geometry:horizontal_tail:area"]
 
-        # CASE1: TAKE-OFF ##########################################################################
+        # First case: takeoff, method extracted from Torenbeek 1982 p325
         # method extracted from Torenbeek 1982 p325
 
         # Calculation of take-off minimum speed
         area_diff_1 = area_htp - self.takeoff_rotation(inputs)
 
-        # CASE2: LANDING ###########################################################################
+        # Second case: landing, method extracted from Torenbeek 1982 p325
         # method extracted from Torenbeek 1982 p325
 
         # Calculation of equivalent area

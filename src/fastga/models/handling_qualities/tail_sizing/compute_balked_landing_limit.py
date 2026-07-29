@@ -28,8 +28,10 @@ from stdatm import Atmosphere
 
 from fastga.utils.options_checkers import check_propulsion_id
 
+MIN_CLIMB_GRADIENT = 0.033
 
-class aircraft_equilibrium_limit(om.ExplicitComponent):
+
+class AircraftEquilibriumLimit(om.ExplicitComponent):
     """
     Compute the mass-lift equilibrium.
     """
@@ -79,14 +81,14 @@ class aircraft_equilibrium_limit(om.ExplicitComponent):
         x_htp = x_wing + inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"]
 
         cl_max_clean = inputs["data:aerodynamics:wing:low_speed:CL_max_clean"]
-        cl_alpha_htp = inputs["data:aerodynamics:horizontal_tail:low_speed:CL_alpha"]
-        cl_delta_htp = inputs["data:aerodynamics:elevator:low_speed:CL_delta"]
+        cl_alpha_htp = inputs["data:aerodynamics:horizontal_tail:low_speed:CL_alpha"].item()
+        cl_delta_htp = inputs["data:aerodynamics:elevator:low_speed:CL_delta"].item()
         cm_alpha_fus = inputs["data:aerodynamics:fuselage:cm_alpha"]
         cm_flaps = inputs["data:aerodynamics:flaps:landing:CM"]
         cl_flaps = inputs["data:aerodynamics:flaps:landing:CL"]
         cl_max_flaps = inputs["data:aerodynamics:flaps:landing:CL_max"]
-        tail_efficiency = float(inputs["data:aerodynamics:horizontal_tail:efficiency"])
-        cl_alpha_wing = inputs["data:aerodynamics:wing:low_speed:CL_alpha"]
+        tail_efficiency = inputs["data:aerodynamics:horizontal_tail:efficiency"].item()
+        cl_alpha_wing = inputs["data:aerodynamics:wing:low_speed:CL_alpha"].item()
         cl0_wing = inputs["data:aerodynamics:wing:low_speed:CL0_clean"]
         cm0_wing = inputs["data:aerodynamics:wing:low_speed:CM0_clean"]
         stall_angle_min = inputs[
@@ -109,7 +111,7 @@ class aircraft_equilibrium_limit(om.ExplicitComponent):
         a22 = tail_efficiency * (x_htp - x_cg)
         b2 = (cm_wing - (cm_alpha_fus / cl_alpha_wing) * cl0_wing) * l0_wing
 
-        a = np.array([[a11, a12], [float(a21), float(a22)]])
+        a = np.array([[a11, a12], [a21.item(), a22.item()]])
         b = np.array([b1, b2])
         inv_a = np.linalg.inv(a)
         CL = np.dot(inv_a, b)
@@ -118,18 +120,18 @@ class aircraft_equilibrium_limit(om.ExplicitComponent):
         # aircraft angle of attack and elevator deflection to see if the equilibrium is possible,
         # but first we must remove the effect of HLD on the wing
 
-        Cl_corrected_1 = float(CL[0] - (cl_flaps + cl0_wing))
-        Cl_corrected_2 = float(CL[1])
+        Cl_corrected_1 = (CL[0] - (cl_flaps + cl0_wing)).item()
+        Cl_corrected_2 = (CL[1]).item()
         CL_corrected = np.array([Cl_corrected_1, Cl_corrected_2])
 
-        c = np.array([[float(cl_alpha_wing), 0.0], [float(cl_alpha_htp), float(cl_delta_htp)]])
+        c = np.array([[cl_alpha_wing, 0.0], [cl_alpha_htp, cl_delta_htp]])
         inv_c = np.linalg.inv(c)
 
         commands = np.dot(inv_c, CL_corrected)
         alpha_avion = commands[0]
         delta_e = commands[1]
 
-        delta_alpha_stall = aircraft_equilibrium_limit._stall_angle_reduction(
+        delta_alpha_stall = AircraftEquilibriumLimit._stall_angle_reduction(
             inputs, abs(delta_e) * 180.0 / np.pi
         )
         stall_angle_min_htp = stall_angle_min + delta_alpha_stall
@@ -179,14 +181,10 @@ class aircraft_equilibrium_limit(om.ExplicitComponent):
         )
         stall_angle_reduction = stall_angle_inter(elevator_chord_ratio, elevator_deflection)[0, 0]
 
-        stall_angle_reduction_wrt_aircraft = (
-            cl_alpha_isolated_htp / cl_alpha_htp * stall_angle_reduction
-        )
-
-        return stall_angle_reduction_wrt_aircraft
+        return cl_alpha_isolated_htp / cl_alpha_htp * stall_angle_reduction
 
 
-class ComputeBalkedLandingLimit(aircraft_equilibrium_limit):
+class ComputeBalkedLandingLimit(AircraftEquilibriumLimit):
     """
     Computes fwd limit position of cg in case of a balked landing
     """
@@ -220,7 +218,7 @@ class ComputeBalkedLandingLimit(aircraft_equilibrium_limit):
 
         cl_max_landing = inputs["data:aerodynamics:aircraft:landing:CL_max"]
         wing_area = inputs["data:geometry:wing:area"]
-        fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
+        fa_length = inputs["data:geometry:wing:MAC:at25percent:x"].item()
         l0_wing = inputs["data:geometry:wing:MAC:length"]
 
         rho = Atmosphere(0.0).density
@@ -230,7 +228,7 @@ class ComputeBalkedLandingLimit(aircraft_equilibrium_limit):
 
         propulsion_model = self._engine_wrapper.get_model(inputs)
 
-        x_cg = float(fa_length)
+        x_cg = fa_length
         increment = l0_wing / 100.0
         equilibrium_found = True
         climb_gradient_achieved = True
@@ -239,7 +237,7 @@ class ComputeBalkedLandingLimit(aircraft_equilibrium_limit):
             climb_gradient, equilibrium_found = self.delta_climb_rate(
                 x_cg, v_ref, mlw, propulsion_model, inputs
             )
-            if climb_gradient < 0.033:
+            if climb_gradient < MIN_CLIMB_GRADIENT:
                 climb_gradient_achieved = False
             x_cg -= increment
 
@@ -284,7 +282,7 @@ class ComputeBalkedLandingLimit(aircraft_equilibrium_limit):
             mach=v_ref / sos, altitude=0.0, engine_setting=EngineSetting.TAKEOFF, thrust_rate=1.0
         )  # with engine_setting as EngineSetting
         propulsion_model.compute_flight_points(flight_point)
-        thrust = float(flight_point.thrust)
+        thrust = flight_point.thrust
         propeller_advance_ratio = v_ref / (2700.0 / 60.0 * 1.97)
         propeller_efficiency_reduction = np.sin(propeller_advance_ratio * np.pi / 2.0)
 

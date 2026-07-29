@@ -15,6 +15,9 @@
 import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
+
+# noinspection PyProtectedMember
+from fastoad._utils.arrays import scalarize
 from fastoad.constants import EngineSetting
 
 # noinspection PyProtectedMember
@@ -25,6 +28,8 @@ from stdatm import Atmosphere
 from fastga.utils.options_checkers import check_propulsion_id
 
 from .constants import SERVICE_VT_AREA, SUBMODEL_VT_AREA_LEGACY, SUBMODEL_VT_AREA_VOLUME_COEFF
+
+MTOW_APPLICABILITY_LIMIT_CS_23_149 = 2722
 
 oad.RegisterSubmodel.active_models[SERVICE_VT_AREA] = SUBMODEL_VT_AREA_LEGACY
 
@@ -50,15 +55,11 @@ class UpdateVTArea(om.Group):
 
 
 def side_wash_effect(area_vtp, inputs):
-    ar_wing = float(inputs["data:geometry:wing:aspect_ratio"])
-    sweep_wing = float(inputs["data:geometry:wing:sweep_25"])
-    area_wing = float(inputs["data:geometry:wing:area"])
+    ar_wing = inputs["data:geometry:wing:aspect_ratio"].item()
+    sweep_wing = inputs["data:geometry:wing:sweep_25"].item()
+    area_wing = inputs["data:geometry:wing:area"].item()
 
-    k_sigma = (
-        0.724 + 0.2 + 0.009 * ar_wing + 3.06 / (1.0 + np.cos(sweep_wing)) * area_vtp / area_wing
-    )
-
-    return k_sigma
+    return 0.724 + 0.2 + 0.009 * ar_wing + 3.06 / (1.0 + np.cos(sweep_wing)) * area_vtp / area_wing
 
 
 class VTPConstraints(om.ExplicitComponent):
@@ -85,27 +86,27 @@ class VTPConstraints(om.ExplicitComponent):
         @return result_array : an array containing the moment and force difference on the
         appropriate axis.
         """
-        v_f = float(inputs["data:TLAR:v_approach"])
+        v_f = inputs["data:TLAR:v_approach"].item()
 
-        area_wing = float(inputs["data:geometry:wing:area"])
-        span_wing = float(inputs["data:geometry:wing:span"])
-        l0_wing = float(inputs["data:geometry:wing:MAC:length"])
-        fa_length = float(inputs["data:geometry:wing:MAC:at25percent:x"])
+        area_wing = inputs["data:geometry:wing:area"].item()
+        span_wing = inputs["data:geometry:wing:span"].item()
+        l0_wing = inputs["data:geometry:wing:MAC:length"].item()
+        fa_length = inputs["data:geometry:wing:MAC:at25percent:x"].item()
 
-        wing_vtp_distance = float(
-            inputs["data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25"]
-        )
+        wing_vtp_distance = inputs[
+            "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25"
+        ].item()
 
-        b_f = float(inputs["data:geometry:fuselage:maximum_width"])
-        h_f = float(inputs["data:geometry:fuselage:maximum_height"])
-        lcyl = float(inputs["data:geometry:cabin:length"])
-        lav = float(inputs["data:geometry:fuselage:front_length"])
-        lar = float(inputs["data:geometry:fuselage:rear_length"])
+        b_f = inputs["data:geometry:fuselage:maximum_width"].item()
+        h_f = inputs["data:geometry:fuselage:maximum_height"].item()
+        lcyl = inputs["data:geometry:cabin:length"].item()
+        lav = inputs["data:geometry:fuselage:front_length"].item()
+        lar = inputs["data:geometry:fuselage:rear_length"].item()
 
-        cg_mac_position = float(inputs["data:weight:aircraft:CG:aft:MAC_position"])
+        cg_mac_position = inputs["data:weight:aircraft:CG:aft:MAC_position"].item()
 
-        cy_delta_r_vtp = float(inputs["data:aerodynamics:rudder:low_speed:Cy_delta_r"])
-        cy_beta = float(inputs["data:aerodynamics:vertical_tail:low_speed:Cy_beta"])
+        cy_delta_r_vtp = inputs["data:aerodynamics:rudder:low_speed:Cy_delta_r"].item()
+        cy_beta = inputs["data:aerodynamics:vertical_tail:low_speed:Cy_beta"].item()
 
         area_vtp = x[0]
         sigma = x[1]
@@ -158,9 +159,7 @@ class VTPConstraints(om.ExplicitComponent):
             cy_beta * (beta - sigma) + cy_delta_r * rudder_angle
         )
 
-        result_array = np.array([delta_yaw, delta_side_force])
-
-        return result_array
+        return np.array([delta_yaw, delta_side_force])
 
     @staticmethod
     def lateral_stability(area_vtp, inputs):
@@ -192,41 +191,35 @@ class VTPConstraints(om.ExplicitComponent):
         required_cn_beta_vtp = cn_beta_goal - cn_beta_fuselage
         distance_to_cg = wing_vtp_distance + 0.25 * l0_wing - cg_mac_position * l0_wing
 
-        delta_cn_beta = required_cn_beta_vtp - (
+        return required_cn_beta_vtp - (
             cl_alpha_vt_cruise * k_sigma * area_vtp / wing_area * distance_to_cg / span
         )
 
-        return delta_cn_beta
-
     def target_stability_constraint(self, inputs):
         results = fsolve(self.lateral_stability, np.array(2.0), args=inputs, xtol=1e-4)
-        area = results[0]
-
-        return area
+        return results[0]
 
     def crosswind_landing_constraint(self, inputs, area_guess):
         rudder_max_deflection = (
-            inputs["data:geometry:vertical_tail:rudder:max_deflection"] * np.pi / 180.0
+            inputs["data:geometry:vertical_tail:rudder:max_deflection"].item() * np.pi / 180.0
         )
 
-        rudder_usage = 1.0 - inputs["settings:handling_qualities:rudder:safety_margin"]
+        rudder_usage = 1.0 - inputs["settings:handling_qualities:rudder:safety_margin"].item()
 
         efficiency_vt = 0.95
 
         beta_crosswind = (
-            float(inputs["data:mission:sizing:landing:target_sideslip"]) * np.pi / 180.0
+            inputs["data:mission:sizing:landing:target_sideslip"].item() * np.pi / 180.0
         )
-        rudder_deflection = -float(rudder_usage * rudder_max_deflection)
+        rudder_deflection = -rudder_usage * rudder_max_deflection
 
         results = fsolve(
             self.lateral_equilibrium,
-            np.array([float(area_guess), 2.0 / 3.0 * beta_crosswind]),
+            np.array([scalarize(area_guess), 2.0 / 3.0 * beta_crosswind]),
             args=(inputs, beta_crosswind, rudder_deflection, efficiency_vt),
             xtol=1e-4,
         )
-        area = results[0]
-
-        return area
+        return results[0]
 
     def engine_out_climb(self, inputs):
         propulsion_model = self._engine_wrapper.get_model(inputs)
@@ -277,7 +270,7 @@ class VTPConstraints(om.ExplicitComponent):
         # multiplied buy engine count so we must divide it here to get the thrust of 1 engine
         # only
         # FIXME : Take the thrust of one engine
-        thrust_cl = float(flight_point_cl.thrust) / engine_number
+        thrust_cl = flight_point_cl.thrust / engine_number
         # Calculation of engine thrust and nacelle drag (failed one)
         max_power_oe_cl_hp = propulsion_model.compute_max_power(flight_point_cl) * 1.34102
         speed_cl_fps = speed_cl * 3.28084
@@ -285,7 +278,7 @@ class VTPConstraints(om.ExplicitComponent):
         # Roskam equation 4.68 in aerodynamics
         # Torque compensation
         rudder_side_force_coefficient = cy_delta_r * rudder_usage * rudder_max_deflection
-        area = (y_nacelle * (thrust_cl + windmilling_prop_drag_cl)) / (
+        return (y_nacelle * (thrust_cl + windmilling_prop_drag_cl)) / (
             0.7
             * pressure_cl
             * mach_cl**2
@@ -293,8 +286,6 @@ class VTPConstraints(om.ExplicitComponent):
             * rudder_side_force_coefficient
             * distance_to_cg
         )
-
-        return area
 
     def engine_out_takeoff(self, inputs):
         propulsion_model = self._engine_wrapper.get_model(inputs)
@@ -343,7 +334,7 @@ class VTPConstraints(om.ExplicitComponent):
             thrust_rate=1.0,
         )  # forced to maximum thrust
         propulsion_model.compute_flight_points(flight_point_to)
-        thrust_to = float(flight_point_to.thrust) / engine_number
+        thrust_to = flight_point_to.thrust / engine_number
         # Calculation of engine thrust and nacelle drag (failed one)
         max_power_oe_to_hp = propulsion_model.compute_max_power(flight_point_to) * 1.34102
         mc_speed_to_fps = vmc_to * 3.28084
@@ -357,7 +348,7 @@ class VTPConstraints(om.ExplicitComponent):
         bank_lever_arm = cg_mac_position * l0_wing - 0.25 * l0_wing
         # Vertical component of lift equals the weight, horizontal component used in bank
         bank_contribution_to = mtow * np.tan(5.0 * np.pi / 180.0)
-        area = (
+        return (
             y_nacelle * (thrust_to + windmilling_prop_drag_to)
             - bank_lever_arm * bank_contribution_to
         ) / (
@@ -368,8 +359,6 @@ class VTPConstraints(om.ExplicitComponent):
             * rudder_side_force_coefficient
             * distance_to_cg
         )
-
-        return area
 
     def engine_out_landing(self, inputs):
         y_nacelle = max(inputs["data:geometry:propulsion:nacelle:y"])
@@ -420,7 +409,7 @@ class VTPConstraints(om.ExplicitComponent):
             thrust_rate=1.0,
         )  # forced to maximum thrust
         propulsion_model.compute_flight_points(flight_point_ldg)
-        thrust_ldg = float(flight_point_ldg.thrust) / engine_number
+        thrust_ldg = flight_point_ldg.thrust / engine_number
         # Calculation of engine thrust and nacelle drag (failed one)
         max_power_oe_ldg_hp = propulsion_model.compute_max_power(flight_point_ldg) * 1.34102
         mc_speed_ldg_fps = vmc_ldg * 3.28084
@@ -433,7 +422,7 @@ class VTPConstraints(om.ExplicitComponent):
         # there is usually no bank at landing ot avoid a propeller strike on the runway
         bank_lever_arm = cg_mac_position * l0_wing - 0.25 * l0_wing
         bank_contribution_ldg = (owe + payload) * np.tan(5.0 * np.pi / 180.0)
-        area = (
+        return (
             y_nacelle * (thrust_ldg + windmilling_prop_drag_ldg)
             - bank_lever_arm * bank_contribution_ldg
         ) / (
@@ -444,8 +433,6 @@ class VTPConstraints(om.ExplicitComponent):
             * rudder_side_force_coefficient
             * distance_to_cg
         )
-
-        return area
 
 
 class _UpdateVTArea(VTPConstraints):
@@ -546,17 +533,11 @@ class _UpdateVTArea(VTPConstraints):
 
         # CASE3: ENGINE FAILURE COMPENSATION DURING CLIMB ##########################################
 
-        if engine_number != 1.0:
-            area_3 = self.engine_out_climb(inputs)
-        else:
-            area_3 = 0.0
+        area_3 = self.engine_out_climb(inputs) if engine_number != 1.0 else 0.0
 
         # CASE4: ENGINE FAILURE COMPENSATION DURING TAKEOFF ########################################
 
-        if engine_number != 1.0:
-            area_4 = self.engine_out_takeoff(inputs)
-        else:
-            area_4 = 0.0
+        area_4 = self.engine_out_takeoff(inputs) if engine_number != 1.0 else 0.0
 
         # CASE5: ENGINE FAILURE COMPENSATION DURING LANDING ########################################
         # ACCORDING TO CS 23.149 (c) ONLY APPLIES TO AIRCRAFT POWERED BY RECIPROCATING ENGINE AND
@@ -565,12 +546,9 @@ class _UpdateVTArea(VTPConstraints):
 
         if not (
             (self.options["propulsion_id"] == "fastga.wrapper.propulsion.basicIC_engine")
-            and (mtow < 2722.0)
+            and (mtow < MTOW_APPLICABILITY_LIMIT_CS_23_149)
         ):
-            if engine_number == 2.0:
-                area_5 = self.engine_out_landing(inputs)
-            else:
-                area_5 = 0.0
+            area_5 = 0.0 if engine_number == 1.0 else self.engine_out_landing(inputs)
         else:
             area_5 = 0.0
 
@@ -676,17 +654,13 @@ class _ComputeVTPAreaConstraints(VTPConstraints):
 
         # CASE3: ENGINE FAILURE COMPENSATION DURING CLIMB ##########################################
 
-        if engine_number != 1.0:
-            area_diff_3 = area_vtp - self.engine_out_climb(inputs)
-        else:
-            area_diff_3 = area_vtp
+        area_diff_3 = area_vtp - self.engine_out_climb(inputs) if engine_number != 1.0 else area_vtp
 
         # CASE4: ENGINE FAILURE COMPENSATION DURING TAKEOFF ########################################
 
-        if engine_number != 1.0:
-            area_diff_4 = area_vtp - self.engine_out_takeoff(inputs)
-        else:
-            area_diff_4 = area_vtp
+        area_diff_4 = (
+            area_vtp - self.engine_out_takeoff(inputs) if engine_number != 1.0 else area_vtp
+        )
 
         # CASE5: ENGINE FAILURE COMPENSATION DURING LANDING ########################################
         # ACCORDING TO CS 23.149 (c) ONLY APPLIES TO AIRCRAFT POWERED BY RECIPROCATING ENGINE AND
@@ -695,12 +669,13 @@ class _ComputeVTPAreaConstraints(VTPConstraints):
 
         if not (
             (self.options["propulsion_id"] == "fastga.wrapper.propulsion.basicIC_engine")
-            and (mtow < 2722.0)
+            and (mtow < MTOW_APPLICABILITY_LIMIT_CS_23_149)
         ):
-            if engine_number == 2.0:
-                area_diff_5 = area_vtp - self.engine_out_landing(inputs)
-            else:
+            if engine_number == 1.0:
                 area_diff_5 = area_vtp
+            else:
+                area_diff_5 = area_vtp - self.engine_out_landing(inputs)
+
         else:
             area_diff_5 = area_vtp
 

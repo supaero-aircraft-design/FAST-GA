@@ -13,7 +13,11 @@
 
 import pytest
 
-from tests.testing_utilities import get_indep_var_comp, list_inputs, run_system
+from tests.testing_utilities import (
+    get_indep_var_comp,
+    run_system,
+    setup_and_run_system,
+)
 
 from .dummy_engines import ENGINE_WRAPPER_SR22 as ENGINE_WRAPPER
 from ..compute_static_margin import ComputeStaticMargin
@@ -28,13 +32,8 @@ XML_FILE = "cirrus_sr22.xml"
 def test_update_vt_area():
     """Tests computation of the vertical tail area"""
 
-    # Research independent input value in .xml file
-    input_vars = get_indep_var_comp(
-        list_inputs(UpdateVTArea(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE
-    )
-
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(UpdateVTArea(propulsion_id=ENGINE_WRAPPER), input_vars)
+    problem = setup_and_run_system(UpdateVTArea(propulsion_id=ENGINE_WRAPPER), __file__, XML_FILE)
     vt_area = problem.get_val("data:geometry:vertical_tail:area", units="m**2")
     assert vt_area == pytest.approx(1.41, abs=1e-2)
 
@@ -60,21 +59,15 @@ def test_update_vt_area():
     assert vt_area_constraints_eo_landing == pytest.approx(
         1.41, abs=1e-2
     )  # Should be equal to vtp_area but since
-    # the dummy engine is not recognized as an ICE engine the last constraints applies even though it shouldn't
+    # the dummy engine is not recognized as an ICE engine the last constraints applies even though
+    # it shouldn't
 
 
 def test_update_ht_area():
     """Tests computation of the horizontal tail area"""
 
     # Research independent input value in .xml file
-    # noinspection PyTypeChecker
-    ivc = get_indep_var_comp(
-        list_inputs(UpdateHTArea(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE
-    )
-
-    # Run problem and check obtained value(s) is/(are) correct
-    # noinspection PyTypeChecker
-    problem = run_system(UpdateHTArea(propulsion_id=ENGINE_WRAPPER), ivc)
+    problem = setup_and_run_system(UpdateHTArea(propulsion_id=ENGINE_WRAPPER), __file__, XML_FILE)
     ht_area = problem.get_val("data:geometry:horizontal_tail:area", units="m**2")
     assert ht_area == pytest.approx(3.95, abs=1e-2)
 
@@ -84,7 +77,6 @@ def test_update_tail_area_volume():
     Tests computation of the horizontal tail area and vertical tail area with volume coefficient
     """
     # Research independent input value in .xml file
-    # noinspection PyTypeChecker
     inputs_list = [
         "data:geometry:wing:area",
         "data:geometry:wing:span",
@@ -95,7 +87,6 @@ def test_update_tail_area_volume():
     ivc = get_indep_var_comp(inputs_list, __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    # noinspection PyTypeChecker
     problem = run_system(UpdateVTAreaVolumeCoefficient(propulsion_id=ENGINE_WRAPPER), ivc)
 
     vt_area = problem.get_val("data:geometry:vertical_tail:area", units="m**2")
@@ -104,7 +95,6 @@ def test_update_tail_area_volume():
     problem.check_partials(compact_print=True)
 
     # Research independent input value in .xml file
-    # noinspection PyTypeChecker
     inputs_list = [
         "data:geometry:wing:area",
         "data:geometry:wing:MAC:length",
@@ -115,7 +105,6 @@ def test_update_tail_area_volume():
     ivc = get_indep_var_comp(inputs_list, __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    # noinspection PyTypeChecker
     problem = run_system(UpdateHTAreaVolumeCoefficient(propulsion_id=ENGINE_WRAPPER), ivc)
 
     ht_area = problem.get_val("data:geometry:horizontal_tail:area", units="m**2")
@@ -128,10 +117,7 @@ def test_compute_static_margin():
     """Tests computation of static margin"""
 
     # Research independent input value in .xml file
-    ivc = get_indep_var_comp(list_inputs(ComputeStaticMargin()), __file__, XML_FILE)
-
-    # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeStaticMargin(), ivc)
+    problem = setup_and_run_system(ComputeStaticMargin(), __file__, XML_FILE)
     stick_fixed_static_margin = problem["data:handling_qualities:stick_fixed_static_margin"]
     assert stick_fixed_static_margin == pytest.approx(0.34, abs=1e-2)
     free_elevator_factor = problem["data:aerodynamics:cruise:neutral_point:free_elevator_factor"]
@@ -143,14 +129,9 @@ def test_compute_static_margin():
 def test_compute_to_rotation_limit():
     """Tests computation of static margin"""
 
-    # noinspection PyTypeChecker
-    ivc = get_indep_var_comp(
-        list_inputs(ComputeTORotationLimitGroup(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE
+    problem = setup_and_run_system(
+        ComputeTORotationLimitGroup(propulsion_id=ENGINE_WRAPPER), __file__, XML_FILE
     )
-
-    # Run problem and check obtained value(s) is/(are) correct
-    # noinspection PyTypeChecker
-    problem = run_system(ComputeTORotationLimitGroup(propulsion_id=ENGINE_WRAPPER), ivc)
     x_cg_rotation_limit = problem["data:handling_qualities:to_rotation_limit:x"]
     assert x_cg_rotation_limit == pytest.approx(1.98, abs=1e-2)
     x_cg_ratio_rotation_limit = problem["data:handling_qualities:to_rotation_limit:MAC_position"]
@@ -161,13 +142,9 @@ def test_compute_balked_landing():
     """Tests computation of static margin"""
 
     # Research independent input value in .xml file
-    # noinspection PyTypeChecker
-    ivc = get_indep_var_comp(
-        list_inputs(ComputeBalkedLandingLimit(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE
+    problem = setup_and_run_system(
+        ComputeBalkedLandingLimit(propulsion_id=ENGINE_WRAPPER), __file__, XML_FILE
     )
-
-    # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeBalkedLandingLimit(propulsion_id=ENGINE_WRAPPER), ivc)
     x_cg_balked_landing_limit = problem["data:handling_qualities:balked_landing_limit:x"]
     assert x_cg_balked_landing_limit == pytest.approx(2.67, abs=1e-2)
     x_cg_ratio_balked_landing_limit = problem[
