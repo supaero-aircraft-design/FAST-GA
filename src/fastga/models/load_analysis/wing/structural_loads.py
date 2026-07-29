@@ -146,12 +146,12 @@ class StructuralLoads(om.ExplicitComponent):
         y_vector = inputs["data:aerodynamics:wing:low_speed:Y_vector"]
         chord_vector = inputs["data:aerodynamics:wing:low_speed:chord_vector"]
 
-        semi_span = float(inputs["data:geometry:wing:span"]) / 2.0
+        semi_span = inputs["data:geometry:wing:span"].item() / 2.0
         root_chord = inputs["data:geometry:wing:root:chord"]
         tip_chord = inputs["data:geometry:wing:tip:chord"]
 
-        load_factor_shear = float(inputs["data:loads:max_shear:load_factor"])
-        load_factor_rbm = float(inputs["data:loads:max_rbm:load_factor"])
+        load_factor_shear = inputs["data:loads:max_shear:load_factor"].item()
+        load_factor_rbm = inputs["data:loads:max_rbm:load_factor"].item()
         wing_mass = inputs["data:weight:airframe:wing:mass"]
         fuel_mass = inputs["data:mission:sizing:fuel"]
 
@@ -174,10 +174,10 @@ class StructuralLoads(om.ExplicitComponent):
             inputs, y_vector_orig, chord_vector_orig, 0.0, 0.0
         )
         _, wing_mass_array_orig = AerostructuralLoad.compute_relief_force(
-            inputs, y_vector_orig, chord_vector_orig, wing_mass, 0.0, False
+            inputs, y_vector_orig, chord_vector_orig, wing_mass, 0.0, point_mass=False
         )
         _, fuel_mass_array_orig = AerostructuralLoad.compute_relief_force(
-            inputs, y_vector_orig, chord_vector_orig, 0.0, fuel_mass, False
+            inputs, y_vector_orig, chord_vector_orig, 0.0, fuel_mass, point_mass=False
         )
 
         point_mass_array = max(load_factor_shear, load_factor_rbm) * point_mass_array_orig

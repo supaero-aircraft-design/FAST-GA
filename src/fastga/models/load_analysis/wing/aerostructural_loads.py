@@ -30,13 +30,14 @@ from .constants import (
 )
 
 SPAN_MESH_POINT_LOADS = int(1.5 * SPAN_MESH_POINT)
+MIN_SIGNIFICANT_FUEL_MASS = 5
 
 
 @oad.RegisterSubmodel(
     SUBMODEL_AEROSTRUCTURAL_LOADS, "fastga.submodel.loads.wings.aerostructural.legacy"
 )
 class AerostructuralLoad(om.ExplicitComponent):
-    def setup(self):
+    def setup(self):  # noqa: PLR0915
         self.add_input("data:TLAR:category", val=3.0)
         self.add_input("data:TLAR:level", val=2.0)
         self.add_input("data:TLAR:v_max_sl", val=np.nan, units="kn")
@@ -190,7 +191,7 @@ class AerostructuralLoad(om.ExplicitComponent):
 
         self.add_output("data:loads:y_vector", units="m", shape=SPAN_MESH_POINT_LOADS)
 
-    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):  # noqa: PLR0915
         # STEP 1/XX - DEFINE OR CALCULATE INPUT DATA FOR LOAD COMPUTATION ##########################
         ############################################################################################
 
@@ -214,7 +215,7 @@ class AerostructuralLoad(om.ExplicitComponent):
         cruise_v_tas = inputs["data:TLAR:v_cruise"]
         v_c = inputs["data:mission:sizing:cs23:characteristic_speed:vc"]
 
-        factor_of_safety = float(inputs["data:mission:sizing:cs23:safety_factor"])
+        factor_of_safety = inputs["data:mission:sizing:cs23:safety_factor"].item()
         shear_max_conditions = []
         rbm_max_conditions = []
 
@@ -273,24 +274,21 @@ class AerostructuralLoad(om.ExplicitComponent):
             if mass_tag == "mtow":
                 mass = mtow
                 load_factor_list = [
-                    float(inputs["data:mission:sizing:cs23:sizing_factor:ultimate_mtow:positive"])
+                    inputs["data:mission:sizing:cs23:sizing_factor:ultimate_mtow:positive"].item()
                     / factor_of_safety,
-                    float(inputs["data:mission:sizing:cs23:sizing_factor:ultimate_mtow:negative"])
+                    inputs["data:mission:sizing:cs23:sizing_factor:ultimate_mtow:negative"].item()
                     / factor_of_safety,
                 ]
             else:
                 mass = min(mzfw, mtow)
                 load_factor_list = [
-                    float(inputs["data:mission:sizing:cs23:sizing_factor:ultimate_mzfw:positive"])
+                    inputs["data:mission:sizing:cs23:sizing_factor:ultimate_mzfw:positive"].item()
                     / factor_of_safety,
-                    float(inputs["data:mission:sizing:cs23:sizing_factor:ultimate_mzfw:negative"])
+                    inputs["data:mission:sizing:cs23:sizing_factor:ultimate_mzfw:negative"].item()
                     / factor_of_safety,
                 ]
 
-            if abs(mtow - mzfw) < 5.0:
-                fuel_mass = 0.0
-            else:
-                fuel_mass = mass - mzfw
+            fuel_mass = 0.0 if abs(mtow - mzfw) < MIN_SIGNIFICANT_FUEL_MASS else mass - mzfw
 
             y_vector, weight_array_orig = self.compute_relief_force(
                 inputs, y_vector_orig, chord_vector, wing_mass, fuel_mass
@@ -437,12 +435,12 @@ class AerostructuralLoad(om.ExplicitComponent):
         # We compute the new lift coefficient and
         cl_fin = np.interp(y_vector, y_vector_cl_orig, cl_list)
         chord_fin = np.interp(y_vector, y_vector_chord_orig, chord_list)
-        lift_chord = np.multiply(cl_fin, chord_fin)
-
-        return lift_chord
+        return np.multiply(cl_fin, chord_fin)
 
     @staticmethod
-    def compute_relief_force(inputs, y_vector, chord_vector, wing_mass, fuel_mass, point_mass=True):
+    def compute_relief_force(
+        inputs, y_vector, chord_vector, wing_mass, fuel_mass, *, point_mass=True
+    ):
         """
         Function that computes the baseline weight distribution and modify the y_vector to
         account for point masses. We chose to represent point masses as linear masses on finite
@@ -478,10 +476,7 @@ class AerostructuralLoad(om.ExplicitComponent):
         engine_count = inputs["data:geometry:propulsion:engine:count"]
         semi_span = inputs["data:geometry:wing:span"] / 2.0
         y_lg = inputs["data:geometry:landing_gear:y"]
-        if engine_config != 1.0:
-            y_ratio = 0.0
-        else:
-            y_ratio = inputs["data:geometry:propulsion:engine:y_ratio"]
+        y_ratio = 0.0 if engine_config != 1.0 else inputs["data:geometry:propulsion:engine:y_ratio"]
 
         y_ratio_punctual_mass = inputs["data:weight:airframe:wing:punctual_mass:y_ratio"]
         punctual_mass_array = inputs["data:weight:airframe:wing:punctual_mass:mass"]
@@ -569,7 +564,7 @@ class AerostructuralLoad(om.ExplicitComponent):
         return y_vector, weight_array
 
     @staticmethod
-    def insert_in_sorted_array(array, element):
+    def insert_in_sorted_array(array: np.ndarray, element: float) -> (np.ndarray, int):
         """
         Function that insert an element in a sorted array to keep it sorted
 
@@ -583,12 +578,13 @@ class AerostructuralLoad(om.ExplicitComponent):
 
         tmp_array = np.append(array, element)
         final_array = np.sort(tmp_array)
-        index = np.where(final_array == element)
+        # There should only be one valid index hence why we can do this.
+        index = np.where(final_array == element)[0].item()
 
         return final_array, index
 
     @staticmethod
-    def delete_additional_zeros(array, length: int = None):
+    def delete_additional_zeros(array, length: int | None = None):
         """
         Function that delete the additional zeros we had to add to fit the format imposed by
         OpenMDAO
@@ -629,7 +625,7 @@ class AerostructuralLoad(om.ExplicitComponent):
 
         # STEP 1/XX - WE EXTRACT THE NECESSARY OUTPUT FROM THE INPUTS
 
-        semi_span = float(inputs["data:geometry:wing:span"]) / 2.0
+        semi_span = inputs["data:geometry:wing:span"].item() / 2.0
 
         # STEP 2/XX - WE CREATE THE INTERPOLATION VECTOR FOR THE CHORD AND THE MASSES. WE ALSO
         # CREATE A VECTOR TO STOCK WHERE THE MASS ARE ADDED AND HAVE A WAY TO READJUST THE
@@ -656,38 +652,35 @@ class AerostructuralLoad(om.ExplicitComponent):
             if (y_current >= 0.0) and (y_current <= semi_span):
                 y_added.append(y_current)
                 y_vector, idx = AerostructuralLoad.insert_in_sorted_array(y_vector, y_current)
-                index = int(float(idx[0]))
                 chord_vector = np.insert(
-                    chord_vector, index, np.interp(y_current, y_vector_interp, chord_vector_interp)
+                    chord_vector, idx, np.interp(y_current, y_vector_interp, chord_vector_interp)
                 )
                 point_mass_array = np.insert(
                     point_mass_array,
-                    index,
+                    idx,
                     np.interp(y_current, y_vector_interp, point_mass_array_interp),
                 )
-                fake_point_mass_array = np.insert(fake_point_mass_array, index, 0.0)
+                fake_point_mass_array = np.insert(fake_point_mass_array, idx, 0.0)
 
         y_min = min(y_added) - 1e-3
         y_vector, idx = AerostructuralLoad.insert_in_sorted_array(y_vector, y_min)
-        index = int(float(idx[0]))
         chord_vector = np.insert(
-            chord_vector, index, np.interp(y_min, y_vector_interp, chord_vector_interp)
+            chord_vector, idx, np.interp(y_min, y_vector_interp, chord_vector_interp)
         )
         point_mass_array = np.insert(
-            point_mass_array, index, np.interp(y_min, y_vector_interp, point_mass_array_interp)
+            point_mass_array, idx, np.interp(y_min, y_vector_interp, point_mass_array_interp)
         )
-        fake_point_mass_array = np.insert(fake_point_mass_array, index, 0.0)
+        fake_point_mass_array = np.insert(fake_point_mass_array, idx, 0.0)
 
         y_max = max(y_added) + 1e-3
         y_vector, idx = AerostructuralLoad.insert_in_sorted_array(y_vector, y_max)
-        index = int(float(idx[0]))
         chord_vector = np.insert(
-            chord_vector, index, np.interp(y_max, y_vector_interp, chord_vector_interp)
+            chord_vector, idx, np.interp(y_max, y_vector_interp, chord_vector_interp)
         )
         point_mass_array = np.insert(
-            point_mass_array, index, np.interp(y_max, y_vector_interp, point_mass_array_interp)
+            point_mass_array, idx, np.interp(y_max, y_vector_interp, point_mass_array_interp)
         )
-        fake_point_mass_array = np.insert(fake_point_mass_array, index, 0.0)
+        fake_point_mass_array = np.insert(fake_point_mass_array, idx, 0.0)
 
         # STEP 5/XX - WE NOW HAVE THE RIGHT WE JUST NEED TO SCALE IT PROPERLY WHICH IS THE POINT
         # OF THIS STEP
@@ -781,14 +774,11 @@ def tank_volume_distribution(inputs, y_array_orig):
     thickness_array = k * chord_array * thickness_ratio_array
 
     # Distributed propulsion / single engine on the wing / nose or rear mounted engine
-    if engine_config != 1.0:
-        y_ratio = 0.0
-    else:
-        y_ratio = inputs["data:geometry:propulsion:engine:y_ratio"]
+    y_ratio = 0.0 if engine_config != 1.0 else inputs["data:geometry:propulsion:engine:y_ratio"]
 
     y_eng_array = semi_span * np.array(y_ratio)
 
-    in_eng_nacelle = np.full(len(y_in_tank_array), False)
+    in_eng_nacelle = np.full(len(y_in_tank_array), fill_value=False)
     for y_eng in y_eng_array:
         for i in np.where(abs(y_in_tank_array - y_eng) <= nacelle_width / 2.0):
             in_eng_nacelle[i] = True
@@ -806,6 +796,4 @@ def tank_volume_distribution(inputs, y_array_orig):
             # For now 80% size reduction in the fuel tank capacity due to the landing gear
             width_array[i] *= 0.2
 
-    tank_cross_section = thickness_array * width_array * 0.85
-
-    return tank_cross_section
+    return thickness_array * width_array * 0.85
