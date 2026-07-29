@@ -16,6 +16,7 @@ Convenience functions for helping tests
 
 import logging
 import os.path as pth
+import pathlib
 import time
 from copy import deepcopy
 
@@ -123,6 +124,53 @@ def list_inputs(component: om.ExplicitComponent | om.Group) -> list:
     input_names = [var.name for var in variables if var.is_input]
 
     return input_names
+
+
+def test_system(
+    component: System,
+    test_file: str,
+    xml_file_name: str,
+    setup_mode="auto",
+    *,
+    add_solvers=False,
+    check=False,
+):
+    """
+    Runs and returns an OpenMDAO problem with provided component using data taken from provided data
+    file.
+    """
+    problem = oad.FASTOADProblem()
+    model = problem.model
+    model.add_subsystem("component", component, promotes=["*"])
+    if add_solvers:
+        # noinspection PyTypeChecker
+        model.nonlinear_solver = om.NonlinearBlockGS()
+        model.linear_solver = om.LinearBlockGS()
+
+    if check:
+        print("\n")
+
+    problem.setup(mode=setup_mode, check=check)
+
+    variables = [var.name for var in oad.VariableList.from_problem(problem, io_status="inputs")]
+
+    datafile = oad.DataFile(pathlib.Path(test_file).parent / "data" / xml_file_name)
+    missing = []
+
+    for variable in variables:
+        try:
+            problem.set_val(variable, val=datafile[variable].val, units=datafile[variable].units)
+        except ValueError:
+            if np.isnan(
+                problem.get_val(variable)
+            ):  # Unit doesn't matter we just want to check if nan
+                missing.append(variable)
+
+    assert not missing, "These inputs are not provided: %s" % missing
+
+    problem.run_model()
+
+    return problem
 
 
 class Timer:
