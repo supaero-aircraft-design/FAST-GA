@@ -518,9 +518,9 @@ class XfoilPolar(ExternalCodeComp):
         result_array_n = np.array([])
 
         if self.options[OPTION_COMP_NEG_AIR_SYM]:
-            self.stdin.unlink()
-            self.stdout.unlink()
-            self.stderr.unlink()
+            pathlib.Path(self.stdin).unlink()
+            pathlib.Path(self.stdout).unlink()
+            pathlib.Path(self.stderr).unlink()
             pathlib.Path(tmp_result_file_path).unlink()
             alpha_start = min(-1 * self.options[OPTION_ALPHA_START], -ALPHA_STEP)
             self._write_script_file(
@@ -846,12 +846,10 @@ class XfoilPolar(ExternalCodeComp):
         return results, labels
 
     def _get_output_files(
-            self, result_folder_path: pathlib.Path, tmp_result_file_path: pathlib.Path
+        self, result_folder_path: pathlib.Path, tmp_result_file_path: pathlib.Path
     ):
         if tmp_result_file_path.exists():
-            polar_file_path = (
-                result_folder_path / self.options[OPTION_RESULT_POLAR_FILENAME]
-            )
+            polar_file_path = result_folder_path / self.options[OPTION_RESULT_POLAR_FILENAME]
             shutil.move(tmp_result_file_path, polar_file_path)
 
         if self.stdout.exists():

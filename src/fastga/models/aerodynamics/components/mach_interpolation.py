@@ -124,29 +124,30 @@ class _ComputeMachInterpolation(om.ExplicitComponent):
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        sweep_25_wing = float(inputs["data:geometry:wing:sweep_25"])
-        aspect_ratio_wing = float(inputs["data:geometry:wing:aspect_ratio"])
-        taper_ratio_wing = float(inputs["data:geometry:wing:taper_ratio"])
-        area_wing = float(inputs["data:geometry:wing:area"])
-        span_wing = float(inputs["data:geometry:wing:span"])
+        sweep_25_wing = inputs["data:geometry:wing:sweep_25"]
+        aspect_ratio_wing = inputs["data:geometry:wing:aspect_ratio"]
+        taper_ratio_wing = inputs["data:geometry:wing:taper_ratio"]
+        area_wing = inputs["data:geometry:wing:area"]
+        span_wing = inputs["data:geometry:wing:span"]
 
-        sweep_25_htp = float(inputs["data:geometry:horizontal_tail:sweep_25"])
-        aspect_ratio_htp = float(inputs["data:geometry:horizontal_tail:aspect_ratio"])
-        efficiency_htp = float(inputs["data:aerodynamics:horizontal_tail:efficiency"])
-        area_htp = float(inputs["data:geometry:horizontal_tail:area"])
-        lp_ht = float(inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"])
-        delta_z_htp = float(inputs["data:geometry:horizontal_tail:z:from_wingMAC25"])
+        sweep_25_htp = inputs["data:geometry:horizontal_tail:sweep_25"]
+        aspect_ratio_htp = inputs["data:geometry:horizontal_tail:aspect_ratio"]
+        efficiency_htp = inputs["data:aerodynamics:horizontal_tail:efficiency"]
+        area_htp = inputs["data:geometry:horizontal_tail:area"]
+        lp_ht = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"]
+        delta_z_htp = inputs["data:geometry:horizontal_tail:z:from_wingMAC25"]
 
-        fuselage_width = float(inputs["data:geometry:fuselage:maximum_width"])
-        fuselage_height = float(inputs["data:geometry:fuselage:maximum_height"])
+        fuselage_width = inputs["data:geometry:fuselage:maximum_width"]
+        fuselage_height = inputs["data:geometry:fuselage:maximum_height"]
         fuselage_diameter = np.sqrt(fuselage_width * fuselage_height)
 
         area_ratio = area_htp / area_wing
 
-        sos_cruise = Atmosphere(
+        atm = Atmosphere(
             inputs["data:mission:sizing:main_route:cruise:altitude"], altitude_in_feet=False
-        ).speed_of_sound
-        mach_cruise = float(inputs["data:TLAR:v_cruise"]) / float(sos_cruise)
+        )
+        atm.true_airspeed = inputs["data:TLAR:v_cruise"]
+        mach_cruise = atm.mach
 
         wing_cl = self._reshape(inputs["wing:alpha"], inputs["wing:CL"])
         wing_alpha = self._reshape(inputs["wing:alpha"], inputs["wing:alpha"])

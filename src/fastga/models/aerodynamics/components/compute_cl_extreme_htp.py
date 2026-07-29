@@ -171,24 +171,24 @@ class ComputeHtp3DExtremeCL(om.ExplicitComponent):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         y_root = 0.0
-        y_tip = float(inputs["data:geometry:horizontal_tail:span"]) / 2.0
-        wing_area = inputs["data:geometry:wing:area"]
-        htp_area = inputs["data:geometry:horizontal_tail:area"]
-        area_ratio = float(htp_area / wing_area)
+        y_tip = inputs["data:geometry:horizontal_tail:span"].item() / 2.0
+        wing_area = inputs["data:geometry:wing:area"].item()
+        htp_area = inputs["data:geometry:horizontal_tail:area"].item()
+        area_ratio = htp_area / wing_area
 
         cl_max_2d_root = (
-            float(inputs["data:aerodynamics:horizontal_tail:low_speed:root:CL_max_2D"]) * area_ratio
+            inputs["data:aerodynamics:horizontal_tail:low_speed:root:CL_max_2D"].item() * area_ratio
         )
         cl_max_2d_tip = (
-            float(inputs["data:aerodynamics:horizontal_tail:low_speed:tip:CL_max_2D"]) * area_ratio
+            inputs["data:aerodynamics:horizontal_tail:low_speed:tip:CL_max_2D"].item() * area_ratio
         )
         cl_min_2d_root = (
-            float(inputs["data:aerodynamics:horizontal_tail:low_speed:root:CL_min_2D"]) * area_ratio
+            inputs["data:aerodynamics:horizontal_tail:low_speed:root:CL_min_2D"].item() * area_ratio
         )
         cl_min_2d_tip = (
-            float(inputs["data:aerodynamics:horizontal_tail:low_speed:tip:CL_min_2D"]) * area_ratio
+            inputs["data:aerodynamics:horizontal_tail:low_speed:tip:CL_min_2D"].item() * area_ratio
         )
-        cl_alpha_htp = float(inputs["data:aerodynamics:horizontal_tail:low_speed:CL_alpha"])
+        cl_alpha_htp = inputs["data:aerodynamics:horizontal_tail:low_speed:CL_alpha"].item()
         cl_ref = inputs["data:aerodynamics:horizontal_tail:low_speed:CL_ref"]
         y_interp = inputs["data:aerodynamics:horizontal_tail:low_speed:Y_vector"]
         cl_interp = inputs["data:aerodynamics:horizontal_tail:low_speed:CL_vector"]

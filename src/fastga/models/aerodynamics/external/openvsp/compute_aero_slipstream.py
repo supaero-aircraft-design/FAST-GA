@@ -375,7 +375,7 @@ class PropulsionForDPComputation(om.ExplicitComponent):
             thrust_rate=1.0,
         )
         propulsion_model.compute_flight_points(flight_point)
-        thrust = float(flight_point.thrust)
+        thrust = flight_point.thrust
 
         thrust_one_prop = thrust / inputs["data:geometry:propulsion:engine:count"]
         atm = Atmosphere(inputs["altitude"], altitude_in_feet=False)

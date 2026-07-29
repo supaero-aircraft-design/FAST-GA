@@ -80,21 +80,21 @@ class ComputeClBetaHorizontalTail(FigureDigitization):
         ht_area = inputs["data:geometry:horizontal_tail:area"]
         wing_area = inputs["data:geometry:wing:area"]
         wing_span = inputs["data:geometry:wing:span"]
-        ht_ar = inputs["data:geometry:horizontal_tail:aspect_ratio"]
-        ht_taper_ratio = inputs["data:geometry:horizontal_tail:taper_ratio"]
-        ht_sweep_50 = inputs["data:geometry:horizontal_tail:sweep_50"]  # In rad !!!
+        ht_ar = inputs["data:geometry:horizontal_tail:aspect_ratio"].item()
+        ht_taper_ratio = inputs["data:geometry:horizontal_tail:taper_ratio"].item()
+        ht_sweep_50 = inputs["data:geometry:horizontal_tail:sweep_50"].item()  # In rad !!!
         ht_sweep_25 = inputs["data:geometry:horizontal_tail:sweep_25"]  # In rad !!!
         ht_dihedral = inputs["data:geometry:horizontal_tail:dihedral"]  # In deg, not specified
         # in the  formula
         ht_twist = inputs["data:geometry:horizontal_tail:twist"]  # In deg, not specified in the
         # formula
-        ht_span = inputs["data:geometry:horizontal_tail:span"]
+        ht_span = inputs["data:geometry:horizontal_tail:span"].item()
 
-        fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
-        lp_ht = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"]
-        x4_ht = inputs["data:geometry:horizontal_tail:tip:chord"]
+        fa_length = inputs["data:geometry:wing:MAC:at25percent:x"].item()
+        lp_ht = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"].item()
+        x4_ht = inputs["data:geometry:horizontal_tail:tip:chord"].item()
 
-        if float(inputs["data:geometry:horizontal_tail:z:from_wingMAC25"]) == 0.0:
+        if inputs["data:geometry:horizontal_tail:z:from_wingMAC25"] == 0.0:
             z2_ht = 0.0  # Aligned with the fuselage centerline
         else:
             z2_ht = (
@@ -108,7 +108,7 @@ class ComputeClBetaHorizontalTail(FigureDigitization):
         ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
 
         aoa_ref = inputs["settings:aerodynamics:reference_flight_conditions:" + ls_tag + ":AOA"]
-        mach = inputs["data:aerodynamics:" + ls_tag + ":mach"]
+        mach = inputs["data:aerodynamics:" + ls_tag + ":mach"].item()
         cl_0_ht = inputs["data:aerodynamics:horizontal_tail:" + ls_tag + ":CL0"]
         cl_alpha_ht = inputs["data:aerodynamics:horizontal_tail:" + ls_tag + ":CL_alpha"]
 

@@ -64,10 +64,10 @@ class DummyEngineBE76(AbstractFuelPropulsion):
 
     def compute_drag(
         self,
-        mach: float | np.array,
-        unit_reynolds: float | np.array,
+        mach: float | np.ndarray,
+        unit_reynolds: float | np.ndarray,
         wing_mac: float,
-    ) -> float | np.array:
+    ) -> float | np.ndarray:
         return 0.0
 
     def get_consumed_mass(self, flight_point: oad.FlightPoint, time_step: float) -> float:
@@ -141,10 +141,10 @@ class DummyEngineSR22(AbstractFuelPropulsion):
 
     def compute_drag(
         self,
-        mach: float | np.array,
-        unit_reynolds: float | np.array,
+        mach: float | np.ndarray,
+        unit_reynolds: float | np.ndarray,
         wing_mac: float,
-    ) -> float | np.array:
+    ) -> float | np.ndarray:
         return 0.0
 
     def get_consumed_mass(self, flight_point: oad.FlightPoint, time_step: float) -> float:
@@ -212,10 +212,10 @@ class DummyEngineTBM900(AbstractFuelPropulsion):
 
     def compute_drag(
         self,
-        mach: float | np.array,
-        unit_reynolds: float | np.array,
+        mach: float | np.ndarray,
+        unit_reynolds: float | np.ndarray,
         wing_mac: float,
-    ) -> float | np.array:
+    ) -> float | np.ndarray:
         return 0.0
 
     def get_consumed_mass(self, flight_point: oad.FlightPoint, time_step: float) -> float:

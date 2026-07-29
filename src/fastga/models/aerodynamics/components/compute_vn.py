@@ -18,6 +18,9 @@ import warnings
 import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
+
+# noinspection PyProtectedMember
+from fastoad._utils.arrays import scalarize
 from fastoad.constants import EngineSetting
 
 # noinspection PyProtectedMember
@@ -124,7 +127,7 @@ class ComputeVh(om.ExplicitComponent):
             thrust_rate=1.0,
         )
         propulsion_model.compute_flight_points(flight_point)
-        thrust = float(flight_point.thrust)
+        thrust = flight_point.thrust
 
         # TODO: Change to use the Equilibrium computation
         # Get the necessary thrust to overcome
@@ -326,9 +329,9 @@ class ComputeVN(om.ExplicitComponent):
         # Lets start by computing the 1g/-1g stall speeds using the usual formulations
         vs_1g_ps = np.sqrt((2.0 * mass * g) / (atm_0.density * wing_area * cl_max))  # [m/s]
         vs_1g_ng = np.sqrt((2.0 * mass * g) / (atm_0.density * wing_area * abs(cl_min)))  # [m/s]
-        velocity_array.append(float(vs_1g_ps))
+        velocity_array.append(scalarize(vs_1g_ps))
         load_factor_array.append(1.0)
-        velocity_array.append(float(vs_1g_ng))
+        velocity_array.append(scalarize(vs_1g_ng))
         load_factor_array.append(-1.0)
 
         # As we will consider all the calculated speed to be Vs_1g_ps < V < 1.4*Vh, we will
@@ -339,7 +342,7 @@ class ComputeVN(om.ExplicitComponent):
         mach_interp = inputs["data:aerodynamics:aircraft:mach_interpolation:mach_vector"]
         v_interp = []
         for mach in mach_interp:
-            v_interp.append(float(mach * atm.speed_of_sound))
+            v_interp.append(scalarize(mach * atm.speed_of_sound))
         cl_alpha_interp = inputs["data:aerodynamics:aircraft:mach_interpolation:CL_alpha_vector"]
         cl_alpha_fct = make_interp_spline(v_interp, cl_alpha_interp, k=2)
 
@@ -355,12 +358,14 @@ class ComputeVN(om.ExplicitComponent):
         n_lim_ps_min = min(n_lim_1, n_lim_2)  # CS 23.337 (a)
         n_lim_ps = max(n_lim_ps_min, design_n_ps)
 
-        n_lim_ng_max = -0.5 * n_lim_ps if category == AircraftCategory.AEROBATIC else -0.4
+        n_lim_ng_max = (
+            -0.5 * n_lim_ps if category == AircraftCategory.AEROBATIC else -0.4 * n_lim_ps
+        )
         # CS 23.337 (b)
         n_lim_ng = min(n_lim_ng_max, design_n_ng)
 
-        load_factor_array.append(float(n_lim_ps))
-        load_factor_array.append(float(n_lim_ng))
+        load_factor_array.append(scalarize(n_lim_ps))
+        load_factor_array.append(scalarize(n_lim_ng))
 
         # Starting from there, we need to compute the gust lines as it can have an impact on the
         # choice of the maneuvering speed. We will also compute the maximum intensity gust line
@@ -396,27 +401,17 @@ class ComputeVN(om.ExplicitComponent):
 
         # Now, define the gust function
         def load_factor_gust_p(u_de_v, x):
-            return float(
-                1.0
-                + k_g(mu_g(cl_alpha_fct(x)))
-                * atm_0.density
-                * u_de_v
-                * self.ft_to_m
-                * x
-                * cl_alpha_fct(x)
-                / (2.0 * weight_lbf / wing_area_sft * self.lbf_to_N / self.ft_to_m**2)
+            return 1.0 + k_g(
+                mu_g(cl_alpha_fct(x))
+            ) * atm_0.density * u_de_v * self.ft_to_m * x * cl_alpha_fct(x) / (
+                2.0 * weight_lbf / wing_area_sft * self.lbf_to_N / self.ft_to_m**2
             )
 
         def load_factor_gust_n(u_de_v, x):
-            return float(
-                1
-                - k_g(mu_g(cl_alpha_fct(x)))
-                * atm_0.density
-                * u_de_v
-                * self.ft_to_m
-                * x
-                * cl_alpha_fct(x)
-                / (2.0 * weight_lbf / wing_area_sft * self.lbf_to_N / self.ft_to_m**2)
+            return 1 - k_g(
+                mu_g(cl_alpha_fct(x))
+            ) * atm_0.density * u_de_v * self.ft_to_m * x * cl_alpha_fct(x) / (
+                2.0 * weight_lbf / wing_area_sft * self.lbf_to_N / self.ft_to_m**2
             )
 
         def load_factor_stall_p(x):
@@ -434,8 +429,8 @@ class ComputeVN(om.ExplicitComponent):
 
         vma_ps = vs_1g_ps * np.sqrt(n_lim_ps)  # [m/s]
         vma_ng = vs_1g_ng * np.sqrt(abs(n_lim_ng))  # [m/s]
-        velocity_array.append(float(vma_ps))
-        velocity_array.append(float(vma_ng))
+        velocity_array.append(scalarize(vma_ps))
+        velocity_array.append(scalarize(vma_ng))
 
         # We now need to check if we are in the aforementioned case (usually happens for low
         # design wing loading aircraft and/or mission wing loading)
@@ -450,8 +445,8 @@ class ComputeVN(om.ExplicitComponent):
 
             vma_ps = max(optimize.fsolve(delta_maneuver_pos, np.array(1000.0)))
             n_ma_ps = load_factor_gust_p(u_de_vc, vma_ps)  # [-]
-            velocity_array.append(float(vma_ps))
-            load_factor_array.append(float(n_ma_ps))
+            velocity_array.append(scalarize(vma_ps))
+            load_factor_array.append(scalarize(n_ma_ps))
         else:
             velocity_array.append(0.0)
             load_factor_array.append(0.0)
@@ -468,8 +463,8 @@ class ComputeVN(om.ExplicitComponent):
 
             vma_ng = max(optimize.fsolve(delta_maneuver_neg, np.array(1000.0)))
             n_ma_ng = load_factor_gust_n(u_de_vc, vma_ng)  # [-]
-            velocity_array.append(float(vma_ng))
-            load_factor_array.append(float(n_ma_ng))
+            velocity_array.append(scalarize(vma_ng))
+            load_factor_array.append(scalarize(n_ma_ng))
         else:
             velocity_array.append(0.0)
             load_factor_array.append(0.0)
@@ -516,8 +511,8 @@ class ComputeVN(om.ExplicitComponent):
         # speed will never be greater than the maximum level velocity at sea level hence
 
         vc = max(min(design_vc, vh), vc_min_fin)  # [m/s]
-        velocity_array.append(float(vc))
-        load_factor_array.append(float(n_lim_ng))
+        velocity_array.append(scalarize(vc))
+        load_factor_array.append(scalarize(n_lim_ng))
 
         # Lets now look at the load factors associated with the Vc, since it is here that the
         # greatest load factors can appear
@@ -525,10 +520,10 @@ class ComputeVN(om.ExplicitComponent):
         n_vc_ps = max(load_factor_gust_p(u_de_vc, vc), n_lim_ps)  # [-]
         n_vc_ng = min(load_factor_gust_n(u_de_vc, vc), n_lim_ng)  # [-]
 
-        velocity_array.append(float(vc))
-        load_factor_array.append(float(n_vc_ps))
-        velocity_array.append(float(vc))
-        load_factor_array.append(float(n_vc_ng))
+        velocity_array.append(scalarize(vc))
+        load_factor_array.append(scalarize(n_vc_ps))
+        velocity_array.append(scalarize(vc))
+        load_factor_array.append(scalarize(n_vc_ng))
 
         # We now compute the diving speed, methods are described in CS 23.335 (b). We will take
         # the minimum diving speed allowable as our design diving speed. We need to keep in mind
@@ -568,9 +563,9 @@ class ComputeVN(om.ExplicitComponent):
         vd_min_2 = k_d * vc_min_fin  # [m/s]
         vd = max(vd_min_1, vd_min_2)  # [m/s]
 
-        velocity_array.append(float(vd))
-        load_factor_array.append(float(n_lim_ps))
-        velocity_array.append(float(vd))
+        velocity_array.append(scalarize(vd))
+        load_factor_array.append(scalarize(n_lim_ps))
+        velocity_array.append(scalarize(vd))
         load_factor_array.append(0.0)
 
         # Similarly to what was done for the design cruising speed we will explore the load
@@ -590,10 +585,10 @@ class ComputeVN(om.ExplicitComponent):
 
         n_vd_ng = load_factor_gust_n(u_de_vd, vd)  # [-]
 
-        velocity_array.append(float(vd))
-        load_factor_array.append(float(n_vd_ps))
-        velocity_array.append(float(vd))
-        load_factor_array.append(float(n_vd_ng))
+        velocity_array.append(scalarize(vd))
+        load_factor_array.append(scalarize(n_vd_ps))
+        velocity_array.append(scalarize(vd))
+        load_factor_array.append(scalarize(n_vd_ng))
 
         # We have now calculated all the velocities need to plot the flight domain. For the sake
         # of thoroughness we will also compute the maximal structural cruising speed and cruise
@@ -613,7 +608,7 @@ class ComputeVN(om.ExplicitComponent):
 
         v_ne = 0.9 * vd  # [m/s]
 
-        velocity_array.append(float(v_ne))
+        velocity_array.append(scalarize(v_ne))
         load_factor_array.append(0.0)
 
         v_no_min = vc_min  # [m/s]
@@ -624,7 +619,7 @@ class ComputeVN(om.ExplicitComponent):
 
         v_no = max(v_no_min, v_no_max)  # [m/s]
 
-        velocity_array.append(float(v_no))
+        velocity_array.append(scalarize(v_no))
         load_factor_array.append(0.0)
 
         # One additional velocity needs to be computed if we are talking about commuter aircraft.
@@ -668,8 +663,8 @@ class ComputeVN(om.ExplicitComponent):
             vmg = 0.0  # [m/s]
             n_vmg = 0.0
 
-        velocity_array.append(float(vmg))
-        load_factor_array.append(float(n_vmg))
+        velocity_array.append(scalarize(vmg))
+        load_factor_array.append(scalarize(n_vmg))
 
         # Let us now look at the flight domain in the flap extended configuration. For the
         # computation of these speeds and load factors, we will use the formula provided in CS
@@ -691,7 +686,7 @@ class ComputeVN(om.ExplicitComponent):
         vfe_min = max(vfe_min_1, vfe_min_2)  # [m/s]
         vfe = vfe_min  # [m/s]
 
-        velocity_array.append(float(vs_fe_1g_ps))
+        velocity_array.append(scalarize(vs_fe_1g_ps))
         load_factor_array.append(1.0)
 
         # We can then move on to the computation of the load limitation of the flapped flight
@@ -703,10 +698,10 @@ class ComputeVN(om.ExplicitComponent):
         n_lim_ps_fe = 2.0
         n_vfe = max(n_lim_ps_fe, load_factor_gust_n(u_de_fe, vfe))
 
-        velocity_array.append(float(vs_fe_1g_ps * np.sqrt(n_vfe)))
-        load_factor_array.append(float(n_vfe))
-        velocity_array.append(float(vfe))
-        load_factor_array.append(float(n_vfe))
+        velocity_array.append(scalarize(vs_fe_1g_ps * np.sqrt(n_vfe)))
+        load_factor_array.append(scalarize(n_vfe))
+        velocity_array.append(scalarize(vfe))
+        load_factor_array.append(scalarize(n_vfe))
 
         # We also store the conditions in which the values were computed so that we can easily
         # access them when drawing the flight domains

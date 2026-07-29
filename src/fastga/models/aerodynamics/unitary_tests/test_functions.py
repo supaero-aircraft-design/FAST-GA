@@ -96,7 +96,7 @@ from fastga.models.aerodynamics.components.wing import (
     ComputeCyBetaWing,
 )
 from fastga.models.aerodynamics.external.neuralfoil.neuralfoil_polar import NeuralfoilPolar
-from fastga.models.aerodynamics.external.openvsp import ComputeAeroOpenVSP
+from fastga.models.aerodynamics.external.openvsp import ComputeAeroOpenVSP, OpenVSPSimpleGeometry
 from fastga.models.aerodynamics.external.openvsp.compute_aero_slipstream import (
     ComputeSlipstreamOpenvsp,
 )
@@ -163,7 +163,7 @@ def polar_result_retrieve(tmp_folder):
     # Retrieve the polar results set aside during the test duration if there are some [need
     # writing permission]
 
-    files = pathlib.Path(resources.__path__[0]).glob("*.csv")
+    files = pathlib.Path(tmp_folder.name).glob("*.csv")
 
     for file in files:
         if file.is_file():
@@ -178,8 +178,8 @@ def polar_result_retrieve(tmp_folder):
                     )
                 else:
                     _LOGGER.info(
-                       f"Cannot copy {file.as_posix()} file to {tmp_folder.name}! Likely because "
-                       f"the file already exists in the target directory"
+                        f"Cannot copy {file.as_posix()} file to {tmp_folder.name}! Likely because "
+                        f"the file already exists in the target directory"
                     )
 
     tmp_folder.cleanup()
@@ -646,7 +646,9 @@ def polar_ext_folder(
     """Tests polar execution (XFOIL) @ high and low speed! with the option airfoil_folder_path"""
     # Transfer saved polar results to temporary folder
     tmp_folder = polar_result_transfer()
-    shutil.copy(DATA_FOLDER / "sample_airfoil.af", tmp_folder.name / "sample_airfoil.af")
+    shutil.copy(
+        DATA_FOLDER / "sample_airfoil.af", pathlib.Path(tmp_folder.name) / "sample_airfoil.af"
+    )
 
     # Define high-speed parameters (with .xml file and additional inputs)
     ivc = get_indep_var_comp(list_inputs(XfoilPolar()), __file__, xml_file_name)
@@ -675,7 +677,9 @@ def polar_ext_folder(
 
     # Transfer saved polar results to temporary folder
     tmp_folder = polar_result_transfer()
-    shutil.copy(DATA_FOLDER / "sample_airfoil.af", tmp_folder.name / "sample_airfoil.af")
+    shutil.copy(
+        DATA_FOLDER / "sample_airfoil.af", pathlib.Path(tmp_folder.name) / "sample_airfoil.af"
+    )
 
     # Define low-speed parameters (with .xml file and additional inputs)
     ivc = get_indep_var_comp(list_inputs(XfoilPolar()), __file__, xml_file_name)
@@ -712,7 +716,9 @@ def polar_ext_folder_inv(
     """Tests polar execution (XFOIL) @ high and low speed! with the option airfoil_folder_path"""
     # Transfer saved polar results to temporary folder
     tmp_folder = polar_result_transfer()
-    shutil.copy(DATA_FOLDER / "sample_airfoil.af", tmp_folder.name / "sample_airfoil.af")
+    shutil.copy(
+        DATA_FOLDER / "sample_airfoil.af", pathlib.Path(tmp_folder.name) / "sample_airfoil.af"
+    )
 
     # Define high-speed parameters (with .xml file and additional inputs)
     ivc = get_indep_var_comp(list_inputs(XfoilPolar()), __file__, xml_file_name)
@@ -740,7 +746,9 @@ def polar_ext_folder_inv(
 
     # Transfer saved polar results to temporary folder
     tmp_folder = polar_result_transfer()
-    shutil.copy(DATA_FOLDER / "sample_airfoil.af", tmp_folder.name / "sample_airfoil.af")
+    shutil.copy(
+        DATA_FOLDER / "sample_airfoil.af", pathlib.Path(tmp_folder.name) / "sample_airfoil.af"
+    )
 
     # Define high-speed parameters (with .xml file and additional inputs)
     ivc = get_indep_var_comp(list_inputs(XfoilPolar()), __file__, xml_file_name)
@@ -783,7 +791,9 @@ def polar_ext_folder_neuralfoil(
     airfoil_folder_path"""
     # Transfer saved polar results to temporary folder
     tmp_folder = polar_result_transfer()
-    shutil.copy(DATA_FOLDER / "sample_airfoil.af", tmp_folder.name / "sample_airfoil.af")
+    shutil.copy(
+        DATA_FOLDER / "sample_airfoil.af", pathlib.Path(tmp_folder.name) / "sample_airfoil.af"
+    )
 
     # Define high-speed parameters (with .xml file and additional inputs)
     ivc = get_indep_var_comp(list_inputs(NeuralfoilPolar()), __file__, xml_file_name)
@@ -810,7 +820,9 @@ def polar_ext_folder_neuralfoil(
 
     # Transfer saved polar results to temporary folder
     tmp_folder = polar_result_transfer()
-    shutil.copy(DATA_FOLDER / "sample_airfoil.af", tmp_folder.name / "sample_airfoil.af")
+    shutil.copy(
+        DATA_FOLDER / "sample_airfoil.af", pathlib.Path(tmp_folder.name) / "sample_airfoil.af"
+    )
 
     # Define low-speed parameters (with .xml file and additional inputs)
     ivc = get_indep_var_comp(list_inputs(NeuralfoilPolar()), __file__, xml_file_name)
@@ -987,6 +999,7 @@ def compute_aero(
 
     # Research independent input value in .xml file
     if use_openvsp:
+        OpenVSPSimpleGeometry._cache.clear()
         # noinspection PyTypeChecker
         ivc = get_indep_var_comp(
             list_inputs(ComputeAeroOpenVSP(low_speed_aero=low_speed_aero)), __file__, xml_file_name
@@ -1015,6 +1028,7 @@ def compute_aero(
         problem = run_system(openvsp_comp, ivc)
         stop = time.time()
     else:
+        VLMSimpleGeometry._cache.clear()
         # noinspection PyTypeChecker
         ivc = get_indep_var_comp(
             list_inputs(ComputeAeroVLM(low_speed_aero=low_speed_aero)), __file__, xml_file_name
@@ -1073,7 +1087,7 @@ def compute_aero_neuralfoil(
     tmp_folder = polar_result_transfer()
 
     # Research independent input value in .xml file
-
+    VLMSimpleGeometry._cache.clear()
     ivc = get_indep_var_comp(
         list_inputs(ComputeAeroVLM(low_speed_aero=low_speed_aero, use_neuralfoil=True)),
         __file__,
@@ -1116,6 +1130,7 @@ def comp_aero_input_aoa(
 
     # Research independent input value in .xml file
     if use_openvsp:
+        OpenVSPSimpleGeometry._cache.clear()
         # noinspection PyTypeChecker
         ivc = get_indep_var_comp(
             list_inputs(ComputeAeroOpenVSP(low_speed_aero=low_speed_aero)), __file__, xml_file_name
@@ -1146,6 +1161,7 @@ def comp_aero_input_aoa(
         problem = run_system(openvsp_comp, ivc)
         stop = time.time()
     else:
+        VLMSimpleGeometry._cache.clear()
         # noinspection PyTypeChecker
         ivc = get_indep_var_comp(
             list_inputs(ComputeAeroVLM(low_speed_aero=low_speed_aero)), __file__, xml_file_name
@@ -1204,6 +1220,8 @@ def comp_aero_input_aoa_neuralfoil(
 
     # Transfer saved polar results to temporary folder
     tmp_folder = polar_result_transfer()
+
+    VLMSimpleGeometry._cache.clear()
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
@@ -1268,7 +1286,7 @@ def comp_high_speed_xfoil(
     use_openvsp: bool,
 ):
     """Tests components @ high speed!"""
-    for mach_interpolation in [True, False]:
+    for mach_interpolation in [False, True]:
         problem = compute_aero(
             xml_file_name,
             use_openvsp=use_openvsp,
@@ -1433,7 +1451,6 @@ def comp_high_speed_input_aoa_neuralfoil(xml_file_name: str):
         problem = compute_aero_neuralfoil(
             xml_file_name, mach_interpolation=mach_interpolation, low_speed_aero=False
         )
-        VLMSimpleGeometry._cache.clear()
         problem_input_aoa = comp_aero_input_aoa_neuralfoil(
             xml_file_name, mach_interpolation=mach_interpolation, low_speed_aero=False
         )
@@ -1663,7 +1680,6 @@ def comp_low_speed_input_aoa_xfoil(
 def comp_low_speed_input_aoa_neuralfoil(xml_file_name: str):
     """Tests components @ low speed!"""
     problem = compute_aero_neuralfoil(xml_file_name, mach_interpolation=False, low_speed_aero=True)
-    VLMSimpleGeometry._cache.clear()
     problem_input_aoa = comp_aero_input_aoa_neuralfoil(
         xml_file_name, mach_interpolation=False, low_speed_aero=True
     )
@@ -2064,11 +2080,11 @@ def slipstream_openvsp_cruise(
     y_result_prop_on = problem.get_val(
         "data:aerodynamics:slipstream:wing:cruise:prop_on:Y_vector", units="m"
     )
-    assert np.max(np.abs(y_vector_prop_on - y_result_prop_on)) <= 1e-2
+    assert y_result_prop_on == pytest.approx(y_vector_prop_on, abs=1e-2)
     cl_result_prop_on = problem.get_val(
         "data:aerodynamics:slipstream:wing:cruise:prop_on:CL_vector"
     )
-    assert np.max(np.abs(cl_vector_prop_on - cl_result_prop_on)) <= 1e-2
+    assert cl_vector_prop_on == pytest.approx(cl_result_prop_on, abs=1e-2)
     assert problem.get_val(
         "data:aerodynamics:slipstream:wing:cruise:prop_on:CT_ref"
     ) == pytest.approx(ct, abs=1e-4)
@@ -2286,25 +2302,12 @@ def v_n_diagram(
     # Run problem with VLM and check obtained value(s) is/(are) correct
     # noinspection PyTypeChecker
     problem = run_system(ComputeVNAndVH(propulsion_id=engine_wrapper_id), ivc)
-    assert (
-        np.max(
-            np.abs(
-                velocity_vect
-                - problem.get_val(
-                    "data:mission:sizing:cs23:flight_domain:mtow:velocity", units="m/s"
-                )
-            )
-        )
-        <= 1e-3
+    assert velocity_vect == pytest.approx(
+        problem.get_val("data:mission:sizing:cs23:flight_domain:mtow:velocity", units="m/s"),
+        abs=1e-3,
     )
-    assert (
-        np.max(
-            np.abs(
-                load_factor_vect
-                - problem["data:mission:sizing:cs23:flight_domain:mtow:load_factor"]
-            )
-        )
-        <= 1e-3
+    assert load_factor_vect == pytest.approx(
+        problem["data:mission:sizing:cs23:flight_domain:mtow:load_factor"], abs=1e-3
     )
 
 
@@ -2980,10 +2983,10 @@ def roll_moment_side_slip_aircraft(
         "data:aerodynamics:aircraft:low_speed:Cl_beta", units="rad**-1"
     ) == pytest.approx(cl_beta_low_speed_, rel=1e-3)
 
-    # No need to check wing/HT contribution as it is computed with fd
+    # We already check them individually
     problem.check_partials(
         compact_print=True,
-        excludes=["data:aerodynamics:wing:*", "data:aerodynamics:horizontal_tail:*"],
+        excludes=["*wing_contribution*", "*ht_contribution*", "*vt_contribution*"],
     )
 
     # Research independent input value in .xml file
@@ -2997,10 +3000,10 @@ def roll_moment_side_slip_aircraft(
         "data:aerodynamics:aircraft:cruise:Cl_beta", units="rad**-1"
     ) == pytest.approx(cl_beta_cruise_, rel=1e-3)
 
-    # No need to check wing/HT contribution as it is computed with fd
+    # We already check them individually
     problem.check_partials(
         compact_print=True,
-        excludes=["data:aerodynamics:wing:*", "data:aerodynamics:horizontal_tail:*"],
+        excludes=["*wing_contribution*", "*ht_contribution*", "*vt_contribution*"],
     )
 
 
@@ -3108,10 +3111,10 @@ def roll_moment_roll_rate_aircraft(
         "data:aerodynamics:aircraft:low_speed:Cl_p", units="rad**-1"
     ) == pytest.approx(cl_p_low_speed_, rel=1e-3)
 
-    # No need to check wing/HT contribution as it is computed with fd
+    # Checked individually
     problem.check_partials(
         compact_print=True,
-        excludes=["data:aerodynamics:wing:*", "data:aerodynamics:horizontal_tail:*"],
+        excludes=["*wing_contribution*", "*ht_contribution*", "*vt_contribution*"],
     )
 
     # Research independent input value in .xml file
@@ -3125,10 +3128,10 @@ def roll_moment_roll_rate_aircraft(
         "data:aerodynamics:aircraft:cruise:Cl_p", units="rad**-1"
     ) == pytest.approx(cl_p_cruise_, rel=1e-3)
 
-    # No need to check wing/HT contribution as it is computed with fd
+    # Checked individually
     problem.check_partials(
         compact_print=True,
-        excludes=["data:aerodynamics:wing:*", "data:aerodynamics:horizontal_tail:*"],
+        excludes=["*wing_contribution*", "*ht_contribution*", "*vt_contribution*"],
     )
 
 
@@ -3213,8 +3216,10 @@ def roll_moment_yaw_rate_aircraft(
         "data:aerodynamics:aircraft:low_speed:Cl_r", units="rad**-1"
     ) == pytest.approx(cl_r_low_speed_, rel=1e-3)
 
-    # No need to check wing contribution as it is computed with fd
-    problem.check_partials(compact_print=True, excludes=["data:aerodynamics:wing:*"])
+    # Checked individually
+    problem.check_partials(
+        compact_print=True, excludes=["*wing_contribution*", "*vt_contribution*"]
+    )
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
@@ -3227,8 +3232,10 @@ def roll_moment_yaw_rate_aircraft(
         "data:aerodynamics:aircraft:cruise:Cl_r", units="rad**-1"
     ) == pytest.approx(cl_r_cruise_, rel=1e-3)
 
-    # No need to check wing contribution as it is computed with fd
-    problem.check_partials(compact_print=True, excludes=["data:aerodynamics:wing:*"])
+    # Checked individually
+    problem.check_partials(
+        compact_print=True, excludes=["*wing_contribution*", "*vt_contribution*"]
+    )
 
 
 def roll_authority_aileron(
@@ -3375,8 +3382,10 @@ def pitch_moment_pitch_rate_aircraft(
         "data:aerodynamics:aircraft:low_speed:Cm_q", units="rad**-1"
     ) == pytest.approx(cm_q_low_speed_, rel=1e-3)
 
-    # No need to check wing contribution as it is computed with fd
-    problem.check_partials(compact_print=True, excludes=["data:aerodynamics:wing:*"])
+    # Checked individually
+    problem.check_partials(
+        compact_print=True, excludes=["*wing_contribution*", "*ht_contribution*"]
+    )
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
@@ -3389,8 +3398,10 @@ def pitch_moment_pitch_rate_aircraft(
         "data:aerodynamics:aircraft:cruise:Cm_q", units="rad**-1"
     ) == pytest.approx(cm_q_cruise_, rel=1e-3)
 
-    # No need to check wing contribution as it is computed with fd
-    problem.check_partials(compact_print=True, excludes=["data:aerodynamics:wing:*"])
+    # Checked individually
+    problem.check_partials(
+        compact_print=True, excludes=["*wing_contribution*", "*ht_contribution*"]
+    )
 
 
 def pitch_moment_aoa_rate_derivative(
@@ -3619,8 +3630,10 @@ def yaw_moment_roll_rate_aircraft(
         "data:aerodynamics:aircraft:low_speed:Cn_p", units="rad**-1"
     ) == pytest.approx(cn_p_low_speed_, rel=1e-3)
 
-    # Do not check partials on wing contribution as it is already calculated by fd
-    problem.check_partials(compact_print=True, excludes=["data:aerodynamics:wing:*"])
+    # Individually checked
+    problem.check_partials(
+        compact_print=True, excludes=["*wing_contribution*", "*vt_contribution*"]
+    )
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
@@ -3633,8 +3646,10 @@ def yaw_moment_roll_rate_aircraft(
         "data:aerodynamics:aircraft:cruise:Cn_p", units="rad**-1"
     ) == pytest.approx(cn_p_cruise_, rel=1e-3)
 
-    # Do not check partials on wing contribution as it is already calculated by fd
-    problem.check_partials(compact_print=True, excludes=["data:aerodynamics:wing:*"])
+    # Individually checked
+    problem.check_partials(
+        compact_print=True, excludes=["*wing_contribution*", "*vt_contribution*"]
+    )
 
 
 def yaw_moment_yaw_rate_wing(
@@ -3717,8 +3732,10 @@ def yaw_moment_yaw_rate_aircraft(
         "data:aerodynamics:aircraft:low_speed:Cn_r", units="rad**-1"
     ) == pytest.approx(cn_r_low_speed_, rel=1e-3)
 
-    # Do not check partials on wing contribution as it is already calculated by fd
-    problem.check_partials(compact_print=True, excludes=["data:aerodynamics:wing:*"])
+    # Checked individually
+    problem.check_partials(
+        compact_print=True, excludes=["*wing_contribution*", "*vt_contribution*"]
+    )
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
@@ -3731,5 +3748,7 @@ def yaw_moment_yaw_rate_aircraft(
         "data:aerodynamics:aircraft:cruise:Cn_r", units="rad**-1"
     ) == pytest.approx(cn_r_cruise_, rel=1e-3)
 
-    # Do not check partials on wing contribution as it is already calculated by fd
-    problem.check_partials(compact_print=True, excludes=["data:aerodynamics:wing:*"])
+    # Checked individually
+    problem.check_partials(
+        compact_print=True, excludes=["*wing_contribution*", "*vt_contribution*"]
+    )

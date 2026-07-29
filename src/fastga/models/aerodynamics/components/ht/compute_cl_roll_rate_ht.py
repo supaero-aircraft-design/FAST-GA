@@ -75,16 +75,16 @@ class ComputeClRollRateHorizontalTail(FigureDigitization):
         self.declare_partials(of="*", wrt="*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        ht_ar = inputs["data:geometry:horizontal_tail:aspect_ratio"]
+        ht_ar = inputs["data:geometry:horizontal_tail:aspect_ratio"].item()
         wing_span = inputs["data:geometry:wing:span"]
         ht_span = inputs["data:geometry:horizontal_tail:span"]
         wing_area = inputs["data:geometry:wing:area"]
         ht_area = inputs["data:geometry:horizontal_tail:area"]
-        ht_taper_ratio = inputs["data:geometry:horizontal_tail:taper_ratio"]
-        ht_sweep_25 = inputs["data:geometry:horizontal_tail:sweep_25"]  # In rad !!!
+        ht_taper_ratio = inputs["data:geometry:horizontal_tail:taper_ratio"].item()
+        ht_sweep_25 = inputs["data:geometry:horizontal_tail:sweep_25"].item()  # In rad !!!
         ht_dihedral = inputs["data:geometry:horizontal_tail:dihedral"]  # In rad
 
-        if float(inputs["data:geometry:horizontal_tail:z:from_wingMAC25"]) == 0.0:
+        if inputs["data:geometry:horizontal_tail:z:from_wingMAC25"] == 0.0:
             z2_ht = 0.0  # Aligned with the fuselage centerline
         else:
             z2_ht = (
@@ -92,12 +92,12 @@ class ComputeClRollRateHorizontalTail(FigureDigitization):
                 - inputs["data:geometry:horizontal_tail:z:from_wingMAC25"]
             )
 
-        cl_alpha_airfoil = inputs["data:aerodynamics:horizontal_tail:airfoil:CL_alpha"]
+        cl_alpha_airfoil = inputs["data:aerodynamics:horizontal_tail:airfoil:CL_alpha"].item()
 
         ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
 
         aoa_ref = inputs["settings:aerodynamics:reference_flight_conditions:" + ls_tag + ":AOA"]
-        mach = inputs["data:aerodynamics:" + ls_tag + ":mach"]
+        mach = inputs["data:aerodynamics:" + ls_tag + ":mach"].item()
         cl_0_ht = inputs["data:aerodynamics:horizontal_tail:" + ls_tag + ":CL0"]
         cl_alpha_ht = inputs["data:aerodynamics:horizontal_tail:" + ls_tag + ":CL_alpha"]
         cd0_ht = inputs["data:aerodynamics:horizontal_tail:" + ls_tag + ":CD0"]

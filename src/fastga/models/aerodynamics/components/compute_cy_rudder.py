@@ -62,38 +62,34 @@ class ComputeCyDeltaRudder(FigureDigitization):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        taper_ratio_vt = inputs["data:geometry:vertical_tail:taper_ratio"]
-        aspect_ratio_vt = inputs["data:geometry:vertical_tail:aspect_ratio"]
-        thickness_ratio_vt = inputs["data:geometry:vertical_tail:thickness_ratio"]
-        rudder_chord_ratio = inputs["data:geometry:vertical_tail:rudder:chord_ratio"]
-        k_ar_effective = inputs["data:aerodynamics:vertical_tail:k_ar_effective"]
+        taper_ratio_vt = inputs["data:geometry:vertical_tail:taper_ratio"].item()
+        aspect_ratio_vt = inputs["data:geometry:vertical_tail:aspect_ratio"].item()
+        thickness_ratio_vt = inputs["data:geometry:vertical_tail:thickness_ratio"].item()
+        rudder_chord_ratio = inputs["data:geometry:vertical_tail:rudder:chord_ratio"].item()
+        k_ar_effective = inputs["data:aerodynamics:vertical_tail:k_ar_effective"].item()
 
         if self.options["low_speed_aero"]:
             cl_alpha_vt = inputs["data:aerodynamics:vertical_tail:low_speed:CL_alpha"]
         else:
             cl_alpha_vt = inputs["data:aerodynamics:vertical_tail:cruise:CL_alpha"]
 
-        cl_alpha_vt_airfoil = inputs["data:aerodynamics:vertical_tail:airfoil:CL_alpha"]
+        cl_alpha_vt_airfoil = inputs["data:aerodynamics:vertical_tail:airfoil:CL_alpha"].item()
 
         # Assumed that the rudder covers more or less all of the vertical tail while leaving a
         # small gap at the bottom and at the top
         eta_in = 0.05
         eta_out = 0.95
-        kb = self.k_b_flaps(eta_in, eta_out, float(taper_ratio_vt))
+        kb = self.k_b_flaps(eta_in, eta_out, taper_ratio_vt)
 
         # Interpolation of the first graph of figure 8.53 of Roskam
-        rudder_effectiveness_parameter = self.a_delta_airfoil(float(rudder_chord_ratio))
-        k_a_delta = self.k_a_delta(
-            float(rudder_effectiveness_parameter), float(k_ar_effective * aspect_ratio_vt)
-        )
+        rudder_effectiveness_parameter = self.a_delta_airfoil(rudder_chord_ratio)
+        k_a_delta = self.k_a_delta(rudder_effectiveness_parameter, k_ar_effective * aspect_ratio_vt)
 
         k_cl_delta = self.k_cl_delta_plain_flap(
-            float(thickness_ratio_vt), float(cl_alpha_vt_airfoil), float(rudder_chord_ratio)
+            thickness_ratio_vt, cl_alpha_vt_airfoil, rudder_chord_ratio
         )
 
-        cl_delta_th = self.cl_delta_theory_plain_flap(
-            float(thickness_ratio_vt), float(rudder_chord_ratio)
-        )
+        cl_delta_th = self.cl_delta_theory_plain_flap(thickness_ratio_vt, rudder_chord_ratio)
 
         cy_delta_r = cl_alpha_vt / cl_alpha_vt_airfoil * kb * k_a_delta * k_cl_delta * cl_delta_th
 

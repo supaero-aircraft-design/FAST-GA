@@ -166,12 +166,12 @@ class ComputeWing3DExtremeCL(om.ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        y_root = float(inputs["data:geometry:wing:root:y"])
-        y_tip = float(inputs["data:geometry:wing:tip:y"])
-        cl_max_2d_root = float(inputs["data:aerodynamics:wing:low_speed:root:CL_max_2D"])
-        cl_max_2d_tip = float(inputs["data:aerodynamics:wing:low_speed:tip:CL_max_2D"])
-        cl_min_2d_root = float(inputs["data:aerodynamics:wing:low_speed:root:CL_min_2D"])
-        cl_min_2d_tip = float(inputs["data:aerodynamics:wing:low_speed:tip:CL_min_2D"])
+        y_root = inputs["data:geometry:wing:root:y"].item()
+        y_tip = inputs["data:geometry:wing:tip:y"].item()
+        cl_max_2d_root = inputs["data:aerodynamics:wing:low_speed:root:CL_max_2D"].item()
+        cl_max_2d_tip = inputs["data:aerodynamics:wing:low_speed:tip:CL_max_2D"].item()
+        cl_min_2d_root = inputs["data:aerodynamics:wing:low_speed:root:CL_min_2D"].item()
+        cl_min_2d_tip = inputs["data:aerodynamics:wing:low_speed:tip:CL_min_2D"].item()
         cl_ref = inputs["data:aerodynamics:wing:low_speed:CL_ref"]
         y_interp = inputs["data:aerodynamics:wing:low_speed:Y_vector"]
         cl_interp = inputs["data:aerodynamics:wing:low_speed:CL_vector"]

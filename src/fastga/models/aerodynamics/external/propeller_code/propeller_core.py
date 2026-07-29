@@ -16,6 +16,7 @@ import logging
 
 import numpy as np
 import openmdao.api as om
+from fastoad._utils.arrays import scalarize
 from scipy.optimize import root
 from stdatm import Atmosphere
 
@@ -161,7 +162,7 @@ class PropellerCoreModule(om.ExplicitComponent):
         thrust_element_vector = np.zeros_like(radius)
         torque_element_vector = np.zeros_like(radius)
         alpha_vect = np.zeros_like(radius)
-        speed_vect = np.array([0.1 * float(v_inf), 1.0])
+        speed_vect = np.array([0.1 * scalarize(v_inf), 1.0])
 
         chord = np.interp(radius / radius_max, radius_ratio_vect, chord_vect)
 
@@ -217,14 +218,14 @@ class PropellerCoreModule(om.ExplicitComponent):
                 thrust_element_vector[idx] = 0.0
                 torque_element_vector[idx] = 0.0
             else:
-                thrust_element_vector[idx] = results[0] * element_length * atm.density
-                torque_element_vector[idx] = results[1] * element_length * atm.density
+                thrust_element_vector[idx] = scalarize(results[0] * element_length * atm.density)
+                torque_element_vector[idx] = scalarize(results[1] * element_length * atm.density)
             alpha_vect[idx] = results[2]
 
         torque = np.sum(torque_element_vector)
-        thrust = float(np.sum(thrust_element_vector))
-        power = float(torque * omega)
-        eta = float(v_inf * thrust / power)
+        thrust = np.sum(thrust_element_vector)
+        power = torque * scalarize(omega)
+        eta = scalarize(v_inf) * thrust / power
 
         return thrust, eta, torque
 
@@ -320,9 +321,9 @@ class PropellerCoreModule(om.ExplicitComponent):
 
         # Store results
         output = np.empty(4)
-        output[0] = thrust_element
-        output[1] = torque_element
-        output[2] = alpha
+        output[0] = scalarize(thrust_element)
+        output[1] = scalarize(torque_element)
+        output[2] = scalarize(alpha)
         output[3] = out_of_polars
 
         return output
@@ -388,8 +389,8 @@ class PropellerCoreModule(om.ExplicitComponent):
 
         # Store results
         output = np.empty(2)
-        output[0] = thrust_element
-        output[1] = torque_element
+        output[0] = scalarize(thrust_element)
+        output[1] = scalarize(torque_element)
 
         return output
 

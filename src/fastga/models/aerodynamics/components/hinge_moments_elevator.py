@@ -79,11 +79,11 @@ class Compute2DHingeMomentsTail(FigureDigitization):
     # pylint: disable=missing-function-docstring, unused-argument
     # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        elevator_chord_ratio = inputs["data:geometry:horizontal_tail:elevator_chord_ratio"]
-        tail_thickness_ratio = inputs["data:geometry:horizontal_tail:thickness_ratio"]
-        cl_alpha_airfoil_ht = inputs["data:aerodynamics:horizontal_tail:airfoil:CL_alpha"]
-        v_cruise = inputs["data:TLAR:v_cruise"]
-        cruise_alt = inputs["data:mission:sizing:main_route:cruise:altitude"]
+        elevator_chord_ratio = inputs["data:geometry:horizontal_tail:elevator_chord_ratio"].item()
+        tail_thickness_ratio = inputs["data:geometry:horizontal_tail:thickness_ratio"].item()
+        cl_alpha_airfoil_ht = inputs["data:aerodynamics:horizontal_tail:airfoil:CL_alpha"].item()
+        v_cruise = inputs["data:TLAR:v_cruise"].item()
+        cruise_alt = inputs["data:mission:sizing:main_route:cruise:altitude"].item()
 
         # Section 10.4.1.1
         # Step 1.
@@ -111,13 +111,13 @@ class Compute2DHingeMomentsTail(FigureDigitization):
         # Step 2.
         cl_alpha_ht_th = 6.3 + tail_thickness_ratio / 0.2 * (7.3 - 6.3)
 
-        k_cl_alpha = float(cl_alpha_airfoil_ht) / float(cl_alpha_ht_th)
+        k_cl_alpha = cl_alpha_airfoil_ht / cl_alpha_ht_th
 
         k_ch_alpha = self.k_ch_alpha(
-            float(tail_thickness_ratio), float(cl_alpha_airfoil_ht), float(elevator_chord_ratio)
+            tail_thickness_ratio, cl_alpha_airfoil_ht, elevator_chord_ratio
         )
 
-        ch_alpha = self.ch_alpha_th(float(tail_thickness_ratio), float(elevator_chord_ratio))
+        ch_alpha = self.ch_alpha_th(tail_thickness_ratio, elevator_chord_ratio)
 
         ch_prime_alpha = k_ch_alpha * ch_alpha
 
@@ -157,10 +157,10 @@ class Compute2DHingeMomentsTail(FigureDigitization):
         # Step 2.
 
         k_ch_delta = self.k_ch_delta(
-            float(tail_thickness_ratio), float(cl_alpha_airfoil_ht), float(elevator_chord_ratio)
+            tail_thickness_ratio, cl_alpha_airfoil_ht, elevator_chord_ratio
         )
 
-        ch_delta = self.ch_delta_th(float(tail_thickness_ratio), float(elevator_chord_ratio))
+        ch_delta = self.ch_delta_th(tail_thickness_ratio, elevator_chord_ratio)
 
         ch_prime_delta = k_ch_delta * ch_delta
 
@@ -171,11 +171,11 @@ class Compute2DHingeMomentsTail(FigureDigitization):
 
         else:
             cl_delta_th = self.cl_delta_theory_plain_flap(
-                float(tail_thickness_ratio), float(elevator_chord_ratio)
+                tail_thickness_ratio, elevator_chord_ratio
             )
 
             k_cl_delta = self.k_cl_delta_plain_flap(
-                float(tail_thickness_ratio), float(cl_alpha_airfoil_ht), float(elevator_chord_ratio)
+                tail_thickness_ratio, cl_alpha_airfoil_ht, elevator_chord_ratio
             )
 
             ch_prime_prime_delta = ch_prime_delta + (

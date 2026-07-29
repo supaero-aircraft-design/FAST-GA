@@ -328,7 +328,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
 
         @param inputs: inputs parameters defined within FAST-OAD-GA
         @param altitude: altitude for aerodynamic calculation in meters
-        @param mach: air speed expressed in mach
+        @param mach: air speed expressed in mach, should be a one item array
         @param aoa_angle: air speed angle of attack with respect to aircraft
         @return: cl_0_wing, cl_alpha_wing, cm_0_wing, y_vector_wing, cl_vector_wing, coeff_k_wing,
         cl_0_htp, cl_X_htp, cl_alpha_htp, cl_alpha_htp_isolated, y_vector_htp, cl_vector_htp,
@@ -347,7 +347,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         """
 
         # Fix mach number of digits to consider similar results
-        mach = round(float(mach) * 1e3) / 1e3
+        mach = round(mach.item() * 1e3) / 1e3
 
         # Get inputs necessary to define global geometry
         if self.options["low_speed_aero"]:
@@ -362,17 +362,17 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             cdp_htp_airfoil = inputs["data:aerodynamics:horizontal_tail:cruise:CDp"]
         width_max = inputs["data:geometry:fuselage:maximum_width"]
         span_wing = inputs["data:geometry:wing:span"]
-        sref_wing = float(inputs["data:geometry:wing:area"])
-        sref_htp = float(inputs["data:geometry:horizontal_tail:area"])
+        sref_wing = inputs["data:geometry:wing:area"].item()
+        sref_htp = inputs["data:geometry:horizontal_tail:area"].item()
         area_ratio = sref_htp / sref_wing
-        sweep25_wing = float(inputs["data:geometry:wing:sweep_25"])
-        taper_ratio_wing = float(inputs["data:geometry:wing:taper_ratio"])
-        aspect_ratio_wing = float(inputs["data:geometry:wing:aspect_ratio"])
-        sweep25_htp = float(inputs["data:geometry:horizontal_tail:sweep_25"])
-        aspect_ratio_htp = float(inputs["data:geometry:horizontal_tail:aspect_ratio"])
-        taper_ratio_htp = float(inputs["data:geometry:horizontal_tail:taper_ratio"])
-        dihedral_angle = float(inputs["data:geometry:wing:dihedral"])
-        twist_angle = float(inputs["data:geometry:wing:twist"])
+        sweep25_wing = inputs["data:geometry:wing:sweep_25"].item()
+        taper_ratio_wing = inputs["data:geometry:wing:taper_ratio"].item()
+        aspect_ratio_wing = inputs["data:geometry:wing:aspect_ratio"].item()
+        sweep25_htp = inputs["data:geometry:horizontal_tail:sweep_25"].item()
+        aspect_ratio_htp = inputs["data:geometry:horizontal_tail:aspect_ratio"].item()
+        taper_ratio_htp = inputs["data:geometry:horizontal_tail:taper_ratio"].item()
+        dihedral_angle = inputs["data:geometry:wing:dihedral"].item()
+        twist_angle = inputs["data:geometry:wing:twist"].item()
         geometry_set = np.around(
             np.array(
                 [
@@ -579,12 +579,12 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         self._run(inputs, run_opt="wing")
 
         # Get inputs
-        aspect_ratio = float(inputs["data:geometry:wing:aspect_ratio"])
+        aspect_ratio = inputs["data:geometry:wing:aspect_ratio"].item()
         l0_wing = inputs["data:geometry:wing:MAC:length"]
 
-        y2_wing = float(inputs["data:geometry:wing:root:y"])
-        semi_span = float(inputs["data:geometry:wing:span"]) / 2.0
-        wing_twist = float(inputs["data:geometry:wing:twist"])
+        y2_wing = inputs["data:geometry:wing:root:y"].item()
+        semi_span = inputs["data:geometry:wing:span"].item() / 2.0
+        wing_twist = inputs["data:geometry:wing:twist"].item()
 
         # Initialization
         x_c = self.wing["x_c"]
@@ -666,7 +666,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         self._run(inputs, run_opt="htp")
 
         # Get inputs
-        aspect_ratio = float(inputs["data:geometry:horizontal_tail:aspect_ratio"])
+        aspect_ratio = inputs["data:geometry:horizontal_tail:aspect_ratio"].item()
         l0_wing = inputs["data:geometry:horizontal_tail:MAC:length"]
 
         # Initialization
@@ -748,7 +748,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         """
 
         # Get inputs
-        aspect_ratio_wing = float(inputs["data:geometry:wing:aspect_ratio"])
+        aspect_ratio_wing = inputs["data:geometry:wing:aspect_ratio"].item()
 
         # Compute wing
         if saved_wing_result is None:
@@ -773,7 +773,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         return wing, htp, aircraft
 
     def _run(self, inputs, run_opt="wing"):
-        wing_break = float(inputs["data:geometry:wing:kink:span_ratio"])
+        wing_break = inputs["data:geometry:wing:kink:span_ratio"].item()
 
         # Define mesh size
         self.n_x = int(DEFAULT_NX)
@@ -1136,7 +1136,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
 
         # Interpolate value if within the interpolation range
         if min(lift_coeff) <= objective <= max(lift_coeff):
-            idx_max = int(float(np.where(lift_coeff == max(lift_coeff))[0]))
+            idx_max = np.argmax(lift_coeff)
             return np.interp(objective, lift_coeff[0 : idx_max + 1], drag_coeff[0 : idx_max + 1])
         if objective < lift_coeff[0]:
             cdp = drag_coeff[0] + (objective - lift_coeff[0]) * (drag_coeff[1] - drag_coeff[0]) / (
@@ -1187,9 +1187,9 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         """
         k_fus = 1 + 0.025 * width_max / span_wing - 0.025 * (width_max / span_wing) ** 2
         beta = np.sqrt(1 - mach**2)  # Prandtl-Glauert
-        cl_0_wing = float((wing_0["cl"] * k_fus / beta) * np.cos(dihedral_angle) ** 2.0)
-        cl_x_wing = float(wing_aoa["cl"] * k_fus / beta)
-        cm_0_wing = float(wing_0["cm"] * k_fus / beta)
+        cl_0_wing = (wing_0["cl"] * k_fus / beta).item() * np.cos(dihedral_angle) ** 2.0
+        cl_x_wing = (wing_aoa["cl"] * k_fus / beta).item()
+        cm_0_wing = (wing_0["cm"] * k_fus / beta).item()
         cl_alpha_wing = ((cl_x_wing - cl_0_wing) / (aoa_angle * np.pi / 180)) * np.cos(
             dihedral_angle
         ) ** 2.0
@@ -1212,8 +1212,8 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         coeff_e = wing_aoa["cl"] ** 2 / (np.pi * aspect_ratio_wing * cdi)
         # Fuselage correction
         k_fus = 1 - 2 * (width_max / span_wing) ** 2
-        coeff_e = float(coeff_e * k_fus)
-        coeff_k_wing = float(1.0 / (np.pi * aspect_ratio_wing * coeff_e))
+        coeff_e = (coeff_e * k_fus).item()
+        coeff_k_wing = 1.0 / (np.pi * aspect_ratio_wing * coeff_e)
 
         return (
             beta,

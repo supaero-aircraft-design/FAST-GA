@@ -71,12 +71,12 @@ class ComputeClAlphaVerticalTail(FigureDigitization):
 
         tail_type = np.round(inputs["data:geometry:has_T_tail"])
         sweep_25_vt = inputs["data:geometry:vertical_tail:sweep_25"]
-        span_vt = inputs["data:geometry:vertical_tail:span"]
-        area_vt = inputs["data:geometry:vertical_tail:area"]
-        taper_ratio_vt = inputs["data:geometry:vertical_tail:taper_ratio"]
-        area_ht = inputs["data:geometry:horizontal_tail:area"]
+        span_vt = inputs["data:geometry:vertical_tail:span"].item()
+        area_vt = inputs["data:geometry:vertical_tail:area"].item()
+        taper_ratio_vt = inputs["data:geometry:vertical_tail:taper_ratio"].item()
+        area_ht = inputs["data:geometry:horizontal_tail:area"].item()
 
-        avg_fus_depth = inputs["data:geometry:fuselage:average_depth"]
+        avg_fus_depth = inputs["data:geometry:fuselage:average_depth"].item()
 
         # Compute the effect of fuselage and HTP as end plates which gives a different effective
         # aspect ratio
@@ -84,7 +84,7 @@ class ComputeClAlphaVerticalTail(FigureDigitization):
 
         k_ar_fuselage_ht = 1.7 if tail_type == 1.0 else 1.2
 
-        k_vh = self.k_vh(float(area_ht / area_vt))
+        k_vh = self.k_vh(area_ht / area_vt)
 
         k_ar_effective = k_ar_fuselage * (1.0 + k_vh * (k_ar_fuselage_ht - 1.0))
 

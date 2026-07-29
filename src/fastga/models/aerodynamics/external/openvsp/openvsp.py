@@ -26,6 +26,9 @@ from typing import ClassVar
 import numpy as np
 
 # noinspection PyProtectedMember
+from fastoad._utils.arrays import scalarize
+
+# noinspection PyProtectedMember
 from fastoad._utils.resource_management.copy import copy_resource
 from openmdao.components.external_code_comp import ExternalCodeComp
 from openmdao.utils.file_wrap import InputFileGenerator
@@ -429,7 +432,7 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
                 np.array(y_vector_wing).tolist(),
                 np.array(cl_vector_wing).tolist(),
                 np.array(chord_vector_wing).tolist(),
-                float(coeff_k_wing),
+                coeff_k_wing.item(),
                 float(cl_0_htp),
                 float(cl_aoa_htp),
                 float(cl_alpha_htp),
@@ -488,9 +491,9 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
         key = str(dict(zip(GEOMETRY_SET_LABELS, geometry_set)))
         condition_values = [
             comp_opt,
-            round(float(altitude), 1),
+            round(scalarize(altitude), 1),
             mach,
-            round(float(aoa_angle), 2),
+            round(scalarize(aoa_angle), 2),
         ]
 
         self.register_geometry(key)
@@ -537,27 +540,27 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
 
         # WING
         # Get inputs (and calculate missing ones)
-        s_ref_wing = float(inputs["data:geometry:wing:area"])
-        x0_wing = inputs["data:geometry:wing:MAC:leading_edge:x:local"]
-        l0_wing = inputs["data:geometry:wing:MAC:length"]
-        width_max = inputs["data:geometry:fuselage:maximum_width"]
+        s_ref_wing = inputs["data:geometry:wing:area"].item()
+        x0_wing = inputs["data:geometry:wing:MAC:leading_edge:x:local"].item()
+        l0_wing = inputs["data:geometry:wing:MAC:length"].item()
+        width_max = inputs["data:geometry:fuselage:maximum_width"].item()
         y1_wing = width_max / 2.0
-        y2_wing = inputs["data:geometry:wing:root:y"]
-        l2_wing = inputs["data:geometry:wing:root:chord"]
-        y4_wing = inputs["data:geometry:wing:tip:y"]
-        l4_wing = inputs["data:geometry:wing:tip:chord"]
-        sweep_0_wing = inputs["data:geometry:wing:sweep_0"]
-        fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
-        span_wing = inputs["data:geometry:wing:span"]
-        dihedral_angle = inputs["data:geometry:wing:dihedral"]
-        twist = inputs["data:geometry:wing:twist"]
-        height_max = inputs["data:geometry:fuselage:maximum_height"]
+        y2_wing = inputs["data:geometry:wing:root:y"].item()
+        l2_wing = inputs["data:geometry:wing:root:chord"].item()
+        y4_wing = inputs["data:geometry:wing:tip:y"].item()
+        l4_wing = inputs["data:geometry:wing:tip:chord"].item()
+        sweep_0_wing = inputs["data:geometry:wing:sweep_0"].item()
+        fa_length = inputs["data:geometry:wing:MAC:at25percent:x"].item()
+        span_wing = inputs["data:geometry:wing:span"].item()
+        dihedral_angle = inputs["data:geometry:wing:dihedral"].item()
+        twist = inputs["data:geometry:wing:twist"].item()
+        height_max = inputs["data:geometry:fuselage:maximum_height"].item()
         # Compute remaining inputs
-        atm = Atmosphere(altitude, altitude_in_feet=False)
+        atm = Atmosphere(scalarize(altitude), altitude_in_feet=False)
         x_wing = fa_length - x0_wing - 0.25 * l0_wing
         # In the rest of the code the convention for z_wing is positive when wing below the
         # fuselage centerline, for OpenVSP it seems to be the other way around, hence the - sign
-        z_wing = -inputs["data:geometry:wing:root:z"]
+        z_wing = -inputs["data:geometry:wing:root:z"].item()
         span2_wing = y4_wing - y2_wing
         rho = atm.density
         v_inf = max(atm.speed_of_sound * mach, 0.01)  # avoid V=0 m/s crashes
@@ -565,18 +568,18 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
 
         # HTP
         # Get inputs (and calculate missing ones)
-        s_ref_htp = float(inputs["data:geometry:horizontal_tail:area"])
-        sweep_25_htp = inputs["data:geometry:horizontal_tail:sweep_25"]
-        semi_span_htp = inputs["data:geometry:horizontal_tail:span"] / 2.0
+        s_ref_htp = inputs["data:geometry:horizontal_tail:area"].item()
+        sweep_25_htp = inputs["data:geometry:horizontal_tail:sweep_25"].item()
+        semi_span_htp = inputs["data:geometry:horizontal_tail:span"].item() / 2.0
         span_htp = (
-            inputs["data:geometry:horizontal_tail:span"] / 2.0
+            inputs["data:geometry:horizontal_tail:span"].item() / 2.0
         )  # full span? half span for htp?
-        root_chord_htp = inputs["data:geometry:horizontal_tail:root:chord"]
-        tip_chord_htp = inputs["data:geometry:horizontal_tail:tip:chord"]
-        lp_htp = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"]
-        l0_htp = inputs["data:geometry:horizontal_tail:MAC:length"]
-        x0_htp = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:local"]
-        height_htp = inputs["data:geometry:horizontal_tail:z:from_wingMAC25"]
+        root_chord_htp = inputs["data:geometry:horizontal_tail:root:chord"].item()
+        tip_chord_htp = inputs["data:geometry:horizontal_tail:tip:chord"].item()
+        lp_htp = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"].item()
+        l0_htp = inputs["data:geometry:horizontal_tail:MAC:length"].item()
+        x0_htp = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:local"].item()
+        height_htp = inputs["data:geometry:horizontal_tail:z:from_wingMAC25"].item()
         # Compute remaining inputs
         x_htp = fa_length + lp_htp - x0_htp - 0.25 * l0_htp
         z_htp = -(height_max - 0.12 * l0_htp) * 0.5 - height_htp
@@ -600,25 +603,25 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
         # and aircraft
         if comp_opt == "wing":
             input_file_list = [
-                target_directory / INPUT_WING_SCRIPT,
-                target_directory / self.options["wing_airfoil_file"],
+                pathlib.Path(target_directory) / INPUT_WING_SCRIPT,
+                pathlib.Path(target_directory) / self.options["wing_airfoil_file"],
             ]
         elif comp_opt == "htp":
             input_file_list = [
-                target_directory / INPUT_HTP_SCRIPT,
-                target_directory / self.options["htp_airfoil_file"],
+                pathlib.Path(target_directory) / INPUT_HTP_SCRIPT,
+                pathlib.Path(target_directory) / self.options["htp_airfoil_file"],
             ]
         else:
             # When in doubt we compute everything
             input_file_list = [
-                target_directory / INPUT_AIRCRAFT_SCRIPT,
-                target_directory / self.options["wing_airfoil_file"],
-                target_directory / self.options["htp_airfoil_file"],
+                pathlib.Path(target_directory) / INPUT_AIRCRAFT_SCRIPT,
+                pathlib.Path(target_directory) / self.options["wing_airfoil_file"],
+                pathlib.Path(target_directory) / self.options["htp_airfoil_file"],
             ]
 
         self.options["external_input_files"] = input_file_list
         # Define standard error file by default to avoid error code return
-        self.stderr = target_directory / STDERR_FILE_NAME
+        self.stderr = (pathlib.Path(target_directory) / STDERR_FILE_NAME).as_posix()
         # Copy resource in working (target) directory
         # noinspection PyTypeChecker
         shutil.copytree(
@@ -657,30 +660,30 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
             )
 
         # Create corresponding .bat files (one for each geometry configuration)
-        self.options["command"] = [target_directory / "vspscript.bat"]
+        self.options["command"] = [pathlib.Path(target_directory) / "vspscript.bat"]
         with self.options["command"][0].open("w+") as batch_file:
             batch_file.write("@echo off\n")
 
             if comp_opt == "wing":
                 command = (
-                    (target_directory / VSPSCRIPT_EXE_NAME).as_posix()
+                    (pathlib.Path(target_directory) / VSPSCRIPT_EXE_NAME).as_posix()
                     + " -script "
-                    + (target_directory / INPUT_WING_SCRIPT).as_posix()
+                    + (pathlib.Path(target_directory) / INPUT_WING_SCRIPT).as_posix()
                     + " >nul 2>nul\n"
                 )
             elif comp_opt == "htp":
                 command = (
-                    (target_directory / VSPSCRIPT_EXE_NAME).as_posix()
+                    (pathlib.Path(target_directory) / VSPSCRIPT_EXE_NAME).as_posix()
                     + " -script "
-                    + (target_directory / INPUT_HTP_SCRIPT).as_posix()
+                    + (pathlib.Path(target_directory) / INPUT_HTP_SCRIPT).as_posix()
                     + " >nul 2>nul\n"
                 )
             else:
                 # When in doubt we compute everything
                 command = (
-                    (target_directory / VSPSCRIPT_EXE_NAME).as_posix()
+                    (pathlib.Path(target_directory) / VSPSCRIPT_EXE_NAME).as_posix()
                     + " -script "
-                    + (target_directory / INPUT_AIRCRAFT_SCRIPT).as_posix()
+                    + (pathlib.Path(target_directory) / INPUT_AIRCRAFT_SCRIPT).as_posix()
                     + " >nul 2>nul\n"
                 )
 
@@ -691,7 +694,8 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
         if comp_opt == "wing":
             output_file_list = [
                 (
-                    target_directory / INPUT_WING_SCRIPT.replace(".vspscript", "_DegenGeom.csv")
+                    pathlib.Path(target_directory)
+                    / INPUT_WING_SCRIPT.replace(".vspscript", "_DegenGeom.csv")
                 ).as_posix()
             ]
             parser = InputFileGenerator()
@@ -700,31 +704,31 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
                 parser.set_generated_file(input_file_list[0])
                 # Modify wing parameters
                 parser.mark_anchor("x_wing")
-                parser.transfer_var(float(x_wing), 0, 5)
+                parser.transfer_var(x_wing, 0, 5)
                 parser.mark_anchor("z_wing")
-                parser.transfer_var(float(z_wing), 0, 5)
+                parser.transfer_var(z_wing, 0, 5)
                 parser.mark_anchor("y1_wing")
-                parser.transfer_var(float(y1_wing), 0, 5)
+                parser.transfer_var(y1_wing, 0, 5)
                 for i in range(3):
                     parser.mark_anchor("l2_wing")
-                    parser.transfer_var(float(l2_wing), 0, 5)
+                    parser.transfer_var(l2_wing, 0, 5)
                 parser.reset_anchor()
                 parser.mark_anchor("span2_wing")
-                parser.transfer_var(float(span2_wing), 0, 5)
+                parser.transfer_var(span2_wing, 0, 5)
                 parser.mark_anchor("l4_wing")
-                parser.transfer_var(float(l4_wing), 0, 5)
+                parser.transfer_var(l4_wing, 0, 5)
                 parser.mark_anchor("sweep_0_wing")
-                parser.transfer_var(float(sweep_0_wing), 0, 5)
+                parser.transfer_var(sweep_0_wing, 0, 5)
                 parser.mark_anchor("twist")
-                parser.transfer_var(float(twist), 0, 5)
+                parser.transfer_var(twist, 0, 5)
                 parser.mark_anchor("dihedral_angle")
-                parser.transfer_var(float(dihedral_angle), 0, 5)
+                parser.transfer_var(dihedral_angle, 0, 5)
                 parser.mark_anchor("airfoil_0_file")
-                parser.transfer_var('"' + input_file_list[1].replace("\\", "/") + '"', 0, 3)
+                parser.transfer_var('"' + input_file_list[1].as_posix() + '"', 0, 3)
                 parser.mark_anchor("airfoil_1_file")
-                parser.transfer_var('"' + input_file_list[1].replace("\\", "/") + '"', 0, 3)
+                parser.transfer_var('"' + input_file_list[1].as_posix() + '"', 0, 3)
                 parser.mark_anchor("airfoil_2_file")
-                parser.transfer_var('"' + input_file_list[1].replace("\\", "/") + '"', 0, 3)
+                parser.transfer_var('"' + input_file_list[1].as_posix() + '"', 0, 3)
                 parser.mark_anchor("csv_file")
                 csv_name = output_file_list[0]
                 parser.transfer_var('"' + csv_name.replace("\\", "/") + '"', 0, 3)
@@ -732,7 +736,8 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
         elif comp_opt == "htp":
             output_file_list = [
                 (
-                    target_directory / INPUT_HTP_SCRIPT.replace(".vspscript", "_DegenGeom.csv")
+                    pathlib.Path(target_directory)
+                    / INPUT_HTP_SCRIPT.replace(".vspscript", "_DegenGeom.csv")
                 ).as_posix()
             ]
             parser = InputFileGenerator()
@@ -741,21 +746,21 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
                 parser.set_generated_file(input_file_list[0])
                 # Modify htp parameters
                 parser.mark_anchor("x_htp")
-                parser.transfer_var(float(x_htp), 0, 5)
+                parser.transfer_var(x_htp, 0, 5)
                 parser.mark_anchor("z_htp")
-                parser.transfer_var(float(z_htp), 0, 5)
+                parser.transfer_var(z_htp, 0, 5)
                 parser.mark_anchor("semi_span_htp")
-                parser.transfer_var(float(semi_span_htp), 0, 5)
+                parser.transfer_var(semi_span_htp, 0, 5)
                 parser.mark_anchor("root_chord_htp")
-                parser.transfer_var(float(root_chord_htp), 0, 5)
+                parser.transfer_var(root_chord_htp, 0, 5)
                 parser.mark_anchor("tip_chord_htp")
-                parser.transfer_var(float(tip_chord_htp), 0, 5)
+                parser.transfer_var(tip_chord_htp, 0, 5)
                 parser.mark_anchor("sweep_25_htp")
-                parser.transfer_var(float(sweep_25_htp), 0, 5)
+                parser.transfer_var(sweep_25_htp, 0, 5)
                 parser.mark_anchor("airfoil_0_file")
-                parser.transfer_var('"' + input_file_list[1].replace("\\", "/") + '"', 0, 3)
+                parser.transfer_var('"' + input_file_list[1].as_posix() + '"', 0, 3)
                 parser.mark_anchor("airfoil_1_file")
-                parser.transfer_var('"' + input_file_list[1].replace("\\", "/") + '"', 0, 3)
+                parser.transfer_var('"' + input_file_list[1].as_posix() + '"', 0, 3)
                 parser.mark_anchor("csv_file")
                 csv_name = output_file_list[0]
                 parser.transfer_var('"' + csv_name.replace("\\", "/") + '"', 0, 3)
@@ -764,7 +769,8 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
             # When in doubt we compute everything
             output_file_list = [
                 (
-                    target_directory / INPUT_AIRCRAFT_SCRIPT.replace(".vspscript", "_DegenGeom.csv")
+                    pathlib.Path(target_directory)
+                    / INPUT_AIRCRAFT_SCRIPT.replace(".vspscript", "_DegenGeom.csv")
                 ).as_posix()
             ]
             parser = InputFileGenerator()
@@ -773,48 +779,48 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
                 parser.set_generated_file(input_file_list[0])
                 # Modify wing parameters
                 parser.mark_anchor("x_wing")
-                parser.transfer_var(float(x_wing), 0, 5)
+                parser.transfer_var(x_wing, 0, 5)
                 parser.mark_anchor("z_wing")
-                parser.transfer_var(float(z_wing), 0, 5)
+                parser.transfer_var(z_wing, 0, 5)
                 parser.mark_anchor("y1_wing")
-                parser.transfer_var(float(y1_wing), 0, 5)
+                parser.transfer_var(y1_wing, 0, 5)
                 for i in range(3):
                     parser.mark_anchor("l2_wing")
-                    parser.transfer_var(float(l2_wing), 0, 5)
+                    parser.transfer_var(l2_wing, 0, 5)
                 parser.reset_anchor()
                 parser.mark_anchor("span2_wing")
-                parser.transfer_var(float(span2_wing), 0, 5)
+                parser.transfer_var(span2_wing, 0, 5)
                 parser.mark_anchor("l4_wing")
-                parser.transfer_var(float(l4_wing), 0, 5)
+                parser.transfer_var(l4_wing, 0, 5)
                 parser.mark_anchor("sweep_0_wing")
-                parser.transfer_var(float(sweep_0_wing), 0, 5)
+                parser.transfer_var(sweep_0_wing, 0, 5)
                 parser.mark_anchor("twist")
-                parser.transfer_var(float(twist), 0, 5)
+                parser.transfer_var(twist, 0, 5)
                 parser.mark_anchor("dihedral_angle")
-                parser.transfer_var(float(dihedral_angle), 0, 5)
+                parser.transfer_var(dihedral_angle, 0, 5)
                 parser.mark_anchor("airfoil_0_file")
-                parser.transfer_var('"' + input_file_list[-2].replace("\\", "/") + '"', 0, 3)
+                parser.transfer_var('"' + input_file_list[-2].as_posix() + '"', 0, 3)
                 parser.mark_anchor("airfoil_1_file")
-                parser.transfer_var('"' + input_file_list[-2].replace("\\", "/") + '"', 0, 3)
+                parser.transfer_var('"' + input_file_list[-2].as_posix() + '"', 0, 3)
                 parser.mark_anchor("airfoil_2_file")
-                parser.transfer_var('"' + input_file_list[-2].replace("\\", "/") + '"', 0, 3)
+                parser.transfer_var('"' + input_file_list[-2].as_posix() + '"', 0, 3)
                 # Modify HTP parameters
                 parser.mark_anchor("distance_htp")
-                parser.transfer_var(float(distance_htp), 0, 5)
+                parser.transfer_var(distance_htp, 0, 5)
                 parser.mark_anchor("height_htp")
-                parser.transfer_var(float(height_htp), 0, 5)
+                parser.transfer_var(height_htp, 0, 5)
                 parser.mark_anchor("span_htp")
-                parser.transfer_var(float(span_htp), 0, 5)
+                parser.transfer_var(span_htp, 0, 5)
                 parser.mark_anchor("root_chord_htp")
-                parser.transfer_var(float(root_chord_htp), 0, 5)
+                parser.transfer_var(root_chord_htp, 0, 5)
                 parser.mark_anchor("tip_chord_htp")
-                parser.transfer_var(float(tip_chord_htp), 0, 5)
+                parser.transfer_var(tip_chord_htp, 0, 5)
                 parser.mark_anchor("sweep_25_htp")
-                parser.transfer_var(float(sweep_25_htp), 0, 5)
+                parser.transfer_var(sweep_25_htp, 0, 5)
                 parser.mark_anchor("airfoil_3_file")
-                parser.transfer_var('"' + input_file_list[-1].replace("\\", "/") + '"', 0, 3)
+                parser.transfer_var('"' + input_file_list[-1].as_posix() + '"', 0, 3)
                 parser.mark_anchor("airfoil_4_file")
-                parser.transfer_var('"' + input_file_list[-1].replace("\\", "/") + '"', 0, 3)
+                parser.transfer_var('"' + input_file_list[-1].as_posix() + '"', 0, 3)
                 parser.mark_anchor("csv_file")
                 csv_name = output_file_list[0]
                 parser.transfer_var('"' + csv_name.replace("\\", "/") + '"', 0, 3)
@@ -835,11 +841,11 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
         ]
         self.options["external_input_files"] = input_file_list
         self.options["external_output_files"] = output_file_list
-        self.options["command"] = target_directory / "vspaero.bat"
+        self.options["command"] = [(pathlib.Path(target_directory) / "vspaero.bat")]
         with self.options["command"][0].open("w+") as batch_file:
             batch_file.write("@echo off\n")
             command = (
-                (target_directory / VSPAERO_EXE_NAME).as_posix()
+                (pathlib.Path(target_directory) / VSPAERO_EXE_NAME).as_posix()
                 + " "
                 + input_file_list[1].replace(".vspaero", "")
                 + " >nul 2>nul\n"
@@ -857,36 +863,36 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
 
             if comp_opt == "htp":
                 parser.mark_anchor("Sref")
-                parser.transfer_var(float(s_ref_htp), 0, 3)
+                parser.transfer_var(s_ref_htp, 0, 3)
                 parser.mark_anchor("Cref")
-                parser.transfer_var(float(l0_htp), 0, 3)
+                parser.transfer_var(l0_htp, 0, 3)
                 parser.mark_anchor("Bref")
-                parser.transfer_var(float(2.0 * semi_span_htp), 0, 3)
+                parser.transfer_var(2.0 * semi_span_htp, 0, 3)
                 parser.mark_anchor("X_cg")
-                parser.transfer_var(float(fa_length + lp_htp), 0, 3)
+                parser.transfer_var(fa_length + lp_htp, 0, 3)
                 reynolds = reynolds_htp
             else:
                 # For wing and AC evaluation, same reference length and area
                 parser.mark_anchor("Sref")
-                parser.transfer_var(float(s_ref_wing), 0, 3)
+                parser.transfer_var(s_ref_wing, 0, 3)
                 parser.mark_anchor("Cref")
-                parser.transfer_var(float(l0_wing), 0, 3)
+                parser.transfer_var(l0_wing, 0, 3)
                 parser.mark_anchor("Bref")
-                parser.transfer_var(float(span_wing), 0, 3)
+                parser.transfer_var(span_wing, 0, 3)
                 parser.mark_anchor("X_cg")
-                parser.transfer_var(float(fa_length), 0, 3)
+                parser.transfer_var(fa_length, 0, 3)
                 reynolds = reynolds_wing
 
             parser.mark_anchor("Mach")
-            parser.transfer_var(float(mach), 0, 3)
+            parser.transfer_var(mach, 0, 3)
             parser.mark_anchor("AOA")
-            parser.transfer_var(float(aoa_angle), 0, 3)
+            parser.transfer_var(aoa_angle, 0, 3)
             parser.mark_anchor("Vinf")
-            parser.transfer_var(float(v_inf), 0, 3)
+            parser.transfer_var(v_inf, 0, 3)
             parser.mark_anchor("Rho")
-            parser.transfer_var(float(rho), 0, 3)
+            parser.transfer_var(rho, 0, 3)
             parser.mark_anchor("ReCref")
-            parser.transfer_var(float(reynolds), 0, 3)
+            parser.transfer_var(reynolds, 0, 3)
             parser.generate()
 
         # STEP 7/XX - RUN BATCH TO GENERATE AERO OUTPUT FILES (.lod, .polar...) ####################
@@ -1088,17 +1094,17 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
         :return area_ratio: rea ratio between wing and horizontal stabilizer
         :return s_ref_wing: geometry dataset for openvsp calculation
         """
-        s_ref_wing = float(inputs["data:geometry:wing:area"])
-        s_ref_htp = float(inputs["data:geometry:horizontal_tail:area"])
+        s_ref_wing = inputs["data:geometry:wing:area"].item()
+        s_ref_htp = inputs["data:geometry:horizontal_tail:area"].item()
         area_ratio = s_ref_htp / s_ref_wing
-        sweep25_wing = float(inputs["data:geometry:wing:sweep_25"])
-        taper_ratio_wing = float(inputs["data:geometry:wing:taper_ratio"])
-        aspect_ratio_wing = float(inputs["data:geometry:wing:aspect_ratio"])
-        sweep25_htp = float(inputs["data:geometry:horizontal_tail:sweep_25"])
-        aspect_ratio_htp = float(inputs["data:geometry:horizontal_tail:aspect_ratio"])
-        taper_ratio_htp = float(inputs["data:geometry:horizontal_tail:taper_ratio"])
-        dihedral_angle = float(inputs["data:geometry:wing:dihedral"])
-        twist_angle = float(inputs["data:geometry:wing:twist"])
+        sweep25_wing = inputs["data:geometry:wing:sweep_25"].item()
+        taper_ratio_wing = inputs["data:geometry:wing:taper_ratio"].item()
+        aspect_ratio_wing = inputs["data:geometry:wing:aspect_ratio"].item()
+        sweep25_htp = inputs["data:geometry:horizontal_tail:sweep_25"].item()
+        aspect_ratio_htp = inputs["data:geometry:horizontal_tail:aspect_ratio"].item()
+        taper_ratio_htp = inputs["data:geometry:horizontal_tail:taper_ratio"].item()
+        dihedral_angle = inputs["data:geometry:wing:dihedral"].item()
+        twist_angle = inputs["data:geometry:wing:twist"].item()
         geometry_set = np.around(
             np.array(
                 [
@@ -1230,16 +1236,16 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
         width_max = inputs["data:geometry:fuselage:maximum_width"]
         span_wing = inputs["data:geometry:wing:span"]
         k_fus = 1 + 0.025 * width_max / span_wing - 0.025 * (width_max / span_wing) ** 2
-        cl_0_wing = float(wing_0["cl"] * k_fus)
-        cl_x_wing = float(wing_aoa["cl"] * k_fus)
-        cm_0_wing = float(wing_0["cm"] * k_fus)
+        cl_0_wing = (wing_0["cl"] * k_fus).item()
+        cl_x_wing = (wing_aoa["cl"] * k_fus).item()
+        cm_0_wing = (wing_0["cm"] * k_fus).item()
         cl_alpha_wing = (cl_x_wing - cl_0_wing) / (aoa_angle * np.pi / 180)
         y_vector_wing = wing_aoa["y_vector"]
         cl_vector_wing = (np.array(wing_aoa["cl_vector"]) * k_fus).tolist()
         chord_vector_wing = wing_aoa["chord_vector"]
         k_fus = 1 - 2 * (width_max / span_wing) ** 2  # Fuselage correction
-        coeff_e = float(wing_aoa["coeff_e"] * k_fus)
-        coeff_k_wing = float(1.0 / (np.pi * span_wing**2 / s_ref_wing * coeff_e))
+        coeff_e = (wing_aoa["coeff_e"] * k_fus).item()
+        coeff_k_wing = 1.0 / (np.pi * span_wing**2 / s_ref_wing * coeff_e)
 
         return (
             cl_0_wing,
@@ -1270,18 +1276,16 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
         """
 
         # Post-process HTP-aircraft data -------------------------------------------------------
-        cl_0_htp = float(htp_0["cl"])
-        cl_aoa_htp = float(htp_aoa["cl"])
-        cl_alpha_htp = float((cl_aoa_htp - cl_0_htp) / (aoa_angle * np.pi / 180))
-        coeff_k_htp = float(htp_aoa["cdi"]) / cl_aoa_htp**2  # area ratio missing ?
+        cl_0_htp = htp_0["cl"]
+        cl_aoa_htp = htp_aoa["cl"]
+        cl_alpha_htp = (cl_aoa_htp - cl_0_htp) / (aoa_angle * np.pi / 180)
+        coeff_k_htp = htp_aoa["cdi"] / cl_aoa_htp**2  # area ratio missing ?
         y_vector_htp = htp_aoa["y_vector"]
         cl_vector_htp = (np.array(htp_aoa["cl_vector"]) * area_ratio).tolist()
 
         # Post-process HTP-isolated data -------------------------------------------------------
         cl_alpha_htp_isolated = (
-            float(htp_aoa_isolated["cl"] - htp_0_isolated["cl"])
-            * area_ratio
-            / (aoa_angle * np.pi / 180)
+            (htp_aoa_isolated["cl"] - htp_0_isolated["cl"]) * area_ratio / (aoa_angle * np.pi / 180)
         )
 
         return (
@@ -1432,11 +1436,11 @@ class OpenVSPSimpleGeometryDP(OpenVSPSimpleGeometry):
 
         # Propulsion state, part of the cache key since the base geometry_set only
         # describes the wing and HTP planform
-        engine_count = int(float(inputs["data:geometry:propulsion:engine:count"]))
-        engine_config = float(inputs["data:geometry:propulsion:engine:layout"])
-        engine_rpm = float(inputs["data:propulsion:max_rpm"])
-        propeller_diameter = float(inputs["data:geometry:propeller:diameter"])
-        nac_length = float(inputs["data:geometry:propulsion:nacelle:length"])
+        engine_count = int(inputs["data:geometry:propulsion:engine:count"].item())
+        engine_config = inputs["data:geometry:propulsion:engine:layout"].item()
+        engine_rpm = inputs["data:propulsion:max_rpm"].item()
+        propeller_diameter = inputs["data:geometry:propeller:diameter"].item()
+        nac_length = inputs["data:geometry:propulsion:nacelle:length"].item()
         if engine_config != 1.0:
             y_ratio_key = (0.0,)
         else:
@@ -1448,23 +1452,25 @@ class OpenVSPSimpleGeometryDP(OpenVSPSimpleGeometry):
             )
 
         # Same derivation and rounding as in _compute_wing_rotor
-        atm = Atmosphere(altitude, altitude_in_feet=False)
+        atm = Atmosphere(scalarize(altitude), altitude_in_feet=False)
         engine_rps = engine_rpm / 60.0
         thrust_coefficient = round(
-            float(
+            scalarize(
                 thrust / engine_count / (atm.density * engine_rps**2.0 * propeller_diameter**4.0)
             ),
             5,
         )
         power_coefficient = round(
-            float(power / engine_count / (atm.density * engine_rps**3.0 * propeller_diameter**5.0)),
+            scalarize(
+                power / engine_count / (atm.density * engine_rps**3.0 * propeller_diameter**5.0)
+            ),
             5,
         )
 
         condition_values = [
-            round(float(altitude), 1),
+            round(scalarize(altitude), 1),
             mach,
-            round(float(aoa_angle), 2),
+            round(aoa_angle, 2),
             thrust_coefficient,
             power_coefficient,
             engine_count,
@@ -1517,26 +1523,26 @@ class OpenVSPSimpleGeometryDP(OpenVSPSimpleGeometry):
         ############################################################################################
 
         # Get inputs (and calculate missing ones)
-        s_ref_wing = float(inputs["data:geometry:wing:area"])
-        x0_wing = inputs["data:geometry:wing:MAC:leading_edge:x:local"]
-        l0_wing = inputs["data:geometry:wing:MAC:length"]
-        width_max = inputs["data:geometry:fuselage:maximum_width"]
+        s_ref_wing = inputs["data:geometry:wing:area"].item()
+        x0_wing = inputs["data:geometry:wing:MAC:leading_edge:x:local"].item()
+        l0_wing = inputs["data:geometry:wing:MAC:length"].item()
+        width_max = inputs["data:geometry:fuselage:maximum_width"].item()
         y1_wing = width_max / 2.0
-        y2_wing = inputs["data:geometry:wing:root:y"]
-        l2_wing = inputs["data:geometry:wing:root:chord"]
-        y4_wing = inputs["data:geometry:wing:tip:y"]
-        l4_wing = inputs["data:geometry:wing:tip:chord"]
-        x4_wing = inputs["data:geometry:wing:tip:leading_edge:x:local"]
-        sweep_0_wing = inputs["data:geometry:wing:sweep_0"]
-        dihedral_angle = inputs["data:geometry:wing:dihedral"]
-        twist = inputs["data:geometry:wing:twist"]
-        fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
-        span_wing = inputs["data:geometry:wing:span"]
-        engine_rpm = inputs["data:propulsion:max_rpm"]
-        propeller_diameter = float(inputs["data:geometry:propeller:diameter"])
-        nac_length = inputs["data:geometry:propulsion:nacelle:length"]
-        engine_config = inputs["data:geometry:propulsion:engine:layout"]
-        engine_count = int(float(inputs["data:geometry:propulsion:engine:count"]))
+        y2_wing = inputs["data:geometry:wing:root:y"].item()
+        l2_wing = inputs["data:geometry:wing:root:chord"].item()
+        y4_wing = inputs["data:geometry:wing:tip:y"].item()
+        l4_wing = inputs["data:geometry:wing:tip:chord"].item()
+        x4_wing = inputs["data:geometry:wing:tip:leading_edge:x:local"].item()
+        sweep_0_wing = inputs["data:geometry:wing:sweep_0"].item()
+        dihedral_angle = inputs["data:geometry:wing:dihedral"].item()
+        twist = inputs["data:geometry:wing:twist"].item()
+        fa_length = inputs["data:geometry:wing:MAC:at25percent:x"].item()
+        span_wing = inputs["data:geometry:wing:span"].item()
+        engine_rpm = inputs["data:propulsion:max_rpm"].item()
+        propeller_diameter = inputs["data:geometry:propeller:diameter"].item()
+        nac_length = inputs["data:geometry:propulsion:nacelle:length"].item()
+        engine_config = inputs["data:geometry:propulsion:engine:layout"].item()
+        engine_count = int(inputs["data:geometry:propulsion:engine:count"].item())
         semi_span = span_wing / 2.0
 
         if engine_config != PropulsionLayout.UNDER_THE_WING:
@@ -1545,11 +1551,11 @@ class OpenVSPSimpleGeometryDP(OpenVSPSimpleGeometry):
             y_ratio_array = np.array(inputs["data:geometry:propulsion:engine:y_ratio"])
 
         # Compute remaining inputs
-        atm = Atmosphere(altitude, altitude_in_feet=False)
+        atm = Atmosphere(scalarize(altitude), altitude_in_feet=False)
         x_wing = fa_length - x0_wing - 0.25 * l0_wing
         # In the rest of the code the convention for z_wing is positive when wing below the
         # fuselage centerline, for OpenVSP it seems to be the other way around, hence the - sign
-        z_wing = -inputs["data:geometry:wing:root:z"]
+        z_wing = -inputs["data:geometry:wing:root:z"].item()
         span2_wing = y4_wing - y2_wing
         rho = atm.density
         v_inf = max(atm.speed_of_sound * mach, 0.01)  # avoid V=0 m/s crashes
@@ -1564,10 +1570,10 @@ class OpenVSPSimpleGeometryDP(OpenVSPSimpleGeometry):
         engine_rps = engine_rpm / 60.0
         # For now thrust is distributed equally on each engine
         thrust_coefficient = round(
-            float(thrust_one_prop / (rho * engine_rps**2.0 * propeller_diameter**4.0)), 5
+            thrust_one_prop / (rho * engine_rps**2.0 * propeller_diameter**4.0), 5
         )
         power_coefficient = round(
-            float(shaft_power_one_prop / (rho * engine_rps**3.0 * propeller_diameter**5.0)), 5
+            shaft_power_one_prop / (rho * engine_rps**3.0 * propeller_diameter**5.0), 5
         )
 
         prop_radius = round(propeller_diameter / 2.0, 3)
@@ -1625,14 +1631,14 @@ class OpenVSPSimpleGeometryDP(OpenVSPSimpleGeometry):
 
                 prop_rpm_loop = -engine_rpm if idx % 2 == 0 else engine_rpm
 
-                motor_pos_x[eng_start + idx] = round(float(x_eng), 2)
-                motor_pos_y[eng_start + idx] = round(float(y_engine), 2)
-                motor_pos_z[eng_start + idx] = round(float(z_wing), 2)
-                motor_rpm_signed[eng_start + idx] = float(prop_rpm_loop)
-                motor_pos_x[eng_start + eng_per_wing + idx] = round(float(x_eng), 2)
-                motor_pos_y[eng_start + eng_per_wing + idx] = round(-float(y_engine), 2)
-                motor_pos_z[eng_start + eng_per_wing + idx] = round(float(z_wing), 2)
-                motor_rpm_signed[eng_start + eng_per_wing + idx] = -float(prop_rpm_loop)
+                motor_pos_x[eng_start + idx] = round(x_eng.item(), 2)
+                motor_pos_y[eng_start + idx] = round(y_engine.item(), 2)
+                motor_pos_z[eng_start + idx] = round(z_wing, 2)
+                motor_rpm_signed[eng_start + idx] = prop_rpm_loop
+                motor_pos_x[eng_start + eng_per_wing + idx] = round(x_eng.item(), 2)
+                motor_pos_y[eng_start + eng_per_wing + idx] = round(-y_engine.item(), 2)
+                motor_pos_z[eng_start + eng_per_wing + idx] = round(z_wing, 2)
+                motor_rpm_signed[eng_start + eng_per_wing + idx] = -prop_rpm_loop
 
         # STEP 2/XX - DEFINE WORK DIRECTORY, COPY RESOURCES AND CREATE COMMAND BATCH ###############
         ############################################################################################
@@ -1646,12 +1652,12 @@ class OpenVSPSimpleGeometryDP(OpenVSPSimpleGeometry):
             target_directory = tmp_directory.name
         # Define the list of necessary input files: geometry script and foil file for both wing/HTP
         input_file_list = [
-            target_directory / INPUT_WING_ROTOR_SCRIPT,
-            target_directory / self.options["wing_airfoil_file"],
+            pathlib.Path(target_directory) / INPUT_WING_ROTOR_SCRIPT,
+            pathlib.Path(target_directory) / self.options["wing_airfoil_file"],
         ]
         self.options["external_input_files"] = input_file_list
         # Define standard error file by default to avoid error code return
-        self.stderr = target_directory / STDERR_FILE_NAME
+        self.stderr = (pathlib.Path(target_directory) / STDERR_FILE_NAME).as_posix()
         # Copy resource in working (target) directory
         # noinspection PyTypeChecker
         shutil.copytree(
@@ -1667,13 +1673,13 @@ class OpenVSPSimpleGeometryDP(OpenVSPSimpleGeometry):
                 target_directory,
             )
         # Create corresponding .bat files (one for each geometry configuration)
-        self.options["command"] = [target_directory / "vspscript.bat"]
+        self.options["command"] = [pathlib.Path(target_directory) / "vspscript.bat"]
         with self.options["command"][0].open("w+") as batch_file:
             batch_file.write("@echo off\n")
             command = (
-                (target_directory / VSPSCRIPT_EXE_NAME).as_posix()
+                (pathlib.Path(target_directory) / VSPSCRIPT_EXE_NAME).as_posix()
                 + " -script "
-                + (target_directory / INPUT_WING_ROTOR_SCRIPT).as_posix()
+                + (pathlib.Path(target_directory) / INPUT_WING_ROTOR_SCRIPT).as_posix()
                 + " >nul 2>nul\n"
             )
             batch_file.write(command)
@@ -1683,7 +1689,8 @@ class OpenVSPSimpleGeometryDP(OpenVSPSimpleGeometry):
 
         output_file_list = [
             (
-                target_directory / INPUT_WING_ROTOR_SCRIPT.replace(".vspscript", "_DegenGeom.csv")
+                pathlib.Path(target_directory)
+                / INPUT_WING_ROTOR_SCRIPT.replace(".vspscript", "_DegenGeom.csv")
             ).as_posix()
         ]
         parser = InputFileGenerator()
@@ -1692,31 +1699,31 @@ class OpenVSPSimpleGeometryDP(OpenVSPSimpleGeometry):
             parser.set_generated_file(input_file_list[0])
             # Modify wing parameters
             parser.mark_anchor("x_wing")
-            parser.transfer_var(float(x_wing), 0, 5)
+            parser.transfer_var(x_wing, 0, 5)
             parser.mark_anchor("z_wing")
-            parser.transfer_var(float(z_wing), 0, 5)
+            parser.transfer_var(z_wing, 0, 5)
             parser.mark_anchor("y1_wing")
-            parser.transfer_var(float(y1_wing), 0, 5)
+            parser.transfer_var(y1_wing, 0, 5)
             for i in range(3):
                 parser.mark_anchor("l2_wing")
-                parser.transfer_var(float(l2_wing), 0, 5)
+                parser.transfer_var(l2_wing, 0, 5)
             parser.reset_anchor()
             parser.mark_anchor("span2_wing")
-            parser.transfer_var(float(span2_wing), 0, 5)
+            parser.transfer_var(span2_wing, 0, 5)
             parser.mark_anchor("l4_wing")
-            parser.transfer_var(float(l4_wing), 0, 5)
+            parser.transfer_var(l4_wing, 0, 5)
             parser.mark_anchor("sweep_0_wing")
-            parser.transfer_var(float(sweep_0_wing), 0, 5)
+            parser.transfer_var(sweep_0_wing, 0, 5)
             parser.mark_anchor("twist")
-            parser.transfer_var(float(twist), 0, 5)
+            parser.transfer_var(twist, 0, 5)
             parser.mark_anchor("dihedral_angle")
-            parser.transfer_var(float(dihedral_angle), 0, 5)
+            parser.transfer_var(dihedral_angle, 0, 5)
             parser.mark_anchor("airfoil_0_file")
-            parser.transfer_var('"' + input_file_list[1].replace("\\", "/") + '"', 0, 3)
+            parser.transfer_var('"' + input_file_list[1].as_posix() + '"', 0, 3)
             parser.mark_anchor("airfoil_1_file")
-            parser.transfer_var('"' + input_file_list[1].replace("\\", "/") + '"', 0, 3)
+            parser.transfer_var('"' + input_file_list[1].as_posix() + '"', 0, 3)
             parser.mark_anchor("airfoil_2_file")
-            parser.transfer_var('"' + input_file_list[1].replace("\\", "/") + '"', 0, 3)
+            parser.transfer_var('"' + input_file_list[1].as_posix() + '"', 0, 3)
             parser.mark_anchor("csv_file")
             csv_name = output_file_list[0]
             parser.transfer_var('"' + csv_name.replace("\\", "/") + '"', 0, 3)
@@ -1739,11 +1746,11 @@ class OpenVSPSimpleGeometryDP(OpenVSPSimpleGeometry):
         ]
         self.options["external_input_files"] = input_file_list
         self.options["external_output_files"] = output_file_list
-        self.options["command"] = [target_directory / "vspaero.bat"]
+        self.options["command"] = [(pathlib.Path(target_directory) / "vspaero.bat")]
         with self.options["command"][0].open("w+") as batch_file:
             batch_file.write("@echo off\n")
             command = (
-                (target_directory / VSPAERO_EXE_NAME).as_posix()
+                (pathlib.Path(target_directory) / VSPAERO_EXE_NAME).as_posix()
                 + " "
                 + input_file_list[1].replace(".vspaero", "")
                 + " >nul 2>nul\n"
@@ -1765,23 +1772,23 @@ class OpenVSPSimpleGeometryDP(OpenVSPSimpleGeometry):
             parser.set_generated_file(input_file_list[1])
             parser.reset_anchor()
             parser.mark_anchor("Sref")
-            parser.transfer_var(float(s_ref_wing), 0, 3)
+            parser.transfer_var(s_ref_wing, 0, 3)
             parser.mark_anchor("Cref")
-            parser.transfer_var(float(l0_wing), 0, 3)
+            parser.transfer_var(l0_wing, 0, 3)
             parser.mark_anchor("Bref")
-            parser.transfer_var(float(span_wing), 0, 3)
+            parser.transfer_var(span_wing, 0, 3)
             parser.mark_anchor("X_cg")
-            parser.transfer_var(float(fa_length), 0, 3)
+            parser.transfer_var(fa_length, 0, 3)
             parser.mark_anchor("Mach")
-            parser.transfer_var(float(mach), 0, 3)
+            parser.transfer_var(mach, 0, 3)
             parser.mark_anchor("AOA")
-            parser.transfer_var(float(aoa_angle), 0, 3)
+            parser.transfer_var(aoa_angle, 0, 3)
             parser.mark_anchor("Vinf")
-            parser.transfer_var(float(v_inf), 0, 3)
+            parser.transfer_var(v_inf, 0, 3)
             parser.mark_anchor("Rho")
-            parser.transfer_var(float(rho), 0, 3)
+            parser.transfer_var(rho, 0, 3)
             parser.mark_anchor("ReCref")
-            parser.transfer_var(float(reynolds), 0, 3)
+            parser.transfer_var(reynolds, 0, 3)
             for i in range(1, eng_per_wing + 1):
                 parser.mark_anchor("Prop_" + str(i) + "_name")
                 parser.transfer_var("Prop_element_" + str(i), 0, 1)
@@ -1882,7 +1889,8 @@ def generate_wing_rotor_file(engine_count: int):
     original_template = pathlib.Path(local_resources.__path__[0]) / "wing_openvsp_DegenGeom.vspaero"
     new_template = pathlib.Path(local_resources.__path__[0]) / rotor_template_file_name
 
-    with original_template.open("r").readlines() as file_to_copy, new_template.open("w") as file:
+    with original_template.open("r") as orig_template, new_template.open("w") as file:
+        file_to_copy = orig_template.readlines()
         for i, _ in enumerate(file_to_copy):
             if "NumberOfRotors" in file_to_copy[i]:
                 new_line = list(file_to_copy[i][:])

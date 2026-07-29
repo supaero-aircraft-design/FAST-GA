@@ -75,7 +75,7 @@ class ComputeEffectiveEfficiencyPropeller(om.ExplicitComponent):
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         propeller_diameter = inputs["data:geometry:propeller:diameter"]
         wing_area = inputs["data:geometry:wing:area"]
-        engine_layout = inputs["data:geometry:propulsion:engine:layout"]
+        engine_layout = inputs["data:geometry:propulsion:engine:layout"].item()
 
         if self.options["low_speed_aero"]:
             altitude = 0.0
