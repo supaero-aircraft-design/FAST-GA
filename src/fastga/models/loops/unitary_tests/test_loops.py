@@ -14,7 +14,7 @@ test module for wing area computation.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import os.path as pth
+import pathlib
 
 import openmdao.api as om
 from numpy.testing import assert_allclose
@@ -41,7 +41,7 @@ from ..wing_area_component.wing_area_loop_geom_simple import (
     UpdateWingAreaGeomSimple,
 )
 
-DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
+DATA_FOLDER_PATH = pathlib.Path(__file__).parent / "data"
 
 
 def test_update_wing_area_group():
@@ -103,8 +103,6 @@ def test_simple_geom():
     problem_loop = run_system(UpdateWingAreaGeomSimple(), ivc_loop)
     assert_allclose(problem_loop["wing_area"], 20.05, atol=1e-2)
 
-    # _ = problem_loop.check_partials(compact_print=True)
-
     ivc_cons = om.IndepVarComp()
     ivc_cons.add_output("data:weight:aircraft:MFW", val=573.00, units="kg")
     ivc_cons.add_output("data:mission:sizing:fuel", val=600.0, units="kg")
@@ -116,8 +114,6 @@ def test_simple_geom():
         atol=1,
     )
 
-    # _ = problem_cons.check_partials(compact_print=True)
-
 
 def test_simple_cl():
     ivc_loop = om.IndepVarComp()
@@ -127,8 +123,6 @@ def test_simple_cl():
 
     problem_loop = run_system(UpdateWingAreaLiftSimple(), ivc_loop)
     assert_allclose(problem_loop["wing_area"], 14.02, atol=1e-2)
-
-    # _ = problem_loop.check_partials(compact_print=True)
 
     ivc_cons = om.IndepVarComp()
     ivc_cons.add_output("data:TLAR:v_approach", val=78.0, units="kn")
@@ -142,8 +136,6 @@ def test_simple_cl():
         0.0,
         atol=1e-2,
     )
-
-    # _ = problem_cons.check_partials(compact_print=True)
 
 
 def test_advanced_geom():
@@ -264,16 +256,12 @@ def test_update_wing_area():
     problem_geom = run_system(UpdateWingArea(), ivc_geom)
     assert_allclose(problem_geom["data:geometry:wing:area"], 20.0, atol=1e-3)
 
-    # _ = problem_geom.check_partials(compact_print=True)
-
     ivc_aero = om.IndepVarComp()
     ivc_aero.add_output("wing_area:geometric", val=10.0, units="m**2")
     ivc_aero.add_output("wing_area:aerodynamic", val=15.0, units="m**2")
 
     problem_aero = run_system(UpdateWingArea(), ivc_aero)
     assert_allclose(problem_aero["data:geometry:wing:area"], 15.0, atol=1e-3)
-
-    # _ = problem_aero.check_partials(compact_print=True)
 
 
 def test_update_wing_position():

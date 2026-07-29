@@ -14,7 +14,7 @@
 from collections.abc import Iterable
 
 import numpy as np
-from fastoad.exceptions import FastUnexpectedKeywordArgument
+from fastoad.exceptions import FastUnexpectedKeywordArgumentError
 
 
 class DynamicAttributeDict(dict):
@@ -66,10 +66,10 @@ class DynamicAttributeDict(dict):
         if hasattr(self, "get_attribute_keys"):
             for key in kwargs:
                 if key not in self.get_attribute_keys():
-                    raise FastUnexpectedKeywordArgument(key)
+                    raise FastUnexpectedKeywordArgumentError(key)
         elif kwargs:
             # No defined dynamic attribute, any keyword argument is illegal
-            raise FastUnexpectedKeywordArgument(list(kwargs.keys())[0])
+            raise FastUnexpectedKeywordArgumentError(list(kwargs.keys())[0])
 
         super().__init__(*args, **kwargs)
 

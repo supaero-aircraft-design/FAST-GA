@@ -140,7 +140,7 @@ class OMBasicICEngineWrapper(oad.IOMPropulsionWrapper):
             "fuel_type": inputs["data:propulsion:fuel_type"],
             "strokes_nb": inputs["data:propulsion:IC_engine:strokes_nb"],
             "prop_layout": inputs["data:geometry:propulsion:engine:layout"],
-            "k_factor_sfc": inputs["settings:propulsion:IC_engine:k_factor_sfc"],
+            "k_factor_sfc": inputs["settings:propulsion:IC_engine:k_factor_sfc"].item(),
             "speed_SL": inputs["data:aerodynamics:propeller:sea_level:speed"],
             "thrust_SL": inputs["data:aerodynamics:propeller:sea_level:thrust"],
             "thrust_limit_SL": inputs["data:aerodynamics:propeller:sea_level:thrust_limit"],

@@ -134,9 +134,9 @@ class BasicICEngine(AbstractFuelPropulsion):
         self.thrust_CL = thrust_CL
         self.thrust_limit_CL = thrust_limit_CL
         self.efficiency_CL = efficiency_CL
-        self.effective_J = float(effective_J)
-        self.effective_efficiency_ls = float(effective_efficiency_ls)
-        self.effective_efficiency_cruise = float(effective_efficiency_cruise)
+        self.effective_J = effective_J.item()
+        self.effective_efficiency_ls = effective_efficiency_ls.item()
+        self.effective_efficiency_cruise = effective_efficiency_cruise.item()
         self.specific_shape = None
 
         # Evaluate engine volume based on max power @ 0.0m
@@ -492,11 +492,11 @@ class BasicICEngine(AbstractFuelPropulsion):
                 np.interp(list(installed_airspeed), self.speed_CL, self.thrust_limit_CL),
             )
         if np.size(thrust) == 1:  # calculate for float
-            lower_bound = float(
-                self.propeller_efficiency_interpolator_sl(thrust_interp_SL, installed_airspeed)
+            lower_bound = (
+                self.propeller_efficiency_interpolator_sl(thrust_interp_SL, installed_airspeed).item()
             )
-            upper_bound = float(
-                self.propeller_efficiency_interpolator_cl(thrust_interp_CL, installed_airspeed)
+            upper_bound = (
+                self.propeller_efficiency_interpolator_cl(thrust_interp_CL, installed_airspeed).item()
             )
             altitude = atmosphere.get_altitude(altitude_in_feet=False)
             propeller_efficiency = np.interp(
@@ -507,10 +507,10 @@ class BasicICEngine(AbstractFuelPropulsion):
             for idx in range(np.size(thrust)):
                 lower_bound = self.propeller_efficiency_interpolator_sl(
                     thrust_interp_SL[idx], installed_airspeed[idx]
-                )
+                ).item()
                 upper_bound = self.propeller_efficiency_interpolator_cl(
                     thrust_interp_CL[idx], installed_airspeed[idx]
-                )
+                ).item()
                 altitude = atmosphere.get_altitude(altitude_in_feet=False)[idx]
                 propeller_efficiency[idx] = (
                     lower_bound
@@ -588,7 +588,7 @@ class BasicICEngine(AbstractFuelPropulsion):
                 )
                 torque[idx] = real_power[idx] / (rpm_values[idx] * np.pi / 30.0)
                 sfc[idx] = (
-                    float(self.sfc_interpolator(torque[idx], rpm_values[idx]))
+                    self.sfc_interpolator(torque[idx], rpm_values[idx]).item()
                     * mixture_values[idx]
                     * self.k_factor_sfc
                 )

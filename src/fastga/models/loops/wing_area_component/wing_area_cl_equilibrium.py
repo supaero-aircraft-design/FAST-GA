@@ -182,8 +182,8 @@ def compute_wing_area(inputs, propulsion_id):
     # First, setup an initial guess
     stall_speed = inputs["data:TLAR:v_approach"] / 1.3
     mlw = inputs["data:weight:aircraft:MLW"]
-    cg_max_aft = float(inputs["data:weight:aircraft:CG:aft:x"])
-    cg_max_fwd = float(inputs["data:weight:aircraft:CG:fwd:x"])
+    cg_max_aft = inputs["data:weight:aircraft:CG:aft:x"].item()
+    cg_max_fwd = inputs["data:weight:aircraft:CG:fwd:x"].item()
     delta_cl_flaps = inputs["data:aerodynamics:flaps:landing:CL"]
     cl_alpha = inputs["data:aerodynamics:wing:cruise:CL_alpha"]
     cl_0_wing = inputs["data:aerodynamics:wing:cruise:CL0_clean"]
@@ -278,9 +278,7 @@ def compute_wing_area(inputs, propulsion_id):
     print(problem["delta_m"])
     print(problem["alpha"])
 
-    wing_area_approach = problem.get_val("data:geometry:wing:area", units="m**2")
-
-    return wing_area_approach
+    return problem.get_val("data:geometry:wing:area", units="m**2")
 
 
 def zip_equilibrium_input(propulsion_id):
@@ -306,6 +304,4 @@ def zip_equilibrium_input(propulsion_id):
     )
 
     name, unit, shape, shape_by_conn, copy_shape = list_inputs_metadata(new_component)
-    inputs_zip = zip(name, unit, shape, shape_by_conn, copy_shape)
-
-    return inputs_zip
+    return zip(name, unit, shape, shape_by_conn, copy_shape)
