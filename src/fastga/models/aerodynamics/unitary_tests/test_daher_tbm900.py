@@ -1522,7 +1522,7 @@ def test_load_factor():
     reason="No XFOIL executable available",
 )
 def test_propeller():
-    thrust_SL = np.array(
+    thrust_sl = np.array(
         [
             1619.09853324,
             2602.82704064,
@@ -1556,7 +1556,7 @@ def test_propeller():
             30147.22524794,
         ]
     )
-    thrust_SL_limit = np.array(
+    thrust_sl_limit = np.array(
         [
             12690.75906508,
             14452.03746608,
@@ -1570,7 +1570,7 @@ def test_propeller():
             30147.22524794,
         ]
     )
-    efficiency_SL = np.array(
+    efficiency_sl = np.array(
         [
             [
                 0.13570735,
@@ -1894,7 +1894,7 @@ def test_propeller():
             ],
         ]
     )
-    thrust_CL = np.array(
+    thrust_cl = np.array(
         [
             634.37045222,
             1043.01485082,
@@ -1928,7 +1928,7 @@ def test_propeller():
             12485.05801151,
         ]
     )
-    thrust_CL_limit = np.array(
+    thrust_cl_limit = np.array(
         [
             5141.33873835,
             5859.18963494,
@@ -1942,7 +1942,7 @@ def test_propeller():
             12485.05801151,
         ]
     )
-    efficiency_CL = np.array(
+    efficiency_cl = np.array(
         [
             [
                 0.12333056,
@@ -2282,18 +2282,18 @@ def test_propeller():
     )
     propeller_xfoil(
         XML_FILE,
-        thrust_SL=thrust_SL,
-        thrust_SL_limit=thrust_SL_limit,
-        efficiency_SL=efficiency_SL,
-        thrust_CL=thrust_CL,
-        thrust_CL_limit=thrust_CL_limit,
-        efficiency_CL=efficiency_CL,
+        thrust_sl=thrust_sl,
+        thrust_sl_limit=thrust_sl_limit,
+        efficiency_sl=efficiency_sl,
+        thrust_cl=thrust_cl,
+        thrust_cl_limit=thrust_cl_limit,
+        efficiency_cl=efficiency_cl,
         speed=speed,
     )
 
 
 def test_propeller_neuralfoil():
-    thrust_SL = np.array(
+    thrust_sl = np.array(
         [
             1068.74892912,
             2093.74331654,
@@ -2327,7 +2327,7 @@ def test_propeller_neuralfoil():
             30793.58616417,
         ]
     )
-    thrust_SL_limit = np.array(
+    thrust_sl_limit = np.array(
         [
             13027.69875763,
             14831.30232383,
@@ -2341,7 +2341,7 @@ def test_propeller_neuralfoil():
             30793.58616417,
         ]
     )
-    efficiency_SL = np.array(
+    efficiency_sl = np.array(
         [
             [
                 0.10907139,
@@ -2665,7 +2665,7 @@ def test_propeller_neuralfoil():
             ],
         ]
     )
-    thrust_CL = np.array(
+    thrust_cl = np.array(
         [
             470.95332813,
             894.5318113,
@@ -2699,7 +2699,7 @@ def test_propeller_neuralfoil():
             12754.72934015,
         ]
     )
-    thrust_CL_limit = np.array(
+    thrust_cl_limit = np.array(
         [
             5272.8381602,
             6007.51407156,
@@ -2713,7 +2713,7 @@ def test_propeller_neuralfoil():
             12754.72934015,
         ]
     )
-    efficiency_CL = np.array(
+    efficiency_cl = np.array(
         [
             [
                 0.10402435,
@@ -3053,12 +3053,12 @@ def test_propeller_neuralfoil():
     )
     propeller_neuralfoil(
         XML_FILE,
-        thrust_SL=thrust_SL,
-        thrust_SL_limit=thrust_SL_limit,
-        efficiency_SL=efficiency_SL,
-        thrust_CL=thrust_CL,
-        thrust_CL_limit=thrust_CL_limit,
-        efficiency_CL=efficiency_CL,
+        thrust_sl=thrust_sl,
+        thrust_sl_limit=thrust_sl_limit,
+        efficiency_sl=efficiency_sl,
+        thrust_cl=thrust_cl,
+        thrust_cl_limit=thrust_cl_limit,
+        efficiency_cl=efficiency_cl,
         speed=speed,
     )
 
