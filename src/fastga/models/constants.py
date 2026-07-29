@@ -48,3 +48,23 @@ class FlapType(IntEnum):
 
     PLAIN_FLAP = 0
     SINGLE_SLOTTED = 1
+
+
+class WingLayout(IntEnum):
+    """
+    Enumeration for possible position of the wing
+    """
+
+    LOW_WING = 1
+    MID_WING = 2
+    HIGH_WING = 3
+
+
+class FuelType(IntEnum):
+    """
+    Enumeration for fuel type
+    """
+
+    AVGAS = 1
+    DIESEL = 2
+    JET_A1 = 3

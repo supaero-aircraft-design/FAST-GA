@@ -21,6 +21,8 @@ import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
 
+from fastga.models.constants import FuelType
+
 from ...constants import SERVICE_MFW, SUBMODEL_MFW_LEGACY
 
 oad.RegisterSubmodel.active_models[SERVICE_MFW] = SUBMODEL_MFW_LEGACY
@@ -66,11 +68,11 @@ class ComputeMFWSimple(om.ExplicitComponent):
         root_thickness_ratio = inputs["data:geometry:wing:root:thickness_ratio"]
         tip_thickness_ratio = inputs["data:geometry:wing:tip:thickness_ratio"]
 
-        if fuel_type == 1.0:
+        if fuel_type == FuelType.AVGAS:
             m_vol_fuel = 718.9  # gasoline volume-mass [kg/m**3], cold worst case, Avgas
-        elif fuel_type == 2.0:
+        elif fuel_type == FuelType.DIESEL:
             m_vol_fuel = 860.0  # Diesel volume-mass [kg/m**3], cold worst case
-        elif fuel_type == 3.0:
+        elif fuel_type == FuelType.JET_A1:
             m_vol_fuel = 804.0  # Jet-A1 volume mass [kg/m**3], cold worst case
         else:
             m_vol_fuel = 718.9
@@ -95,11 +97,11 @@ class ComputeMFWSimple(om.ExplicitComponent):
         root_thickness_ratio = inputs["data:geometry:wing:root:thickness_ratio"]
         tip_thickness_ratio = inputs["data:geometry:wing:tip:thickness_ratio"]
 
-        if fuel_type == 1.0:
+        if fuel_type == FuelType.AVGAS:
             m_vol_fuel = 718.9  # gasoline volume-mass [kg/m**3], cold worst case, Avgas
-        elif fuel_type == 2.0:
+        elif fuel_type == FuelType.DIESEL:
             m_vol_fuel = 860.0  # Diesel volume-mass [kg/m**3], cold worst case
-        elif fuel_type == 3.0:
+        elif fuel_type == FuelType.JET_A1:
             m_vol_fuel = 804.0  # Jet-A1 volume mass [kg/m**3], cold worst case
         else:
             m_vol_fuel = 718.9

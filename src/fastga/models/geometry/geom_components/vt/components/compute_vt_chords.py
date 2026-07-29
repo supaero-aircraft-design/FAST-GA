@@ -20,6 +20,8 @@ import openmdao.api as om
 
 from ..constants import SERVICE_VT_CHORD, SUBMODEL_VT_CHORD_LEGACY
 
+MIN_VT_SPAN = 0.1
+
 
 @oad.RegisterSubmodel(SERVICE_VT_CHORD, SUBMODEL_VT_CHORD_LEGACY)
 class ComputeVTChords(om.ExplicitComponent):
@@ -51,7 +53,7 @@ class ComputeVTChords(om.ExplicitComponent):
         s_v = inputs["data:geometry:vertical_tail:area"]
         taper_vt = inputs["data:geometry:vertical_tail:taper_ratio"]
 
-        b_v = np.sqrt(max(aspect_ratio_vt * s_v, 0.1))
+        b_v = np.sqrt(max(aspect_ratio_vt * s_v, MIN_VT_SPAN))
         # !!!: to avoid 0 division if s_v initialised to 0
         root_chord = s_v * 2.0 / (1.0 + taper_vt) / b_v
         tip_chord = root_chord * taper_vt
@@ -67,7 +69,7 @@ class ComputeVTChords(om.ExplicitComponent):
         taper_vt = inputs["data:geometry:vertical_tail:taper_ratio"]
         aspect_ratio_vt = inputs["data:geometry:vertical_tail:aspect_ratio"]
 
-        if aspect_ratio_vt * s_v < 0.1:
+        if aspect_ratio_vt * s_v < MIN_VT_SPAN:
             partials["data:geometry:vertical_tail:span", "data:geometry:vertical_tail:area"] = 0.0
             partials[
                 "data:geometry:vertical_tail:span", "data:geometry:vertical_tail:aspect_ratio"

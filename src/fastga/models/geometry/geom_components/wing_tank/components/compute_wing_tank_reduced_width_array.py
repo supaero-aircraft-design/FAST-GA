@@ -105,8 +105,8 @@ class ComputeWingTankReducedWidthArray(om.ExplicitComponent):
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         nb_point_wing = self.options["number_points_wing_mfw"]
 
-        self.in_engine = np.full(nb_point_wing, False)
-        self.in_landing_gear = np.full(nb_point_wing, False)
+        self.in_engine = np.full(nb_point_wing, fill_value=False)
+        self.in_landing_gear = np.full(nb_point_wing, fill_value=False)
 
         lg_type = inputs["data:geometry:landing_gear:type"]
         y_lg = inputs["data:geometry:landing_gear:y"]
@@ -125,14 +125,14 @@ class ComputeWingTankReducedWidthArray(om.ExplicitComponent):
             for y_eng in y_ratio * span / 2.0:
                 self.in_engine = np.where(
                     np.abs(y_array - y_eng) < nacelle_width / 2.0,
-                    np.full_like(self.in_engine, True),
+                    np.full_like(self.in_engine, fill_value=True),
                     self.in_engine,
                 )
 
         if lg_type == 1.0:
             self.in_landing_gear = np.where(
                 y_array < y_lg,
-                np.full_like(self.in_landing_gear, True),
+                np.full_like(self.in_landing_gear, fill_value=True),
                 self.in_landing_gear,
             )
 

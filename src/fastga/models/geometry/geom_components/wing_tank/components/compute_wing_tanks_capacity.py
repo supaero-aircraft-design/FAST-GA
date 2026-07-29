@@ -72,13 +72,6 @@ class ComputeWingTanksCapacity(om.ExplicitComponent):
         y_array = inputs["data:geometry:propulsion:tank:y_array"]
         cross_section_array = inputs["data:geometry:propulsion:tank:cross_section_array"]
 
-        # trapz should be equivalent to sum(
-        #   (
-        #       (cross_section_array[:-1] + cross_section_array[1:])
-        #       / 2.0
-        #       * (y_array[1:] - y_array[:-1])
-        #   )
-        #
         outputs["data:geometry:propulsion:tank:capacity"] = 2.0 * trapezoid(
             cross_section_array, y_array
         )

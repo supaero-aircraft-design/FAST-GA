@@ -19,6 +19,8 @@ import warnings
 import numpy as np
 import openmdao.api as om
 
+from fastga.models.constants import PropulsionLayout
+
 
 class ComputeNacelleXPosition(om.ExplicitComponent):
     """
@@ -85,7 +87,7 @@ class ComputeNacelleXPosition(om.ExplicitComponent):
         x4_wing = inputs["data:geometry:wing:tip:leading_edge:x:local"]
         y4_wing = inputs["data:geometry:wing:tip:y"]
 
-        if prop_layout == 1.0:
+        if prop_layout == PropulsionLayout.UNDER_THE_WING:
             y_nacelle_array = inputs["data:geometry:propulsion:nacelle:y"]
             tapered_mask = y_nacelle_array > y2_wing
             # Nacelle in the tapered part of the wing
@@ -98,9 +100,9 @@ class ComputeNacelleXPosition(om.ExplicitComponent):
                 + delta_x_nacelle
             )
 
-        elif prop_layout == 2.0:
+        elif prop_layout == PropulsionLayout.IN_THE_REAR:
             x_nacelle_array = fus_length - 0.1 * rear_length
-        elif prop_layout == 3.0:
+        elif prop_layout == PropulsionLayout.IN_THE_NOSE:
             x_nacelle_array = nac_length
         else:
             x_nacelle_array = nac_length
@@ -119,7 +121,7 @@ class ComputeNacelleXPosition(om.ExplicitComponent):
         x4_wing = inputs["data:geometry:wing:tip:leading_edge:x:local"]
         y4_wing = inputs["data:geometry:wing:tip:y"]
 
-        if prop_layout == 1.0:
+        if prop_layout == PropulsionLayout.UNDER_THE_WING:
             y_nacelle_array = inputs["data:geometry:propulsion:nacelle:y"]
             tapered_mask = y_nacelle_array > y2_wing
             # Nacelle in the tapered part of the wing
@@ -169,7 +171,7 @@ class ComputeNacelleXPosition(om.ExplicitComponent):
                 partial_y_nacelle
             )
 
-        elif prop_layout == 2.0:
+        elif prop_layout == PropulsionLayout.IN_THE_REAR:
             partials[
                 "data:geometry:propulsion:nacelle:x", "data:geometry:propulsion:nacelle:length"
             ] = 0.0

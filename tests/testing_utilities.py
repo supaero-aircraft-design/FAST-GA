@@ -126,7 +126,7 @@ def list_inputs(component: om.ExplicitComponent | om.Group) -> list:
     return input_names
 
 
-def test_system(
+def setup_and_run_system(
     component: System,
     test_file: str,
     xml_file_name: str,
@@ -137,7 +137,7 @@ def test_system(
 ):
     """
     Runs and returns an OpenMDAO problem with provided component using data taken from provided data
-    file.
+    file. Does not handle problem with shape by conn variables !
     """
     problem = oad.FASTOADProblem()
     model = problem.model

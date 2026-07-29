@@ -15,7 +15,7 @@ Airfoil reshape function.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-import os.path as pth
+import pathlib
 import warnings
 
 import numpy as np
@@ -25,18 +25,21 @@ from fastga.models.aerodynamics import airfoil_folder
 
 from .profile import Profile
 
+MAX_THICKNESS_RATIO_DEVIATION = 0.01
+
 _LOGGER = logging.getLogger(__name__)
 
 
 def get_profile(
-    airfoil_folder_path: str = None,
-    file_name: str = None,
+    airfoil_folder_path: pathlib.Path | None = None,
+    file_name: str | None = None,
     thickness_ratio=None,
     chord_length=None,
 ) -> Profile:
     """
     Reads profile from indicated resource file and returns it after resize
 
+    :param airfoil_folder_path: path to the folder containing the airfoil
     :param file_name: name of resource (ex: "naca23012.af")
     :param thickness_ratio:
     :param chord_length:
@@ -45,16 +48,19 @@ def get_profile(
 
     profile = Profile()
     if airfoil_folder_path is None:
-        x_z = genfromtxt(pth.join(airfoil_folder.__path__[0], file_name))
+        x_z = genfromtxt(pathlib.Path(airfoil_folder.__path__[0]) / file_name)
     else:
-        x_z = genfromtxt(pth.join(airfoil_folder_path, file_name))
+        x_z = genfromtxt(airfoil_folder_path / file_name)
     profile.set_points(x_z["x"], x_z["z"])
 
     if thickness_ratio:
-        if abs(profile.thickness_ratio - thickness_ratio) / thickness_ratio > 0.01:
+        if (
+            abs(profile.thickness_ratio - thickness_ratio) / thickness_ratio
+            > MAX_THICKNESS_RATIO_DEVIATION
+        ):
             warnings.warn(
                 "The airfoil thickness ratio from file "
-                + pth.join(airfoil_folder.__path__[0], file_name)
+                + (pathlib.Path(airfoil_folder.__path__[0]) / file_name).as_posix()
                 + " differs from user defined input data:geometry:wing:thickness_ratio!"
             )
         profile.thickness_ratio = thickness_ratio
@@ -65,15 +71,15 @@ def get_profile(
     return profile
 
 
-def genfromtxt(file_name: str = None) -> pd.DataFrame:
-    with open(file_name) as file:
+def genfromtxt(file_name: pathlib.Path | None = None) -> pd.DataFrame:
+    with file_name.open() as file:
         data = file.readlines()
         # Extract data
         x_data = []
         z_data = []
         for i in range(len(data)):
             line = data[i].split()
-            if len(line) == 2:
+            if len(line) == 2:  # noqa: PLR2004, 2D coordinates come in 2 ...
                 # noinspection PyBroadException
                 try:
                     float(line[0])
@@ -85,7 +91,7 @@ def genfromtxt(file_name: str = None) -> pd.DataFrame:
                     if line[0] != "NACA" and line[0] != "AIRFOIL":
                         _LOGGER.info(
                             "Problem occurred while reading %s file!",
-                            pth.join(airfoil_folder.__path__[0], file_name),
+                            (pathlib.Path(airfoil_folder.__path__[0]) / file_name).as_posix(),
                         )
                     else:
                         # Skipping to next line

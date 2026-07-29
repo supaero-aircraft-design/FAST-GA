@@ -107,7 +107,12 @@ from fastga.models.aerodynamics.external.vlm import ComputeAeroVLM, VLMSimpleGeo
 from fastga.models.aerodynamics.external.xfoil import resources
 from fastga.models.aerodynamics.external.xfoil.xfoil_polar import XfoilPolar
 from fastga.models.aerodynamics.load_factor import LoadFactor
-from tests.testing_utilities import get_indep_var_comp, list_inputs, run_system, test_system
+from tests.testing_utilities import (
+    get_indep_var_comp,
+    list_inputs,
+    run_system,
+    setup_and_run_system,
+)
 from tests.xfoil_exe.get_xfoil import get_xfoil_path
 
 RESULTS_FOLDER = pathlib.Path(__file__).parent / "results"
@@ -194,14 +199,18 @@ def compute_reynolds(
 ):
     """Tests high and low speed reynolds calculation!"""
     # Research independent input value in .xml file
-    problem = test_system(ComputeUnitReynolds(low_speed_aero=True), __file__, xml_file_name)
+    problem = setup_and_run_system(
+        ComputeUnitReynolds(low_speed_aero=True), __file__, xml_file_name
+    )
     assert problem["data:aerodynamics:low_speed:mach"] == pytest.approx(mach_low_speed, abs=1e-4)
     assert problem.get_val(
         "data:aerodynamics:low_speed:unit_reynolds", units="m**-1"
     ) == pytest.approx(reynolds_low_speed, abs=1)
 
     # Research independent input value in .xml file
-    problem = test_system(ComputeUnitReynolds(low_speed_aero=False), __file__, xml_file_name)
+    problem = setup_and_run_system(
+        ComputeUnitReynolds(low_speed_aero=False), __file__, xml_file_name
+    )
     assert problem["data:aerodynamics:cruise:mach"] == pytest.approx(mach_high_speed, abs=1e-4)
     assert problem.get_val(
         "data:aerodynamics:cruise:unit_reynolds", units="m**-1"
@@ -1702,7 +1711,7 @@ def comp_low_speed_input_aoa_neuralfoil(xml_file_name: str):
 def hinge_moment_2d(xml_file_name: str, ch_alpha_2d: float, ch_delta_2d: float):
     """Tests tail hinge-moments"""
     # Research independent input value in .xml file
-    problem = test_system(Compute2DHingeMomentsTail(), __file__, xml_file_name)
+    problem = setup_and_run_system(Compute2DHingeMomentsTail(), __file__, xml_file_name)
     assert problem.get_val(
         "data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_alpha_2D", units="rad**-1"
     ) == pytest.approx(ch_alpha_2d, abs=1e-4)
@@ -1714,7 +1723,7 @@ def hinge_moment_2d(xml_file_name: str, ch_alpha_2d: float, ch_delta_2d: float):
 def hinge_moment_3d(xml_file_name: str, ch_alpha: float, ch_delta: float):
     """Tests tail hinge-moments!"""
     # Research independent input value in .xml file
-    problem = test_system(Compute3DHingeMomentsTail(), __file__, xml_file_name)
+    problem = setup_and_run_system(Compute3DHingeMomentsTail(), __file__, xml_file_name)
     assert problem.get_val(
         "data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_alpha", units="rad**-1"
     ) == pytest.approx(ch_alpha, abs=1e-4)
@@ -1729,7 +1738,7 @@ def hinge_moments(xml_file_name: str, ch_alpha: float, ch_delta: float):
     """Tests tail hinge-moments complete computation!"""
 
     # Research independent input value in .xml file
-    problem = test_system(ComputeHingeMomentsTail(), __file__, xml_file_name)
+    problem = setup_and_run_system(ComputeHingeMomentsTail(), __file__, xml_file_name)
     assert problem.get_val(
         "data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_alpha", units="rad**-1"
     ) == pytest.approx(ch_alpha, abs=1e-4)
@@ -1743,7 +1752,7 @@ def elevator(
     cl_delta_elev: float,
     cd_delta_elev: float,
 ):
-    problem = test_system(ComputeDeltaElevator(), __file__, xml_file_name)
+    problem = setup_and_run_system(ComputeDeltaElevator(), __file__, xml_file_name)
 
     assert problem.get_val(
         "data:aerodynamics:elevator:low_speed:CL_delta", units="rad**-1"
@@ -1772,7 +1781,7 @@ def high_lift(
 ):
     """Tests high-lift contribution!"""
     # Research independent input value in .xml file
-    problem = test_system(ComputeDeltaHighLift(), __file__, xml_file_name)
+    problem = setup_and_run_system(ComputeDeltaHighLift(), __file__, xml_file_name)
     assert problem["data:aerodynamics:flaps:landing:CL"] == pytest.approx(
         delta_cl0_landing, abs=1e-4
     )
@@ -1975,7 +1984,7 @@ def l_d_max(
 ):
     """Tests best lift/drag component!"""
     # Define independent input value (openVSP)
-    problem = test_system(ComputeLDMax(), __file__, xml_file_name)
+    problem = setup_and_run_system(ComputeLDMax(), __file__, xml_file_name)
     assert problem["data:aerodynamics:aircraft:cruise:L_D_max"] == pytest.approx(l_d_max_, abs=1e-1)
     assert problem["data:aerodynamics:aircraft:cruise:optimal_CL"] == pytest.approx(
         optimal_cl, abs=1e-4
@@ -1993,7 +2002,7 @@ def l_d_max(
 def cnbeta(xml_file_name: str, cn_beta_fus: float):
     """Tests cn beta fuselage"""
     # Research independent input value in .xml file
-    problem = test_system(ComputeCnBetaFuselage(), __file__, xml_file_name)
+    problem = setup_and_run_system(ComputeCnBetaFuselage(), __file__, xml_file_name)
     assert problem["data:aerodynamics:fuselage:Cn_beta"] == pytest.approx(cn_beta_fus, rel=1e-3)
 
     problem.check_partials(compact_print=True)
@@ -2097,7 +2106,7 @@ def compute_mach_interpolation_roskam_xfoil(
 ):
     """Tests computation of the mach interpolation vector using Roskam's approach!"""
     # Research independent input value in .xml file
-    problem = test_system(ComputeMachInterpolation(), __file__, xml_file_name)
+    problem = setup_and_run_system(ComputeMachInterpolation(), __file__, xml_file_name)
     cl_alpha_result = problem["data:aerodynamics:aircraft:mach_interpolation:CL_alpha_vector"]
     assert np.max(np.abs(cl_alpha_vector - cl_alpha_result)) <= 1e-2
     mach_result = problem["data:aerodynamics:aircraft:mach_interpolation:mach_vector"]
@@ -2109,7 +2118,9 @@ def compute_mach_interpolation_roskam_neuralfoil(
 ):
     """Tests computation of the mach interpolation vector using Roskam's approach!"""
     # Research independent input value in .xml file
-    problem = test_system(ComputeMachInterpolation(use_neuralfoil=True), __file__, xml_file_name)
+    problem = setup_and_run_system(
+        ComputeMachInterpolation(use_neuralfoil=True), __file__, xml_file_name
+    )
     cl_alpha_result = problem["data:aerodynamics:aircraft:mach_interpolation:CL_alpha_vector"]
     assert np.max(np.abs(cl_alpha_vector - cl_alpha_result)) <= 1e-2
     mach_result = problem["data:aerodynamics:aircraft:mach_interpolation:mach_vector"]
@@ -2121,7 +2132,9 @@ def cl_alpha_vt(
 ):
     """Tests Cl alpha vt!"""
     # Research independent input value in .xml file
-    problem = test_system(ComputeClAlphaVerticalTail(low_speed_aero=True), __file__, xml_file_name)
+    problem = setup_and_run_system(
+        ComputeClAlphaVerticalTail(low_speed_aero=True), __file__, xml_file_name
+    )
     assert problem.get_val(
         "data:aerodynamics:vertical_tail:low_speed:CL_alpha", units="rad**-1"
     ) == pytest.approx(cl_alpha_vt_ls, rel=1e-3)
@@ -2130,7 +2143,7 @@ def cl_alpha_vt(
     )
 
     # Research independent input value in .xml file
-    problem = test_system(ComputeClAlphaVerticalTail(), __file__, xml_file_name)
+    problem = setup_and_run_system(ComputeClAlphaVerticalTail(), __file__, xml_file_name)
     assert problem.get_val(
         "data:aerodynamics:vertical_tail:cruise:CL_alpha", units="rad**-1"
     ) == pytest.approx(cl_alpha_vt_cruise, rel=1e-3)
@@ -2139,13 +2152,15 @@ def cl_alpha_vt(
 def cy_delta_r(xml_file_name: str, cy_delta_r_: float, cy_delta_r_cruise):
     """Tests cy delta of the rudder!"""
     # Research independent input value in .xml file
-    problem = test_system(ComputeCyDeltaRudder(low_speed_aero=True), __file__, xml_file_name)
+    problem = setup_and_run_system(
+        ComputeCyDeltaRudder(low_speed_aero=True), __file__, xml_file_name
+    )
     assert problem.get_val(
         "data:aerodynamics:rudder:low_speed:Cy_delta_r", units="rad**-1"
     ) == pytest.approx(cy_delta_r_, abs=1e-4)
 
     # Research independent input value in .xml file
-    problem = test_system(ComputeCyDeltaRudder(), __file__, xml_file_name)
+    problem = setup_and_run_system(ComputeCyDeltaRudder(), __file__, xml_file_name)
     assert problem.get_val(
         "data:aerodynamics:rudder:cruise:Cy_delta_r", units="rad**-1"
     ) == pytest.approx(cy_delta_r_cruise, abs=1e-4)
@@ -2169,7 +2184,7 @@ def effective_efficiency(
     ) == pytest.approx(effective_efficiency_low_speed, abs=1e-4)
 
     # Research independent input value in .xml file
-    problem = test_system(ComputeEffectiveEfficiencyPropeller(), __file__, xml_file_name)
+    problem = setup_and_run_system(ComputeEffectiveEfficiencyPropeller(), __file__, xml_file_name)
     assert problem.get_val(
         "data:aerodynamics:propeller:installation_effect:effective_efficiency:cruise",
     ) == pytest.approx(effective_efficiency_cruise, abs=1e-4)
@@ -2178,7 +2193,7 @@ def effective_efficiency(
 def cm_alpha_fus(xml_file_name: str, cm_alpha_fus_: float):
     """Tests cm alpha of the fuselage"""
     # Research independent input value in .xml file
-    problem = test_system(ComputeCmAlphaFuselage(), __file__, xml_file_name)
+    problem = setup_and_run_system(ComputeCmAlphaFuselage(), __file__, xml_file_name)
     assert problem.get_val("data:aerodynamics:fuselage:cm_alpha", units="rad**-1") == pytest.approx(
         cm_alpha_fus_, abs=1e-4
     )
@@ -2434,7 +2449,9 @@ def non_equilibrated_cl_cd_polar(
 ):
     """Tests non-equilibrated cl/cd polar of the aircraft"""
     # Research independent input value in .xml file
-    problem = test_system(ComputeNonEquilibratedPolar(low_speed_aero=True), __file__, xml_file_name)
+    problem = setup_and_run_system(
+        ComputeNonEquilibratedPolar(low_speed_aero=True), __file__, xml_file_name
+    )
     assert problem.get_val("data:aerodynamics:aircraft:low_speed:CD")[::10] == pytest.approx(
         cd_polar_ls_, abs=1e-4
     )
@@ -2442,7 +2459,7 @@ def non_equilibrated_cl_cd_polar(
         cl_polar_ls_, abs=1e-2
     )
 
-    problem = test_system(
+    problem = setup_and_run_system(
         ComputeNonEquilibratedPolar(low_speed_aero=False), __file__, xml_file_name
     )
     assert problem.get_val("data:aerodynamics:aircraft:cruise:CD")[::10] == pytest.approx(
@@ -2499,7 +2516,7 @@ def cy_beta_fus(
 ):
     """Tests cy beta of the fuselage"""
     # Research independent input value in .xml file
-    problem = test_system(ComputeCyBetaFuselage(), __file__, xml_file_name)
+    problem = setup_and_run_system(ComputeCyBetaFuselage(), __file__, xml_file_name)
     assert problem.get_val("data:aerodynamics:fuselage:Cy_beta", units="rad**-1") == pytest.approx(
         cy_beta_fus_, rel=1e-3
     )
@@ -2514,7 +2531,9 @@ def downwash_gradient(
 ):
     """Tests cy beta of the fuselage"""
     # Research independent input value in .xml file
-    problem = test_system(DownWashGradientComputation(low_speed_aero=True), __file__, xml_file_name)
+    problem = setup_and_run_system(
+        DownWashGradientComputation(low_speed_aero=True), __file__, xml_file_name
+    )
     assert problem.get_val(
         "data:aerodynamics:horizontal_tail:low_speed:downwash_gradient"
     ) == pytest.approx(downwash_gradient_ls_, rel=1e-3)
@@ -2523,7 +2542,7 @@ def downwash_gradient(
 
     """Tests cy beta of the fuselage"""
     # Research independent input value in .xml file
-    problem = test_system(
+    problem = setup_and_run_system(
         DownWashGradientComputation(low_speed_aero=False), __file__, xml_file_name
     )
     assert problem.get_val(
@@ -2539,7 +2558,9 @@ def lift_aoa_rate_derivative(
     cl_aoa_dot_cruise_: float,
 ):
     # Research independent input value in .xml file
-    problem = test_system(ComputeCLAlphaDotAircraft(low_speed_aero=True), __file__, xml_file_name)
+    problem = setup_and_run_system(
+        ComputeCLAlphaDotAircraft(low_speed_aero=True), __file__, xml_file_name
+    )
     assert problem.get_val("data:aerodynamics:aircraft:low_speed:CL_alpha_dot") == pytest.approx(
         cl_aoa_dot_low_speed_, rel=1e-3
     )
@@ -2547,7 +2568,9 @@ def lift_aoa_rate_derivative(
     problem.check_partials(compact_print=True)
 
     # Research independent input value in .xml file
-    problem = test_system(ComputeCLAlphaDotAircraft(low_speed_aero=False), __file__, xml_file_name)
+    problem = setup_and_run_system(
+        ComputeCLAlphaDotAircraft(low_speed_aero=False), __file__, xml_file_name
+    )
     assert problem.get_val("data:aerodynamics:aircraft:cruise:CL_alpha_dot") == pytest.approx(
         cl_aoa_dot_cruise_, rel=1e-3
     )
@@ -2597,7 +2620,9 @@ def lift_pitch_velocity_derivative_wing(
     cl_q_wing_cruise_: float,
 ):
     # Research independent input value in .xml file
-    problem = test_system(ComputeCLPitchVelocityWing(low_speed_aero=True), __file__, xml_file_name)
+    problem = setup_and_run_system(
+        ComputeCLPitchVelocityWing(low_speed_aero=True), __file__, xml_file_name
+    )
     assert problem.get_val("data:aerodynamics:wing:low_speed:CL_q") == pytest.approx(
         cl_q_wing_low_speed_, rel=1e-3
     )
@@ -2605,7 +2630,9 @@ def lift_pitch_velocity_derivative_wing(
     problem.check_partials(compact_print=True)
 
     # Research independent input value in .xml file
-    problem = test_system(ComputeCLPitchVelocityWing(low_speed_aero=False), __file__, xml_file_name)
+    problem = setup_and_run_system(
+        ComputeCLPitchVelocityWing(low_speed_aero=False), __file__, xml_file_name
+    )
     assert problem.get_val("data:aerodynamics:wing:cruise:CL_q") == pytest.approx(
         cl_q_wing_cruise_, rel=1e-3
     )
@@ -2619,7 +2646,7 @@ def lift_pitch_velocity_derivative_aircraft(
     cl_q_cruise_: float,
 ):
     # Research independent input value in .xml file
-    problem = test_system(
+    problem = setup_and_run_system(
         ComputeCLPitchVelocityAircraft(low_speed_aero=True), __file__, xml_file_name
     )
     assert problem.get_val("data:aerodynamics:aircraft:low_speed:CL_q") == pytest.approx(
@@ -2629,7 +2656,7 @@ def lift_pitch_velocity_derivative_aircraft(
     problem.check_partials(compact_print=True)
 
     # Research independent input value in .xml file
-    problem = test_system(
+    problem = setup_and_run_system(
         ComputeCLPitchVelocityAircraft(low_speed_aero=False), __file__, xml_file_name
     )
     assert problem.get_val("data:aerodynamics:aircraft:cruise:CL_q") == pytest.approx(
@@ -2644,7 +2671,7 @@ def side_force_sideslip_derivative_wing(
     cy_beta_wing_: float,
 ):
     # Research independent input value in .xml file
-    problem = test_system(ComputeCyBetaWing(), __file__, xml_file_name)
+    problem = setup_and_run_system(ComputeCyBetaWing(), __file__, xml_file_name)
     assert problem.get_val("data:aerodynamics:wing:Cy_beta", units="rad**-1") == pytest.approx(
         cy_beta_wing_, rel=1e-3
     )
@@ -2658,7 +2685,9 @@ def side_force_sideslip_derivative_vt(
     cy_beta_vt_cruise_: float,
 ):
     # Research independent input value in .xml file
-    problem = test_system(ComputeCyBetaVerticalTail(low_speed_aero=True), __file__, xml_file_name)
+    problem = setup_and_run_system(
+        ComputeCyBetaVerticalTail(low_speed_aero=True), __file__, xml_file_name
+    )
     assert problem.get_val(
         "data:aerodynamics:vertical_tail:low_speed:Cy_beta", units="rad**-1"
     ) == pytest.approx(cy_beta_vt_low_speed_, rel=1e-3)
@@ -2666,7 +2695,9 @@ def side_force_sideslip_derivative_vt(
     problem.check_partials(compact_print=True)
 
     # Research independent input value in .xml file
-    problem = test_system(ComputeCyBetaVerticalTail(low_speed_aero=False), __file__, xml_file_name)
+    problem = setup_and_run_system(
+        ComputeCyBetaVerticalTail(low_speed_aero=False), __file__, xml_file_name
+    )
     assert problem.get_val(
         "data:aerodynamics:vertical_tail:cruise:Cy_beta", units="rad**-1"
     ) == pytest.approx(cy_beta_vt_cruise_, rel=1e-3)
@@ -2681,7 +2712,9 @@ def side_force_sideslip_aircraft(
     # Only testing the low speed case since the high can't run on its own (fuselage and wing
     # contribution are independent of mach number and are thus only computed at low speed)
     # Research independent input value in .xml file
-    problem = test_system(ComputeCYBetaAircraft(low_speed_aero=True), __file__, xml_file_name)
+    problem = setup_and_run_system(
+        ComputeCYBetaAircraft(low_speed_aero=True), __file__, xml_file_name
+    )
     assert problem.get_val(
         "data:aerodynamics:aircraft:low_speed:Cy_beta", units="rad**-1"
     ) == pytest.approx(cy_beta_low_speed_, rel=1e-3)
@@ -2695,7 +2728,9 @@ def side_force_yaw_rate_aircraft(
     cy_yaw_rate_cruise_: float,
 ):
     # Research independent input value in .xml file
-    problem = test_system(ComputeCyYawRateAircraft(low_speed_aero=True), __file__, xml_file_name)
+    problem = setup_and_run_system(
+        ComputeCyYawRateAircraft(low_speed_aero=True), __file__, xml_file_name
+    )
     assert problem.get_val(
         "data:aerodynamics:aircraft:low_speed:Cy_r", units="rad**-1"
     ) == pytest.approx(cy_yaw_rate_low_speed_, rel=1e-3)
@@ -2703,7 +2738,9 @@ def side_force_yaw_rate_aircraft(
     problem.check_partials(compact_print=True)
 
     # Research independent input value in .xml file
-    problem = test_system(ComputeCyYawRateAircraft(low_speed_aero=False), __file__, xml_file_name)
+    problem = setup_and_run_system(
+        ComputeCyYawRateAircraft(low_speed_aero=False), __file__, xml_file_name
+    )
     assert problem.get_val(
         "data:aerodynamics:aircraft:cruise:Cy_r", units="rad**-1"
     ) == pytest.approx(cy_yaw_rate_cruise_, rel=1e-3)
@@ -2717,7 +2754,9 @@ def side_force_roll_rate_aircraft(
     cy_roll_rate_cruise_: float,
 ):
     # Research independent input value in .xml file
-    problem = test_system(ComputeCyRollRateAircraft(low_speed_aero=True), __file__, xml_file_name)
+    problem = setup_and_run_system(
+        ComputeCyRollRateAircraft(low_speed_aero=True), __file__, xml_file_name
+    )
     assert problem.get_val(
         "data:aerodynamics:aircraft:low_speed:Cy_p", units="rad**-1"
     ) == pytest.approx(cy_roll_rate_low_speed_, rel=1e-3)
@@ -2725,7 +2764,9 @@ def side_force_roll_rate_aircraft(
     problem.check_partials(compact_print=True)
 
     # Research independent input value in .xml file
-    problem = test_system(ComputeCyRollRateAircraft(low_speed_aero=False), __file__, xml_file_name)
+    problem = setup_and_run_system(
+        ComputeCyRollRateAircraft(low_speed_aero=False), __file__, xml_file_name
+    )
     assert problem.get_val(
         "data:aerodynamics:aircraft:cruise:Cy_p", units="rad**-1"
     ) == pytest.approx(cy_roll_rate_cruise_, rel=1e-3)
@@ -2739,13 +2780,13 @@ def roll_moment_side_slip_wing(
     cl_beta_wing_cruise_: float,
 ):
     # Research independent input value in .xml file
-    problem = test_system(ComputeClBetaWing(low_speed_aero=True), __file__, xml_file_name)
+    problem = setup_and_run_system(ComputeClBetaWing(low_speed_aero=True), __file__, xml_file_name)
     assert problem.get_val(
         "data:aerodynamics:wing:low_speed:Cl_beta", units="rad**-1"
     ) == pytest.approx(cl_beta_wing_low_speed_, rel=1e-3)
 
     # Research independent input value in .xml file
-    problem = test_system(ComputeClBetaWing(low_speed_aero=False), __file__, xml_file_name)
+    problem = setup_and_run_system(ComputeClBetaWing(low_speed_aero=False), __file__, xml_file_name)
     assert problem.get_val(
         "data:aerodynamics:wing:cruise:Cl_beta", units="rad**-1"
     ) == pytest.approx(cl_beta_wing_cruise_, rel=1e-3)
@@ -2757,13 +2798,15 @@ def roll_moment_side_slip_ht(
     cl_beta_ht_cruise_: float,
 ):
     # Research independent input value in .xml file
-    problem = test_system(ComputeClBetaHorizontalTail(low_speed_aero=True), __file__, xml_file_name)
+    problem = setup_and_run_system(
+        ComputeClBetaHorizontalTail(low_speed_aero=True), __file__, xml_file_name
+    )
     assert problem.get_val(
         "data:aerodynamics:horizontal_tail:low_speed:Cl_beta", units="rad**-1"
     ) == pytest.approx(cl_beta_ht_low_speed_, rel=1e-3)
 
     # Research independent input value in .xml file
-    problem = test_system(
+    problem = setup_and_run_system(
         ComputeClBetaHorizontalTail(low_speed_aero=False), __file__, xml_file_name
     )
     assert problem.get_val(
@@ -2777,7 +2820,9 @@ def roll_moment_side_slip_vt(
     cl_beta_vt_cruise_: float,
 ):
     # Research independent input value in .xml file
-    problem = test_system(ComputeClBetaVerticalTail(low_speed_aero=True), __file__, xml_file_name)
+    problem = setup_and_run_system(
+        ComputeClBetaVerticalTail(low_speed_aero=True), __file__, xml_file_name
+    )
     assert problem.get_val(
         "data:aerodynamics:vertical_tail:low_speed:Cl_beta", units="rad**-1"
     ) == pytest.approx(cl_beta_vt_low_speed_, rel=1e-3)
@@ -2785,7 +2830,9 @@ def roll_moment_side_slip_vt(
     problem.check_partials(compact_print=True)
 
     # Research independent input value in .xml file
-    problem = test_system(ComputeClBetaVerticalTail(low_speed_aero=False), __file__, xml_file_name)
+    problem = setup_and_run_system(
+        ComputeClBetaVerticalTail(low_speed_aero=False), __file__, xml_file_name
+    )
     assert problem.get_val(
         "data:aerodynamics:vertical_tail:cruise:Cl_beta", units="rad**-1"
     ) == pytest.approx(cl_beta_vt_cruise_, rel=1e-3)
@@ -2799,7 +2846,9 @@ def roll_moment_side_slip_aircraft(
     cl_beta_cruise_: float,
 ):
     # Research independent input value in .xml file
-    problem = test_system(ComputeClBetaAircraft(low_speed_aero=True), __file__, xml_file_name)
+    problem = setup_and_run_system(
+        ComputeClBetaAircraft(low_speed_aero=True), __file__, xml_file_name
+    )
     assert problem.get_val(
         "data:aerodynamics:aircraft:low_speed:Cl_beta", units="rad**-1"
     ) == pytest.approx(cl_beta_low_speed_, rel=1e-3)
@@ -2811,7 +2860,9 @@ def roll_moment_side_slip_aircraft(
     )
 
     # Research independent input value in .xml file
-    problem = test_system(ComputeClBetaAircraft(low_speed_aero=False), __file__, xml_file_name)
+    problem = setup_and_run_system(
+        ComputeClBetaAircraft(low_speed_aero=False), __file__, xml_file_name
+    )
     assert problem.get_val(
         "data:aerodynamics:aircraft:cruise:Cl_beta", units="rad**-1"
     ) == pytest.approx(cl_beta_cruise_, rel=1e-3)
@@ -2829,13 +2880,17 @@ def roll_moment_roll_rate_wing(
     cl_p_wing_cruise_: float,
 ):
     # Research independent input value in .xml file
-    problem = test_system(ComputeClRollRateWing(low_speed_aero=True), __file__, xml_file_name)
+    problem = setup_and_run_system(
+        ComputeClRollRateWing(low_speed_aero=True), __file__, xml_file_name
+    )
     assert problem.get_val(
         "data:aerodynamics:wing:low_speed:Cl_p", units="rad**-1"
     ) == pytest.approx(cl_p_wing_low_speed_, rel=1e-3)
 
     # Research independent input value in .xml file
-    problem = test_system(ComputeClRollRateWing(low_speed_aero=False), __file__, xml_file_name)
+    problem = setup_and_run_system(
+        ComputeClRollRateWing(low_speed_aero=False), __file__, xml_file_name
+    )
     assert problem.get_val("data:aerodynamics:wing:cruise:Cl_p", units="rad**-1") == pytest.approx(
         cl_p_wing_cruise_, rel=1e-3
     )
@@ -2847,7 +2902,7 @@ def roll_moment_roll_rate_ht(
     cl_p_ht_cruise_: float,
 ):
     # Research independent input value in .xml file
-    problem = test_system(
+    problem = setup_and_run_system(
         ComputeClRollRateHorizontalTail(low_speed_aero=True), __file__, xml_file_name
     )
     assert problem.get_val(
@@ -2855,7 +2910,7 @@ def roll_moment_roll_rate_ht(
     ) == pytest.approx(cl_p_ht_low_speed_, rel=1e-3)
 
     # Research independent input value in .xml file
-    problem = test_system(
+    problem = setup_and_run_system(
         ComputeClRollRateHorizontalTail(low_speed_aero=False), __file__, xml_file_name
     )
     assert problem.get_val(
@@ -2869,7 +2924,7 @@ def roll_moment_roll_rate_vt(
     cl_p_vt_cruise_: float,
 ):
     # Research independent input value in .xml file
-    problem = test_system(
+    problem = setup_and_run_system(
         ComputeClRollRateVerticalTail(low_speed_aero=True), __file__, xml_file_name
     )
     assert problem.get_val(
@@ -2879,7 +2934,7 @@ def roll_moment_roll_rate_vt(
     problem.check_partials(compact_print=True)
 
     # Research independent input value in .xml file
-    problem = test_system(
+    problem = setup_and_run_system(
         ComputeClRollRateVerticalTail(low_speed_aero=False), __file__, xml_file_name
     )
     assert problem.get_val(
@@ -2895,7 +2950,9 @@ def roll_moment_roll_rate_aircraft(
     cl_p_cruise_: float,
 ):
     # Research independent input value in .xml file
-    problem = test_system(ComputeClRollRateAircraft(low_speed_aero=True), __file__, xml_file_name)
+    problem = setup_and_run_system(
+        ComputeClRollRateAircraft(low_speed_aero=True), __file__, xml_file_name
+    )
     assert problem.get_val(
         "data:aerodynamics:aircraft:low_speed:Cl_p", units="rad**-1"
     ) == pytest.approx(cl_p_low_speed_, rel=1e-3)
@@ -2907,7 +2964,9 @@ def roll_moment_roll_rate_aircraft(
     )
 
     # Research independent input value in .xml file
-    problem = test_system(ComputeClRollRateAircraft(low_speed_aero=False), __file__, xml_file_name)
+    problem = setup_and_run_system(
+        ComputeClRollRateAircraft(low_speed_aero=False), __file__, xml_file_name
+    )
     assert problem.get_val(
         "data:aerodynamics:aircraft:cruise:Cl_p", units="rad**-1"
     ) == pytest.approx(cl_p_cruise_, rel=1e-3)
@@ -2925,7 +2984,9 @@ def roll_moment_yaw_rate_wing(
     cl_r_wing_cruise_: float,
 ):
     # Research independent input value in .xml file
-    problem = test_system(ComputeClYawRateWing(low_speed_aero=True), __file__, xml_file_name)
+    problem = setup_and_run_system(
+        ComputeClYawRateWing(low_speed_aero=True), __file__, xml_file_name
+    )
 
     assert problem.get_val(
         "data:aerodynamics:wing:low_speed:Cl_r", units="rad**-1"
@@ -2934,7 +2995,9 @@ def roll_moment_yaw_rate_wing(
     problem.check_partials(compact_print=True)
 
     # Research independent input value in .xml file
-    problem = test_system(ComputeClYawRateWing(low_speed_aero=False), __file__, xml_file_name)
+    problem = setup_and_run_system(
+        ComputeClYawRateWing(low_speed_aero=False), __file__, xml_file_name
+    )
 
     assert problem.get_val("data:aerodynamics:wing:cruise:Cl_r", units="rad**-1") == pytest.approx(
         cl_r_wing_cruise_, rel=1e-3
@@ -2949,7 +3012,7 @@ def roll_moment_yaw_rate_vt(
     cl_r_vt_cruise_: float,
 ):
     # Research independent input value in .xml file
-    problem = test_system(
+    problem = setup_and_run_system(
         ComputeClYawRateVerticalTail(low_speed_aero=True), __file__, xml_file_name
     )
     assert problem.get_val(
@@ -2959,7 +3022,7 @@ def roll_moment_yaw_rate_vt(
     problem.check_partials(compact_print=True)
 
     # Research independent input value in .xml file
-    problem = test_system(
+    problem = setup_and_run_system(
         ComputeClYawRateVerticalTail(low_speed_aero=False), __file__, xml_file_name
     )
     assert problem.get_val(
@@ -2974,7 +3037,9 @@ def roll_moment_yaw_rate_aircraft(
     cl_r_cruise_: float,
 ):
     # Research independent input value in .xml file
-    problem = test_system(ComputeClYawRateAircraft(low_speed_aero=True), __file__, xml_file_name)
+    problem = setup_and_run_system(
+        ComputeClYawRateAircraft(low_speed_aero=True), __file__, xml_file_name
+    )
     assert problem.get_val(
         "data:aerodynamics:aircraft:low_speed:Cl_r", units="rad**-1"
     ) == pytest.approx(cl_r_low_speed_, rel=1e-3)
@@ -2985,7 +3050,9 @@ def roll_moment_yaw_rate_aircraft(
     )
 
     # Research independent input value in .xml file
-    problem = test_system(ComputeClYawRateAircraft(low_speed_aero=False), __file__, xml_file_name)
+    problem = setup_and_run_system(
+        ComputeClYawRateAircraft(low_speed_aero=False), __file__, xml_file_name
+    )
     assert problem.get_val(
         "data:aerodynamics:aircraft:cruise:Cl_r", units="rad**-1"
     ) == pytest.approx(cl_r_cruise_, rel=1e-3)
@@ -3002,7 +3069,9 @@ def roll_authority_aileron(
     cl_delta_a_cruise_: float,
 ):
     # Research independent input value in .xml file
-    problem = test_system(ComputeClDeltaAileron(low_speed_aero=True), __file__, xml_file_name)
+    problem = setup_and_run_system(
+        ComputeClDeltaAileron(low_speed_aero=True), __file__, xml_file_name
+    )
     assert problem.get_val(
         "data:aerodynamics:aileron:low_speed:Cl_delta_a", units="rad**-1"
     ) == pytest.approx(cl_delta_a_low_speed_, rel=1e-3)
@@ -3010,7 +3079,9 @@ def roll_authority_aileron(
     problem.check_partials(compact_print=True)
 
     # Research independent input value in .xml file
-    problem = test_system(ComputeClDeltaAileron(low_speed_aero=False), __file__, xml_file_name)
+    problem = setup_and_run_system(
+        ComputeClDeltaAileron(low_speed_aero=False), __file__, xml_file_name
+    )
     assert problem.get_val(
         "data:aerodynamics:aileron:cruise:Cl_delta_a", units="rad**-1"
     ) == pytest.approx(cl_delta_a_cruise_, rel=1e-3)
@@ -3024,7 +3095,9 @@ def roll_moment_rudder(
     cl_delta_r_cruise_: float,
 ):
     # Research independent input value in .xml file
-    problem = test_system(ComputeClDeltaRudder(low_speed_aero=True), __file__, xml_file_name)
+    problem = setup_and_run_system(
+        ComputeClDeltaRudder(low_speed_aero=True), __file__, xml_file_name
+    )
     assert problem.get_val(
         "data:aerodynamics:rudder:low_speed:Cl_delta_r", units="rad**-1"
     ) == pytest.approx(cl_delta_r_low_speed_, rel=1e-3)
@@ -3032,7 +3105,9 @@ def roll_moment_rudder(
     problem.check_partials(compact_print=True)
 
     # Research independent input value in .xml file
-    problem = test_system(ComputeClDeltaRudder(low_speed_aero=False), __file__, xml_file_name)
+    problem = setup_and_run_system(
+        ComputeClDeltaRudder(low_speed_aero=False), __file__, xml_file_name
+    )
     assert problem.get_val(
         "data:aerodynamics:rudder:cruise:Cl_delta_r", units="rad**-1"
     ) == pytest.approx(cl_delta_r_cruise_, rel=1e-3)
@@ -3046,13 +3121,17 @@ def pitch_moment_pitch_rate_wing(
     cm_q_wing_cruise_: float,
 ):
     # Research independent input value in .xml file
-    problem = test_system(ComputeCMPitchVelocityWing(low_speed_aero=True), __file__, xml_file_name)
+    problem = setup_and_run_system(
+        ComputeCMPitchVelocityWing(low_speed_aero=True), __file__, xml_file_name
+    )
     assert problem.get_val(
         "data:aerodynamics:wing:low_speed:Cm_q", units="rad**-1"
     ) == pytest.approx(cm_q_wing_low_speed_, rel=1e-3)
 
     # Research independent input value in .xml file
-    problem = test_system(ComputeCMPitchVelocityWing(low_speed_aero=False), __file__, xml_file_name)
+    problem = setup_and_run_system(
+        ComputeCMPitchVelocityWing(low_speed_aero=False), __file__, xml_file_name
+    )
     assert problem.get_val("data:aerodynamics:wing:cruise:Cm_q", units="rad**-1") == pytest.approx(
         cm_q_wing_cruise_, rel=1e-3
     )
@@ -3100,7 +3179,7 @@ def pitch_moment_pitch_rate_aircraft(
     cm_q_cruise_: float,
 ):
     # Research independent input value in .xml file
-    problem = test_system(
+    problem = setup_and_run_system(
         ComputeCMPitchVelocityAircraft(low_speed_aero=True), __file__, xml_file_name
     )
     assert problem.get_val(
@@ -3113,7 +3192,7 @@ def pitch_moment_pitch_rate_aircraft(
     )
 
     # Research independent input value in .xml file
-    problem = test_system(
+    problem = setup_and_run_system(
         ComputeCMPitchVelocityAircraft(low_speed_aero=False), __file__, xml_file_name
     )
     assert problem.get_val(
@@ -3132,7 +3211,9 @@ def pitch_moment_aoa_rate_derivative(
     cm_aoa_dot_cruise_: float,
 ):
     # Research independent input value in .xml file
-    problem = test_system(ComputeCMAlphaDotAircraft(low_speed_aero=True), __file__, xml_file_name)
+    problem = setup_and_run_system(
+        ComputeCMAlphaDotAircraft(low_speed_aero=True), __file__, xml_file_name
+    )
     assert problem.get_val("data:aerodynamics:aircraft:low_speed:Cm_alpha_dot") == pytest.approx(
         cm_aoa_dot_low_speed_, rel=1e-3
     )
@@ -3140,7 +3221,9 @@ def pitch_moment_aoa_rate_derivative(
     problem.check_partials(compact_print=True)
 
     # Research independent input value in .xml file
-    problem = test_system(ComputeCMAlphaDotAircraft(low_speed_aero=False), __file__, xml_file_name)
+    problem = setup_and_run_system(
+        ComputeCMAlphaDotAircraft(low_speed_aero=False), __file__, xml_file_name
+    )
     assert problem.get_val("data:aerodynamics:aircraft:cruise:Cm_alpha_dot") == pytest.approx(
         cm_aoa_dot_cruise_, rel=1e-3
     )
@@ -3154,7 +3237,9 @@ def yaw_moment_sideslip_derivative_vt(
     cn_beta_vt_cruise_: float,
 ):
     # Research independent input value in .xml file
-    problem = test_system(ComputeCnBetaVerticalTail(low_speed_aero=True), __file__, xml_file_name)
+    problem = setup_and_run_system(
+        ComputeCnBetaVerticalTail(low_speed_aero=True), __file__, xml_file_name
+    )
     assert problem.get_val(
         "data:aerodynamics:vertical_tail:low_speed:Cn_beta", units="rad**-1"
     ) == pytest.approx(cn_beta_vt_low_speed_, rel=1e-3)
@@ -3162,7 +3247,9 @@ def yaw_moment_sideslip_derivative_vt(
     problem.check_partials(compact_print=True)
 
     # Research independent input value in .xml file
-    problem = test_system(ComputeCnBetaVerticalTail(low_speed_aero=False), __file__, xml_file_name)
+    problem = setup_and_run_system(
+        ComputeCnBetaVerticalTail(low_speed_aero=False), __file__, xml_file_name
+    )
     assert problem.get_val(
         "data:aerodynamics:vertical_tail:cruise:Cn_beta", units="rad**-1"
     ) == pytest.approx(cn_beta_vt_cruise_, rel=1e-3)
@@ -3177,7 +3264,9 @@ def yaw_moment_sideslip_aircraft(
     # Only testing the low speed case since the high can't run on its own (fuselage is
     # independent of mach number and are thus only computed at low speed)
     # Research independent input value in .xml file
-    problem = test_system(ComputeCnBetaAircraft(low_speed_aero=True), __file__, xml_file_name)
+    problem = setup_and_run_system(
+        ComputeCnBetaAircraft(low_speed_aero=True), __file__, xml_file_name
+    )
     assert problem.get_val(
         "data:aerodynamics:aircraft:low_speed:Cn_beta", units="rad**-1"
     ) == pytest.approx(cn_beta_low_speed_, rel=1e-3)
@@ -3191,7 +3280,9 @@ def yaw_moment_aileron(
     cn_delta_a_cruise_: float,
 ):
     # Research independent input value in .xml file
-    problem = test_system(ComputeCnDeltaAileron(low_speed_aero=True), __file__, xml_file_name)
+    problem = setup_and_run_system(
+        ComputeCnDeltaAileron(low_speed_aero=True), __file__, xml_file_name
+    )
     assert problem.get_val(
         "data:aerodynamics:aileron:low_speed:Cn_delta_a", units="rad**-1"
     ) == pytest.approx(cn_delta_a_low_speed_, rel=1e-3)
@@ -3199,7 +3290,9 @@ def yaw_moment_aileron(
     problem.check_partials(compact_print=True)
 
     # Research independent input value in .xml file
-    problem = test_system(ComputeCnDeltaAileron(low_speed_aero=False), __file__, xml_file_name)
+    problem = setup_and_run_system(
+        ComputeCnDeltaAileron(low_speed_aero=False), __file__, xml_file_name
+    )
     assert problem.get_val(
         "data:aerodynamics:aileron:cruise:Cn_delta_a", units="rad**-1"
     ) == pytest.approx(cn_delta_a_cruise_, rel=1e-3)
@@ -3213,7 +3306,9 @@ def yaw_moment_rudder(
     cn_delta_r_cruise_: float,
 ):
     # Research independent input value in .xml file
-    problem = test_system(ComputeCnDeltaRudder(low_speed_aero=True), __file__, xml_file_name)
+    problem = setup_and_run_system(
+        ComputeCnDeltaRudder(low_speed_aero=True), __file__, xml_file_name
+    )
     assert problem.get_val(
         "data:aerodynamics:rudder:low_speed:Cn_delta_r", units="rad**-1"
     ) == pytest.approx(cn_delta_r_low_speed_, rel=1e-3)
@@ -3221,7 +3316,9 @@ def yaw_moment_rudder(
     problem.check_partials(compact_print=True)
 
     # Research independent input value in .xml file
-    problem = test_system(ComputeCnDeltaRudder(low_speed_aero=False), __file__, xml_file_name)
+    problem = setup_and_run_system(
+        ComputeCnDeltaRudder(low_speed_aero=False), __file__, xml_file_name
+    )
     assert problem.get_val(
         "data:aerodynamics:rudder:cruise:Cn_delta_r", units="rad**-1"
     ) == pytest.approx(cn_delta_r_cruise_, rel=1e-3)
@@ -3235,13 +3332,17 @@ def yaw_moment_roll_rate_wing(
     cn_p_wing_cruise_: float,
 ):
     # Research independent input value in .xml file
-    problem = test_system(ComputeCnRollRateWing(low_speed_aero=True), __file__, xml_file_name)
+    problem = setup_and_run_system(
+        ComputeCnRollRateWing(low_speed_aero=True), __file__, xml_file_name
+    )
     assert problem.get_val(
         "data:aerodynamics:wing:low_speed:Cn_p", units="rad**-1"
     ) == pytest.approx(cn_p_wing_low_speed_, rel=1e-3)
 
     # Research independent input value in .xml file
-    problem = test_system(ComputeCnRollRateWing(low_speed_aero=False), __file__, xml_file_name)
+    problem = setup_and_run_system(
+        ComputeCnRollRateWing(low_speed_aero=False), __file__, xml_file_name
+    )
     assert problem.get_val("data:aerodynamics:wing:cruise:Cn_p", units="rad**-1") == pytest.approx(
         cn_p_wing_cruise_, rel=1e-3
     )
@@ -3255,7 +3356,7 @@ def yaw_moment_roll_rate_vt(
     cn_p_vt_cruise_: float,
 ):
     # Research independent input value in .xml file
-    problem = test_system(
+    problem = setup_and_run_system(
         ComputeCnRollRateVerticalTail(low_speed_aero=True), __file__, xml_file_name
     )
     assert problem.get_val(
@@ -3265,7 +3366,7 @@ def yaw_moment_roll_rate_vt(
     problem.check_partials(compact_print=True)
 
     # Research independent input value in .xml file
-    problem = test_system(
+    problem = setup_and_run_system(
         ComputeCnRollRateVerticalTail(low_speed_aero=False), __file__, xml_file_name
     )
     assert problem.get_val(
@@ -3281,7 +3382,9 @@ def yaw_moment_roll_rate_aircraft(
     cn_p_cruise_: float,
 ):
     # Research independent input value in .xml file
-    problem = test_system(ComputeCnRollRateAircraft(low_speed_aero=True), __file__, xml_file_name)
+    problem = setup_and_run_system(
+        ComputeCnRollRateAircraft(low_speed_aero=True), __file__, xml_file_name
+    )
     assert problem.get_val(
         "data:aerodynamics:aircraft:low_speed:Cn_p", units="rad**-1"
     ) == pytest.approx(cn_p_low_speed_, rel=1e-3)
@@ -3292,7 +3395,9 @@ def yaw_moment_roll_rate_aircraft(
     )
 
     # Research independent input value in .xml file
-    problem = test_system(ComputeCnRollRateAircraft(low_speed_aero=False), __file__, xml_file_name)
+    problem = setup_and_run_system(
+        ComputeCnRollRateAircraft(low_speed_aero=False), __file__, xml_file_name
+    )
     assert problem.get_val(
         "data:aerodynamics:aircraft:cruise:Cn_p", units="rad**-1"
     ) == pytest.approx(cn_p_cruise_, rel=1e-3)
@@ -3309,7 +3414,9 @@ def yaw_moment_yaw_rate_wing(
     cn_r_wing_cruise_: float,
 ):
     # Research independent input value in .xml file
-    problem = test_system(ComputeCnYawRateWing(low_speed_aero=True), __file__, xml_file_name)
+    problem = setup_and_run_system(
+        ComputeCnYawRateWing(low_speed_aero=True), __file__, xml_file_name
+    )
     assert problem.get_val(
         "data:aerodynamics:wing:low_speed:Cn_r", units="rad**-1"
     ) == pytest.approx(cn_r_wing_low_speed_, rel=1e-3)
@@ -3317,7 +3424,9 @@ def yaw_moment_yaw_rate_wing(
     problem.check_partials(compact_print=True)
 
     # Research independent input value in .xml file
-    problem = test_system(ComputeCnYawRateWing(low_speed_aero=False), __file__, xml_file_name)
+    problem = setup_and_run_system(
+        ComputeCnYawRateWing(low_speed_aero=False), __file__, xml_file_name
+    )
     assert problem.get_val("data:aerodynamics:wing:cruise:Cn_r", units="rad**-1") == pytest.approx(
         cn_r_wing_cruise_, rel=1e-3
     )
@@ -3331,7 +3440,7 @@ def yaw_moment_yaw_rate_vt(
     cn_r_vt_cruise_: float,
 ):
     # Research independent input value in .xml file
-    problem = test_system(
+    problem = setup_and_run_system(
         ComputeCnYawRateVerticalTail(low_speed_aero=True), __file__, xml_file_name
     )
     assert problem.get_val(
@@ -3341,7 +3450,7 @@ def yaw_moment_yaw_rate_vt(
     problem.check_partials(compact_print=True)
 
     # Research independent input value in .xml file
-    problem = test_system(
+    problem = setup_and_run_system(
         ComputeCnYawRateVerticalTail(low_speed_aero=False), __file__, xml_file_name
     )
     assert problem.get_val(
@@ -3357,7 +3466,9 @@ def yaw_moment_yaw_rate_aircraft(
     cn_r_cruise_: float,
 ):
     # Research independent input value in .xml file
-    problem = test_system(ComputeCnYawRateAircraft(low_speed_aero=True), __file__, xml_file_name)
+    problem = setup_and_run_system(
+        ComputeCnYawRateAircraft(low_speed_aero=True), __file__, xml_file_name
+    )
     assert problem.get_val(
         "data:aerodynamics:aircraft:low_speed:Cn_r", units="rad**-1"
     ) == pytest.approx(cn_r_low_speed_, rel=1e-3)
@@ -3368,7 +3479,9 @@ def yaw_moment_yaw_rate_aircraft(
     )
 
     # Research independent input value in .xml file
-    problem = test_system(ComputeCnYawRateAircraft(low_speed_aero=False), __file__, xml_file_name)
+    problem = setup_and_run_system(
+        ComputeCnYawRateAircraft(low_speed_aero=False), __file__, xml_file_name
+    )
     assert problem.get_val(
         "data:aerodynamics:aircraft:cruise:Cn_r", units="rad**-1"
     ) == pytest.approx(cn_r_cruise_, rel=1e-3)

@@ -21,6 +21,8 @@ import openmdao.api as om
 
 from ..constants import SERVICE_HT_CHORD, SUBMODEL_HT_CHORD_LEGACY
 
+MIN_HT_SPAN = 0.1
+
 
 @oad.RegisterSubmodel(SERVICE_HT_CHORD, SUBMODEL_HT_CHORD_LEGACY)
 class ComputeHTChord(om.ExplicitComponent):
@@ -64,7 +66,7 @@ class ComputeHTChord(om.ExplicitComponent):
         taper_ht = inputs["data:geometry:horizontal_tail:taper_ratio"]
         aspect_ratio_ht = inputs["data:geometry:horizontal_tail:aspect_ratio"]
 
-        b_h = np.sqrt(max(aspect_ratio_ht * s_h, 0.1))
+        b_h = np.sqrt(max(aspect_ratio_ht * s_h, MIN_HT_SPAN))
         # !!!: to avoid 0 division if s_h initialised to 0
         root_chord = s_h * 2.0 / (1.0 + taper_ht) / b_h
         tip_chord = root_chord * taper_ht
@@ -80,7 +82,7 @@ class ComputeHTChord(om.ExplicitComponent):
         taper_ht = inputs["data:geometry:horizontal_tail:taper_ratio"]
         aspect_ratio_ht = inputs["data:geometry:horizontal_tail:aspect_ratio"]
 
-        if aspect_ratio_ht * s_h < 0.1:
+        if aspect_ratio_ht * s_h < MIN_HT_SPAN:
             partials["data:geometry:horizontal_tail:span", "data:geometry:horizontal_tail:area"] = (
                 0.0
             )

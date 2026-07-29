@@ -19,6 +19,8 @@ import warnings
 import numpy as np
 import openmdao.api as om
 
+from fastga.models.constants import PropulsionLayout
+
 
 class ComputeNacelleYPosition(om.ExplicitComponent):
     """
@@ -66,11 +68,11 @@ class ComputeNacelleYPosition(om.ExplicitComponent):
         y_ratio = np.array(inputs["data:geometry:propulsion:engine:y_ratio"])
         b_f = inputs["data:geometry:fuselage:maximum_width"]
 
-        if prop_layout == 1.0:
+        if prop_layout == PropulsionLayout.UNDER_THE_WING:
             y_nacelle_array = y_ratio * span / 2.0
-        elif prop_layout == 2.0:
+        elif prop_layout == PropulsionLayout.IN_THE_REAR:
             y_nacelle_array = b_f / 2.0 + 0.8 * nac_width
-        elif prop_layout == 3.0:
+        elif prop_layout == PropulsionLayout.IN_THE_NOSE:
             y_nacelle_array = 0.0
         else:
             y_nacelle_array = 0.0
@@ -88,7 +90,7 @@ class ComputeNacelleYPosition(om.ExplicitComponent):
         span = inputs["data:geometry:wing:span"]
         y_ratio = np.array(inputs["data:geometry:propulsion:engine:y_ratio"])
 
-        if prop_layout == 1.0:
+        if prop_layout == PropulsionLayout.UNDER_THE_WING:
             partials[
                 "data:geometry:propulsion:nacelle:y", "data:geometry:propulsion:nacelle:width"
             ] = 0.0
@@ -101,7 +103,7 @@ class ComputeNacelleYPosition(om.ExplicitComponent):
             partials[
                 "data:geometry:propulsion:nacelle:y", "data:geometry:fuselage:maximum_width"
             ] = 0.0
-        elif prop_layout == 2.0:
+        elif prop_layout == PropulsionLayout.IN_THE_REAR:
             partials[
                 "data:geometry:propulsion:nacelle:y", "data:geometry:propulsion:nacelle:width"
             ] = 0.8

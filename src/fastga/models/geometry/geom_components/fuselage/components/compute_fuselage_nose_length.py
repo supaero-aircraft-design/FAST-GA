@@ -19,6 +19,8 @@ dimension.
 import numpy as np
 import openmdao.api as om
 
+from fastga.models.constants import PropulsionLayout
+
 
 class ComputeFuselageNoseLength(om.ExplicitComponent):
     """
@@ -58,13 +60,14 @@ class ComputeFuselageNoseLength(om.ExplicitComponent):
         h_f = inputs["data:geometry:fuselage:maximum_height"]
         spinner_length = inputs["data:geometry:propeller:depth"]
 
-        if prop_layout == 3.0:  # engine located in nose
-            lav = nacelle_length + spinner_length
-        else:
-            lav = 1.4 * h_f
-            # Used to be 1.7, supposedly as an A320 according to FAST legacy. Results on the BE76
-            # tend to say it is around 1.40, though it varies a lot depending on the airplane and
-            # its use
+        lav = (
+            nacelle_length + spinner_length
+            if prop_layout == PropulsionLayout.IN_THE_NOSE
+            else 1.4 * h_f
+        )
+        # Used to be 1.7, supposedly as an A320 according to FAST legacy. Results on the BE76
+        # tend to say it is around 1.40, though it varies a lot depending on the airplane and
+        # its use
 
         outputs["data:geometry:fuselage:front_length"] = lav
 
@@ -73,7 +76,7 @@ class ComputeFuselageNoseLength(om.ExplicitComponent):
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         prop_layout = inputs["data:geometry:propulsion:engine:layout"]
 
-        if prop_layout == 3.0:
+        if prop_layout == PropulsionLayout.IN_THE_NOSE:
             partials[
                 "data:geometry:fuselage:front_length", "data:geometry:propulsion:nacelle:length"
             ] = 1.0

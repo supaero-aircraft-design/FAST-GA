@@ -20,6 +20,8 @@ import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
 
+from fastga.models.constants import PropulsionLayout
+
 from ..constants import SERVICE_PROPELLER_POSITION, SUBMODEL_PROPELLER_POSITION_LEGACY
 
 
@@ -76,7 +78,7 @@ class ComputePropellerPosition(om.ExplicitComponent):
         nacelle_length = inputs["data:geometry:propulsion:nacelle:length"]
         nacelle_x = np.array(inputs["data:geometry:propulsion:nacelle:x"])
 
-        if prop_layout == 1.0:
+        if prop_layout == PropulsionLayout.UNDER_THE_WING:
             y_nacelle_array = y_ratio * span / 2.0
 
             tapered_mask = y_nacelle_array > y2_wing
@@ -91,9 +93,9 @@ class ComputePropellerPosition(om.ExplicitComponent):
                 np.full_like(chord_array, nacelle_length) - chord_array, 0.0
             )
 
-        elif prop_layout == 2.0:
+        elif prop_layout == PropulsionLayout.IN_THE_REAR:
             x_from_le_array = fa_length - 0.25 * l0_wing - (nacelle_x[0] - nacelle_length)
-        elif prop_layout == 3.0:
+        elif prop_layout == PropulsionLayout.IN_THE_NOSE:
             x_from_le_array = fa_length - 0.25 * l0_wing
         else:
             x_from_le_array = fa_length - 0.25 * l0_wing
@@ -105,7 +107,7 @@ class ComputePropellerPosition(om.ExplicitComponent):
 
     # pylint: disable=missing-function-docstring, unused-argument
     # Overriding OpenMDAO compute_partials, not all arguments are used
-    def compute_partials(self, inputs, partials, discrete_inputs=None):
+    def compute_partials(self, inputs, partials, discrete_inputs=None):  # noqa: PLR0915
         prop_layout = inputs["data:geometry:propulsion:engine:layout"]
         span = inputs["data:geometry:wing:span"]
         y_ratio = np.array(inputs["data:geometry:propulsion:engine:y_ratio"])
@@ -115,7 +117,7 @@ class ComputePropellerPosition(om.ExplicitComponent):
         l4_wing = inputs["data:geometry:wing:tip:chord"]
         nacelle_length = inputs["data:geometry:propulsion:nacelle:length"]
 
-        if prop_layout == 1.0:
+        if prop_layout == PropulsionLayout.UNDER_THE_WING:
             y_nacelle_array = y_ratio * span / 2.0
 
             tapered_mask = y_nacelle_array > y2_wing
@@ -198,7 +200,7 @@ class ComputePropellerPosition(om.ExplicitComponent):
                 "data:geometry:propulsion:engine:y_ratio",
             ] = _set_value(derivative_wrt_y_ratio, nacelle_chord_mask, 0.0)
 
-        elif prop_layout == 2.0:
+        elif prop_layout == PropulsionLayout.IN_THE_REAR:
             partials[
                 "data:geometry:propulsion:nacelle:from_LE", "data:geometry:wing:MAC:at25percent:x"
             ] = 1.0
@@ -256,7 +258,7 @@ class ComputePropellerPosition(om.ExplicitComponent):
 
 
 def _set_value(array, mask, value):
-    if array.ndim == 2:
+    if array.ndim == 2:  # noqa: PLR2004
         array[mask, mask] = value
     else:
         array[mask] = value

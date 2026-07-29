@@ -64,6 +64,7 @@ class Profile:
         self,
         x: Sequence,
         z: Sequence,
+        *,
         keep_chord_length: bool = True,
         keep_relative_thickness: bool = True,
     ):
@@ -98,8 +99,7 @@ class Profile:
 
         DataFrame keys are 'x' and 'z', given in meters.
         """
-        mean_line = self._rel_mean_line_and_thickness[[X, Z]] * self.chord_length
-        return mean_line
+        return self._rel_mean_line_and_thickness[[X, Z]] * self.chord_length
 
     def get_relative_thickness(self) -> pd.DataFrame:
         """Point set of relative thickness of the profile.
@@ -145,8 +145,7 @@ class Profile:
         half_thickness[Z] = (
             self._rel_mean_line_and_thickness[THICKNESS] / 2.0 * self.thickness_ratio
         )
-        points = operator_(mean_line, half_thickness) * self.chord_length
-        return points
+        return operator_(mean_line, half_thickness) * self.chord_length
 
     def _compute_mean_line_and_thickness(
         self, upper_side_points, lower_side_points

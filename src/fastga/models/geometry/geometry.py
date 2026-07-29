@@ -16,6 +16,7 @@ import fastoad.api as oad
 import openmdao.api as om
 from fastoad.module_management.constants import ModelDomain
 
+from fastga.models.constants import CABIN_SIZING_OPTION
 from fastga.models.geometry.geom_components import (
     ComputeHorizontalTailGeometryFD,
     ComputeHorizontalTailGeometryFL,
@@ -26,7 +27,6 @@ from fastga.models.geometry.geom_components.fuselage.compute_fuselage import (
     ComputeFuselageAlternate,
     ComputeFuselageLegacy,
 )
-from fastga.models.constants import CABIN_SIZING_OPTION
 
 from .constants import (
     SERVICE_AIRCRAFT_WET_AREA,

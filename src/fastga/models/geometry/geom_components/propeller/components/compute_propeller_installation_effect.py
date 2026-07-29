@@ -20,6 +20,8 @@ import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
 
+from fastga.models.constants import PropulsionLayout
+
 from ..constants import SERVICE_PROPELLER_INSTALLATION, SUBMODEL_PROPELLER_INSTALLATION_LEGACY
 
 
@@ -51,11 +53,11 @@ class ComputePropellerInstallationEffect(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring, unused-argument
     # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        engine_layout = inputs["data:geometry:propulsion:engine:layout"]
+        engine_layout = inputs["data:geometry:propulsion:engine:layout"].item()
 
-        if engine_layout == 3.0:
+        if engine_layout == PropulsionLayout.IN_THE_NOSE:
             cowling_master_cross_section = inputs["data:geometry:fuselage:master_cross_section"]
-        elif engine_layout == 1.0 or engine_layout == 2.0:
+        elif engine_layout in {PropulsionLayout.IN_THE_REAR, PropulsionLayout.UNDER_THE_WING}:
             cowling_master_cross_section = inputs[
                 "data:geometry:propulsion:nacelle:master_cross_section"
             ]
@@ -78,25 +80,13 @@ class ComputePropellerInstallationEffect(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring, unused-argument
     # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-        engine_layout = inputs["data:geometry:propulsion:engine:layout"]
+        engine_layout = inputs["data:geometry:propulsion:engine:layout"].item()
         disk_diameter = inputs["data:geometry:propeller:diameter"]
 
-        if engine_layout == 3.0:
-            cowling_master_cross_section = inputs["data:geometry:fuselage:master_cross_section"]
-
-            partials[
-                "data:aerodynamics:propeller:installation_effect:effective_advance_ratio",
-                "data:geometry:fuselage:master_cross_section",
-            ] = -1.016 / (disk_diameter**2.0 * np.pi)
-            partials[
-                "data:aerodynamics:propeller:installation_effect:effective_advance_ratio",
-                "data:geometry:propulsion:nacelle:master_cross_section",
-            ] = 0.0
-        elif engine_layout == 1.0 or engine_layout == 2.0:
+        if engine_layout in {PropulsionLayout.IN_THE_REAR, PropulsionLayout.UNDER_THE_WING}:
             cowling_master_cross_section = inputs[
                 "data:geometry:propulsion:nacelle:master_cross_section"
             ]
-
             partials[
                 "data:aerodynamics:propeller:installation_effect:effective_advance_ratio",
                 "data:geometry:propulsion:nacelle:master_cross_section",
@@ -107,9 +97,7 @@ class ComputePropellerInstallationEffect(om.ExplicitComponent):
             ] = 0.0
         else:
             cowling_master_cross_section = inputs["data:geometry:fuselage:master_cross_section"]
-            warnings.warn(
-                f"Propulsion layout {engine_layout} not implemented in model, replaced by layout 3!"
-            )
+
             partials[
                 "data:aerodynamics:propeller:installation_effect:effective_advance_ratio",
                 "data:geometry:fuselage:master_cross_section",
