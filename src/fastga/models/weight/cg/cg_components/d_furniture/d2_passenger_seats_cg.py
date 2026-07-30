@@ -45,7 +45,7 @@ class ComputePassengerSeatsCG(om.ExplicitComponent):
         # Instruments length
         l_instr = 0.7
         # Seats and passengers gravity center (hypothesis of 2 pilots)
-        nrows = int(np.ceil(npax_max / count_by_row))
+        nrows = int(np.ceil(npax_max / count_by_row).item())
         x_cg_d2 = lav + l_instr + l_pilot_seat * 2.0 / (npax_max + 2.0)
         for idx in range(nrows):
             length = l_pilot_seat + (idx + 0.5) * l_pass_seat

@@ -18,6 +18,8 @@ import openmdao.api as om
 
 from ..constants import SUBMODEL_WING_CG
 
+MAX_SWEEP_STRAIGHT_WING = 5.0  # In deg
+
 
 @oad.RegisterSubmodel(SUBMODEL_WING_CG, "fastga.submodel.weight.cg.airframe.wing.legacy")
 class ComputeWingCG(om.ExplicitComponent):
@@ -54,7 +56,7 @@ class ComputeWingCG(om.ExplicitComponent):
         l4_wing = inputs["data:geometry:wing:tip:chord"]
         y4_wing = inputs["data:geometry:wing:tip:y"]
 
-        if sweep_25 < 5.0:
+        if sweep_25 < MAX_SWEEP_STRAIGHT_WING:
             y_cg = 0.40 * span / 2.0
 
             if y_cg < y2_wing:

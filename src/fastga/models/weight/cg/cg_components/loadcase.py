@@ -55,7 +55,7 @@ class ComputeGroundCGCase(om.ExplicitComponent):
         self.add_output("data:weight:aircraft:CG:ground_condition:min:MAC_position")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        luggage_mass_max = float(inputs["data:geometry:cabin:luggage:mass_max"])
+        luggage_mass_max = inputs["data:geometry:cabin:luggage:mass_max"].item()
         l0_wing = inputs["data:geometry:wing:MAC:length"]
         fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
         cg_pax = inputs["data:weight:furniture:passenger_seats:CG:x"]
@@ -143,8 +143,8 @@ class ComputeFlightCGCase(om.ExplicitComponent):
         self.add_output("data:weight:aircraft:CG:flight_condition:min:MAC_position")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        luggage_mass_max = float(inputs["data:geometry:cabin:luggage:mass_max"])
-        n_pax_max = inputs["data:geometry:cabin:seats:passenger:NPAX_max"]
+        luggage_mass_max = inputs["data:geometry:cabin:luggage:mass_max"].item()
+        n_pax_max = int(inputs["data:geometry:cabin:seats:passenger:NPAX_max"].item())
         l0_wing = inputs["data:geometry:wing:MAC:length"]
         fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
         lav = inputs["data:geometry:fuselage:front_length"]
@@ -162,7 +162,7 @@ class ComputeFlightCGCase(om.ExplicitComponent):
         l_instr = 0.7
         cg_pilot = lav + l_instr + l_pilot_seat / 2.0
 
-        n_pax_array = np.linspace(0.0, n_pax_max, int(n_pax_max) + 1)
+        n_pax_array = np.linspace(0.0, n_pax_max, n_pax_max + 1)
 
         m_pilot_single = 77.0
         m_pilot_array = np.array([2.0 * m_pilot_single])  # Without the pilots and with the 2 pilots
@@ -179,7 +179,7 @@ class ComputeFlightCGCase(om.ExplicitComponent):
             for m_fuel in m_fuel_array:
                 for m_lug in m_lug_array:
                     for n_pax in n_pax_array:
-                        n_row = np.ceil(n_pax / count_by_row)
+                        n_row = np.ceil(n_pax / count_by_row).item()
 
                         x_cg_pax_fwd = 0.0
                         for idx in range(int(n_row)):
@@ -240,10 +240,8 @@ class ComputeFlightCGCase(om.ExplicitComponent):
         )
 
         propulsion_model.compute_flight_points(flight_point)
-        m_fuel = propulsion_model.get_consumed_mass(flight_point, 30.0 * 60.0)
         # Fuel necessary for a half-hour at max continuous power
-
-        return m_fuel
+        return propulsion_model.get_consumed_mass(flight_point, 30.0 * 60.0)
 
     def max_speed(self, inputs, altitude, mass):
         # noinspection PyTypeChecker
@@ -266,7 +264,7 @@ class ComputeFlightCGCase(om.ExplicitComponent):
             thrust_rate=1.0,
         )
         propulsion_model.compute_flight_points(flight_point)
-        thrust = float(flight_point.thrust)
+        thrust = flight_point.thrust
 
         # Get the necessary thrust to overcome
         cl = (mass * g) / (0.5 * atm.density * wing_area * air_speed**2.0)

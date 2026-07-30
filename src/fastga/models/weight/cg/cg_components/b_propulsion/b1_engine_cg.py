@@ -17,6 +17,8 @@ import warnings
 import numpy as np
 import openmdao.api as om
 
+from fastga.models.constants import PropulsionLayout
+
 
 class ComputeEngineCG(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
@@ -73,7 +75,7 @@ class ComputeEngineCG(om.ExplicitComponent):
         x_cg_in_nacelle = 0.6 * nacelle_length
         # From the beginning of the nacelle wrt to the nose, the CG is at x_cg_in_nacelle
 
-        if prop_layout == 1.0:
+        if prop_layout == PropulsionLayout.UNDER_THE_WING:
             x_cg_b1 = 0
 
             for y_nacelle, x_nacelle in zip(y_nacelle_array, x_nacelle_array):
@@ -88,9 +90,9 @@ class ComputeEngineCG(om.ExplicitComponent):
                     delta_x_nacelle = 0.05 * l_wing_nac
                     x_nacelle_cg = x_nacelle - delta_x_nacelle - (nacelle_length - x_cg_in_nacelle)
                 x_cg_b1 += x_nacelle_cg / engine_count_pre_wing
-        elif prop_layout == 2.0:
+        elif prop_layout == PropulsionLayout.IN_THE_REAR:
             x_cg_b1 = x_nacelle_array - (nacelle_length - x_cg_in_nacelle)
-        elif prop_layout == 3.0:
+        elif prop_layout == PropulsionLayout.IN_THE_NOSE:
             x_cg_b1 = x_cg_in_nacelle + prop_depth
         else:
             x_cg_b1 = x_cg_in_nacelle + prop_depth
