@@ -37,6 +37,11 @@ class ComputePayloadRange(om.ExplicitComponent):
     mission are created in a dict. generate_block_analysis still needs a xml file to be processed.
     """
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        self.fuel_problem = None
+
     def initialize(self):
         self.options.declare("propulsion_id", check_valid=check_propulsion_id)
 
@@ -64,7 +69,7 @@ class ComputePayloadRange(om.ExplicitComponent):
 
         self.declare_partials("*", "*", method="fd")
 
-    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):  # noqa: PLR0915
         payload_mission = inputs["data:weight:aircraft:payload"][0]
         max_payload = inputs["data:weight:aircraft:max_payload"][0]
         range_mission = inputs["data:TLAR:range"]
@@ -79,6 +84,9 @@ class ComputePayloadRange(om.ExplicitComponent):
         range_array = []
         sr_array = []
 
+        # First setup the problem
+        self.setup_fuel_problem(inputs=inputs, prop_id=self.options["propulsion_id"])
+
         # Point A : 0 fuel, max payload and mass < MTOW
         payload_array.append(max_payload)
         range_array.append(0)
@@ -89,12 +97,12 @@ class ComputePayloadRange(om.ExplicitComponent):
         range_b, _, ier, message = fsolve(
             self.fuel_function,
             range_mission / 2,
-            args=(fuel_target_b, mtow, inputs, self.options["propulsion_id"]),
+            args=(fuel_target_b, mtow),
             xtol=0.01,
             full_output=True,
         )
         if ier != 1:
-            _LOGGER.warning("Computation of point B failed. Error message : %s", message)
+            _LOGGER.warning(f"Computation of point B failed. Error message : {message}")
 
         payload_array.append(max_payload)
         range_array.append(range_b[0])
@@ -104,12 +112,12 @@ class ComputePayloadRange(om.ExplicitComponent):
         range_c, _, ier, message = fsolve(
             self.fuel_function,
             range_mission / 2,
-            args=(fuel_target_c, mtow, inputs, self.options["propulsion_id"]),
+            args=(fuel_target_c, mtow),
             xtol=0.01,
             full_output=True,
         )
         if ier != 1:
-            _LOGGER.warning("Computation of point C failed. Error message : %s", message)
+            _LOGGER.warning(f"Computation of point C failed. Error message : {message}")
 
         payload_array.append(payload_mission)
         range_array.append(range_c[0])
@@ -122,12 +130,12 @@ class ComputePayloadRange(om.ExplicitComponent):
         range_d, _, ier, message = fsolve(
             self.fuel_function,
             range_mission,
-            args=(fuel_target_d, mtow, inputs, self.options["propulsion_id"]),
+            args=(fuel_target_d, mtow),
             xtol=0.01,
             full_output=True,
         )
         if ier != 1:
-            _LOGGER.warning("Computation of point D failed. Error message : %s", message)
+            _LOGGER.warning(f"Computation of point D failed. Error message : {message}")
 
         if payload_d < 2 * mass_pilot:
             _LOGGER.warning(
@@ -145,12 +153,12 @@ class ComputePayloadRange(om.ExplicitComponent):
         range_e, _, ier, message = fsolve(
             self.fuel_function,
             range_mission,
-            args=(fuel_target_e, mass_aircraft, inputs, self.options["propulsion_id"]),
+            args=(fuel_target_e, mass_aircraft),
             xtol=0.01,
             full_output=True,
         )
         if ier != 1:
-            _LOGGER.warning("Computation of point E failed. Error message : %s", message)
+            _LOGGER.warning(f"Computation of point E failed. Error message : {message}")
 
         payload_array.append(payload_e)
         range_array.append(range_e[0])
@@ -164,8 +172,8 @@ class ComputePayloadRange(om.ExplicitComponent):
         outputs["data:payload_range:range_array"] = range_array
         outputs["data:payload_range:specific_range_array"] = sr_array
 
-    @staticmethod
-    def fuel_function(range_parameter, fuel_target, mass, inputs, prop_id):
+    def setup_fuel_problem(self, inputs, prop_id):
+
         mission_component = AutoUnitsDefaultGroup()
         mission_component.add_subsystem(
             "system",
@@ -179,18 +187,16 @@ class ComputePayloadRange(om.ExplicitComponent):
 
         input_zip = zip(var_inputs, var_units, var_shapes)
 
+        # These should never change so we'll set them up like this
         ivc = om.IndepVarComp()
         for var_names, var_unit, var_shape in input_zip:
-            if var_names != "data:TLAR:range" and var_names != "data:weight:aircraft:MTOW":
+            if var_names not in {"data:TLAR:range", "data:weight:aircraft:MTOW"}:
                 ivc.add_output(
                     name=var_names, val=inputs[var_names], units=var_unit, shape=var_shape
                 )
 
-        ivc.add_output(name="data:TLAR:range", val=range_parameter, units="m")
-        ivc.add_output(name="data:weight:aircraft:MTOW", val=mass, units="kg")
-
-        problem = oad.FASTOADProblem()
-        model = problem.model
+        self.fuel_problem = oad.FASTOADProblem()
+        model = self.fuel_problem.model
 
         model.add_subsystem("ivc", ivc, promotes_outputs=["*"])
         model.add_subsystem("mission", Mission(propulsion_id=prop_id), promotes=["*"])
@@ -199,16 +205,22 @@ class ComputePayloadRange(om.ExplicitComponent):
         model.nonlinear_solver.options["iprint"] = 0
         model.nonlinear_solver.options["maxiter"] = 10
         model.nonlinear_solver.options["rtol"] = 1e-3
+        model.nonlinear_solver.options["atol"] = 1
 
         model.linear_solver = om.LinearBlockGS()
         model.linear_solver.options["iprint"] = 0
         model.linear_solver.options["maxiter"] = 10
         model.linear_solver.options["rtol"] = 1e-3
 
-        problem.setup()
+        self.fuel_problem.setup()
 
-        problem.run_model()
+    def fuel_function(self, range_parameter, fuel_target, mass):
 
-        fuel = problem.get_val("data:mission:sizing:fuel", units="kg")
+        self.fuel_problem.set_val(name="data:TLAR:range", val=range_parameter, units="m")
+        self.fuel_problem.set_val(name="data:weight:aircraft:MTOW", val=mass, units="kg")
+
+        self.fuel_problem.run_model()
+
+        fuel = self.fuel_problem.get_val("data:mission:sizing:fuel", units="kg")
 
         return fuel - fuel_target

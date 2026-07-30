@@ -109,9 +109,9 @@ class FuelConsumed(om.ExplicitComponent):
             mach=atm.mach,
             altitude=inputs["altitude_econ"],
             engine_setting=engine_setting,
-            thrust_is_regulated=np.full_like(inputs["altitude_econ"], True),
+            thrust_is_regulated=np.full_like(inputs["altitude_econ"], fill_value=True),
             thrust=inputs["thrust_econ"],
-            thrust_rate=np.full_like(inputs["altitude_econ"], 0.0),
+            thrust_rate=np.full_like(inputs["altitude_econ"], fill_value=0.0),
         )
         propulsion_model.compute_flight_points(flight_point)
 

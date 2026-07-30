@@ -180,7 +180,7 @@ class Equilibrium(om.ImplicitComponent):
                 of="delta_m", wrt="data:aerodynamics:flaps:landing:CM", method="exact"
             )
 
-    def linearize(self, inputs, outputs, partials):
+    def linearize(self, inputs, outputs, partials):  # noqa: PLR0915
         number_of_points = self.options["number_of_points"]
 
         mass = inputs["mass"]

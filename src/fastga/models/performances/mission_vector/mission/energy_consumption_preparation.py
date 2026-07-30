@@ -115,9 +115,7 @@ class PrepareForEnergyConsumption(om.ExplicitComponent):
 
         thrust_taxi_out = inputs["data:mission:sizing:taxi_out:thrust"]
         thrust_taxi_in = inputs["data:mission:sizing:taxi_in:thrust"]
-        outputs["thrust_econ"] = np.concatenate(
-            (inputs["thrust"], thrust_taxi_out, thrust_taxi_in)
-        )
+        outputs["thrust_econ"] = np.concatenate((inputs["thrust"], thrust_taxi_out, thrust_taxi_in))
 
         outputs["altitude_econ"] = np.concatenate((inputs["altitude"], np.array([0.0, 0.0])))
 

@@ -69,10 +69,9 @@ class InitializeTimeAndDistance(om.ExplicitComponent):
         mission_range = inputs["data:TLAR:range"]
         v_tas_cruise = inputs["data:TLAR:v_cruise"]
 
-        climb_rate_sl = float(inputs["data:mission:sizing:main_route:climb:climb_rate:sea_level"])
-        climb_rate_cl = float(
-            inputs["data:mission:sizing:main_route:climb:climb_rate:cruise_level"]
-        )
+        climb_rate_sl = inputs["data:mission:sizing:main_route:climb:climb_rate:sea_level"]
+        climb_rate_cl = inputs["data:mission:sizing:main_route:climb:climb_rate:cruise_level"]
+
         descent_rate = -abs(inputs["data:mission:sizing:main_route:descent:descent_rate"])
 
         altitude_climb = altitude[0:POINTS_NB_CLIMB]
@@ -84,7 +83,9 @@ class InitializeTimeAndDistance(om.ExplicitComponent):
         # the desired climb rate
         mid_altitude_climb = (altitude_climb[:-1] + altitude_climb[1:]) / 2.0
         mid_climb_rate = np.interp(
-            mid_altitude_climb, [0.0, max(altitude_climb)], [climb_rate_sl, climb_rate_cl]
+            mid_altitude_climb,
+            [0.0, max(altitude_climb)],
+            np.concatenate((climb_rate_sl, climb_rate_cl)),
         )
         mid_horizontal_speed_climb = (
             horizontal_speed_climb[:-1] + horizontal_speed_climb[1:]

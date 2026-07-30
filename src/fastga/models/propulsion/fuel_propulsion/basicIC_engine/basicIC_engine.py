@@ -492,12 +492,12 @@ class BasicICEngine(AbstractFuelPropulsion):
                 np.interp(list(installed_airspeed), self.speed_CL, self.thrust_limit_CL),
             )
         if np.size(thrust) == 1:  # calculate for float
-            lower_bound = (
-                self.propeller_efficiency_interpolator_sl(thrust_interp_SL, installed_airspeed).item()
-            )
-            upper_bound = (
-                self.propeller_efficiency_interpolator_cl(thrust_interp_CL, installed_airspeed).item()
-            )
+            lower_bound = self.propeller_efficiency_interpolator_sl(
+                thrust_interp_SL, installed_airspeed
+            ).item()
+            upper_bound = self.propeller_efficiency_interpolator_cl(
+                thrust_interp_CL, installed_airspeed
+            ).item()
             altitude = atmosphere.get_altitude(altitude_in_feet=False)
             propeller_efficiency = np.interp(
                 altitude, [0.0, self.cruise_altitude_propeller], [lower_bound, upper_bound]

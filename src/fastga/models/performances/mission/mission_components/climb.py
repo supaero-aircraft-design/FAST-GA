@@ -13,7 +13,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-import os
+import pathlib
 import time
 
 import fastoad.api as oad
@@ -87,14 +87,14 @@ class ComputeClimb(DynamicEquilibrium):
 
         self.declare_partials("*", "*", method="fd")
 
-    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):  # noqa: PLR0915
         # Delete previous .csv results
         if self.options["out_file"] != "":
             # noinspection PyBroadException
             try:
-                os.remove(self.options["out_file"])
-            except OSError:
-                _LOGGER.info("Failed to remove %s file!", self.options["out_file"])
+                pathlib.Path(self.options["out_file"]).unlink()
+            except FileNotFoundError:
+                _LOGGER.info(f"Failed to remove {self.options['out_file']} file!")
 
         propulsion_model = self._engine_wrapper.get_model(inputs)
         wing_area = inputs["data:geometry:wing:area"]
@@ -104,10 +104,10 @@ class ComputeClimb(DynamicEquilibrium):
         m_tk = inputs["data:mission:sizing:takeoff:fuel"]
         m_ic = inputs["data:mission:sizing:initial_climb:fuel"]
         v_cas = inputs["data:mission:sizing:main_route:climb:v_cas"]
-        climb_rate_sl = float(inputs["data:mission:sizing:main_route:climb:climb_rate:sea_level"])
-        climb_rate_cl = float(
-            inputs["data:mission:sizing:main_route:climb:climb_rate:cruise_level"]
-        )
+        climb_rate_sl = inputs["data:mission:sizing:main_route:climb:climb_rate:sea_level"].item()
+        climb_rate_cl = inputs[
+            "data:mission:sizing:main_route:climb:climb_rate:cruise_level"
+        ].item()
 
         # Define initial conditions
         t_start = time.time()
@@ -138,7 +138,7 @@ class ComputeClimb(DynamicEquilibrium):
             )
 
             climb_rate = np.interp(
-                altitude_t, [0.0, float(cruise_altitude)], [climb_rate_sl, climb_rate_cl]
+                altitude_t, [0.0, cruise_altitude.item()], [climb_rate_sl, climb_rate_cl]
             )
 
             self.complete_flight_point(flight_point, v_cas=v_cas, climb_rate=climb_rate)
@@ -156,13 +156,15 @@ class ComputeClimb(DynamicEquilibrium):
             # Find equilibrium
             previous_step = self.dynamic_equilibrium(
                 inputs,
-                flight_point.gamma,
-                dynamic_pressure,
-                dvx_dt,
-                0.0,
-                mass_t,
-                "none",
-                previous_step[0:2],
+                gamma=flight_point.gamma,
+                q=dynamic_pressure,
+                dvx_dt=dvx_dt,
+                dvz_dt=0.0,
+                mass=mass_t,
+                flap_condition="none",
+                previous_step=previous_step[0:2],
+                low_speed=False,
+                x_cg=None,
             )
             flight_point.thrust = float(previous_step[1])
 
@@ -194,8 +196,8 @@ class ComputeClimb(DynamicEquilibrium):
             # Check calculation duration
             if (time.time() - t_start) > MAX_CALCULATION_TIME:
                 raise Exception(
-                    "Time calculation duration for climb phase [%f s] exceeded!"
-                    % MAX_CALCULATION_TIME
+                    f"Time calculation duration for climb phase [{MAX_CALCULATION_TIME} s] "
+                    f"exceeded!"
                 )
 
         # Save mission

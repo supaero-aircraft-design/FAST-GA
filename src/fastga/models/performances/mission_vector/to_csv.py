@@ -11,7 +11,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import os
+import pathlib
 
 import numpy as np
 import openmdao.api as om
@@ -146,7 +146,7 @@ class ToCSV(om.ExplicitComponent):
             "tsfc", shape=number_of_points, val=np.full(number_of_points, 7e-6), units="kg/s/N"
         )
 
-    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):  # noqa: PLR0915
         time = inputs["time"]
         altitude = inputs["altitude"]
         distance = inputs["position"]
@@ -207,11 +207,12 @@ class ToCSV(om.ExplicitComponent):
             outputs["tsfc"] = tsfc
 
         else:
-            if os.path.exists(self.options["out_file"]):
-                os.remove(self.options["out_file"])
+            outfile = pathlib.Path(self.options["out_file"])
+            if outfile.exists():
+                outfile.unlink()
 
-            if not os.path.exists(os.path.dirname(self.options["out_file"])):
-                os.mkdir(os.path.dirname(self.options["out_file"]))
+            if not outfile.parent.exists():
+                outfile.parent.mkdir()
 
             results_df = pd.DataFrame(columns=CSV_DATA_LABELS)
             results_df["time"] = time

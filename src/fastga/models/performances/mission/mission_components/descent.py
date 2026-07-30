@@ -88,7 +88,7 @@ class ComputeDescent(DynamicEquilibrium):
 
         self.declare_partials("*", "*", method="fd")
 
-    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):  # noqa: PLR0915
         wing_area = inputs["data:geometry:wing:area"]
         propulsion_model = self._engine_wrapper.get_model(inputs)
         cruise_altitude = inputs["data:mission:sizing:main_route:cruise:altitude"]
@@ -197,8 +197,8 @@ class ComputeDescent(DynamicEquilibrium):
             # Check calculation duration
             if (time.time() - t_start) > MAX_CALCULATION_TIME:
                 raise Exception(
-                    "Time calculation duration for descent phase [%f s] exceeded!"
-                    % MAX_CALCULATION_TIME
+                    f"Time calculation duration for descent phase [{MAX_CALCULATION_TIME} s] "
+                    f"exceeded!"
                 )
 
         # Save results
