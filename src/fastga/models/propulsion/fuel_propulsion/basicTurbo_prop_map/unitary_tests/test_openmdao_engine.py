@@ -44,7 +44,7 @@ from .data.dummy_maps import (
 from ..openmdao import OMBasicTPEngineMappedComponent
 
 
-def test_OMBasicTPEngineMappedComponent():
+def test_openmdao_component_wrapper():
     """Tests ManualBasicTPEngine component"""
     # Same test as in test_basicIC_engine.test_compute_flight_points
     engine = OMBasicTPEngineMappedComponent(flight_point_count=(2, 5))

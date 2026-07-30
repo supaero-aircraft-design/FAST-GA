@@ -31,7 +31,6 @@ class OverallPressureRatio(om.ExplicitComponent):
         outputs["opr_1"] = inputs["total_pressure_25"] / inputs["total_pressure_2"]
         outputs["opr_2"] = inputs["total_pressure_3"] / inputs["total_pressure_25"]
         outputs["opr"] = inputs["total_pressure_3"] / inputs["total_pressure_2"]
-        # print("OPR", outputs["opr"])
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         partials["opr_1", "total_pressure_25"] = np.diag(1.0 / inputs["total_pressure_2"])

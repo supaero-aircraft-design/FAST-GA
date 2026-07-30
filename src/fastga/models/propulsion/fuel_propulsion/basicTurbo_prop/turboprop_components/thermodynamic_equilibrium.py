@@ -221,7 +221,7 @@ class ThermodynamicEquilibrium(om.ImplicitComponent):
             / (1.0 - compressor_bleed_ratio)
         )
 
-    def linearize(self, inputs, outputs, jacobian, discrete_inputs=None, discrete_outputs=None):
+    def linearize(self, inputs, outputs, jacobian, discrete_inputs=None, discrete_outputs=None):  # noqa: PLR0915
         r_g = 287.0  # Perfect gas constant
 
         combustion_energy = inputs["combustion_energy"]

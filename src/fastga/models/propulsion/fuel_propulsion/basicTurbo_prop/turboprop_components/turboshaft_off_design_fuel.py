@@ -52,7 +52,7 @@ class Turboshaft(om.Group):
     def initialize(self):
         self.options.declare("number_of_points", types=int, default=250)
 
-    def setup(self):
+    def setup(self):  # noqa: PLR0915
         if self.temperature is None:
             self.temperature, self.cv, self.cp, self.gamma = read_air_coeff()
 

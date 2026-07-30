@@ -783,7 +783,7 @@ EFFICIENCY_CL = np.array(
 )
 
 
-def test_OMBasicICEngineComponent():
+def test_openmdao_component_wrapper():
     """Tests ManualBasicICEngine component."""
     # Same test as in test_basicIC_engine.test_compute_flight_points
     engine = OMBasicICEngineComponent(flight_point_count=(2, 5))

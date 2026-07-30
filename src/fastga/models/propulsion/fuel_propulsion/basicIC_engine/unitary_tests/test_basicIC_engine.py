@@ -780,7 +780,6 @@ EFFICIENCY_CL = np.array(
 
 
 def test_compute_flight_points():
-    # BasicICEngine(max_power(W), design_altitude(m), fuel_type, strokes_nb, prop_layout)
     engine = BasicICEngine(
         130000.0,
         2400.0,
@@ -852,7 +851,6 @@ def test_compute_flight_points():
 
 
 def test_engine_weight():
-    # BasicICEngine(max_power(W), design_altitude(m), design_speed(m/s), fuel_type, strokes_nb, prop_layout)
     _50kw_engine = BasicICEngine(
         50000.0,
         2400.0,
@@ -873,7 +871,6 @@ def test_engine_weight():
         0.98,  # Effective efficiency in cruise conditions
     )
     np.testing.assert_allclose(_50kw_engine.compute_weight(), 82, atol=1)
-    # BasicICEngine(max_power(W), design_altitude(m), design_speed(m/s), fuel_type, strokes_nb, prop_layout)
     _250kw_engine = BasicICEngine(
         250000.0,
         2400.0,
@@ -894,7 +891,6 @@ def test_engine_weight():
         0.98,  # Effective efficiency in cruise conditions
     )
     np.testing.assert_allclose(_250kw_engine.compute_weight(), 569, atol=1)
-    # BasicICEngine(max_power(W), design_altitude(m), design_speed(m/s), fuel_type, strokes_nb, prop_layout)
     _130kw_engine = BasicICEngine(
         130000.0,
         2400.0,
@@ -918,7 +914,6 @@ def test_engine_weight():
 
 
 def test_engine_dim():
-    # BasicICEngine(max_power(W), design_altitude(m), design_speed(m/s), fuel_type, strokes_nb, prop_layout)
     _50kw_engine = BasicICEngine(
         50000.0,
         2400.0,
@@ -941,7 +936,6 @@ def test_engine_dim():
     np.testing.assert_allclose(
         _50kw_engine.compute_dimensions(), [0.45, 0.67, 1.20, 2.71], atol=1e-2
     )
-    # BasicICEngine(max_power(W), design_altitude(m), design_speed(m/s), fuel_type, strokes_nb, prop_layout)
     _250kw_engine = BasicICEngine(
         250000.0,
         2400.0,

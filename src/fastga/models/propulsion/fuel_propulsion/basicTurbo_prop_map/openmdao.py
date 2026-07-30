@@ -21,7 +21,7 @@ from fastga.models.aerodynamics.external.propeller_code.compute_propeller_aero i
     THRUST_PTS_NB,
 )
 from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
-from fastga.models.propulsion.fuel_propulsion.basicTurbo_prop_map.basicTP_engine_constructor import (
+from fastga.models.propulsion.fuel_propulsion.basicTurbo_prop_map.basicTP_engine_constructor import (  # noqa: E501
     MACH_PTS_NB_TURBOPROP,
     THRUST_PTS_NB_TURBOPROP,
 )
@@ -235,7 +235,7 @@ class OMBasicTurbopropMapWrapper(oad.IOMPropulsionWrapper):
             "opr_design": inputs["data:propulsion:turboprop:design_point:OPR"],
             "cruise_altitude_propeller": inputs[
                 "data:aerodynamics:propeller:cruise_level:altitude"
-            ],
+            ].item(),
             "design_altitude": inputs["data:propulsion:turboprop:design_point:altitude"],
             "design_mach": inputs["data:propulsion:turboprop:design_point:mach"],
             "prop_layout": inputs["data:geometry:propulsion:engine:layout"],
@@ -243,38 +243,38 @@ class OMBasicTurbopropMapWrapper(oad.IOMPropulsionWrapper):
             "itt_limit": inputs["data:propulsion:turboprop:off_design:itt_limit"],
             "power_limit": inputs["data:propulsion:turboprop:off_design:power_limit"],
             "opr_limit": inputs["data:propulsion:turboprop:off_design:opr_limit"],
-            "speed_SL": inputs["data:aerodynamics:propeller:sea_level:speed"],
-            "thrust_SL": inputs["data:aerodynamics:propeller:sea_level:thrust"],
-            "thrust_limit_SL": inputs["data:aerodynamics:propeller:sea_level:thrust_limit"],
-            "efficiency_SL": inputs["data:aerodynamics:propeller:sea_level:efficiency"],
-            "speed_CL": inputs["data:aerodynamics:propeller:cruise_level:speed"],
-            "thrust_CL": inputs["data:aerodynamics:propeller:cruise_level:thrust"],
-            "thrust_limit_CL": inputs["data:aerodynamics:propeller:cruise_level:thrust_limit"],
-            "efficiency_CL": inputs["data:aerodynamics:propeller:cruise_level:efficiency"],
-            "effective_J": inputs[
+            "speed_sl": inputs["data:aerodynamics:propeller:sea_level:speed"],
+            "thrust_sl": inputs["data:aerodynamics:propeller:sea_level:thrust"],
+            "thrust_limit_sl": inputs["data:aerodynamics:propeller:sea_level:thrust_limit"],
+            "efficiency_sl": inputs["data:aerodynamics:propeller:sea_level:efficiency"],
+            "speed_cl": inputs["data:aerodynamics:propeller:cruise_level:speed"],
+            "thrust_cl": inputs["data:aerodynamics:propeller:cruise_level:thrust"],
+            "thrust_limit_cl": inputs["data:aerodynamics:propeller:cruise_level:thrust_limit"],
+            "efficiency_cl": inputs["data:aerodynamics:propeller:cruise_level:efficiency"],
+            "effective_j": inputs[
                 "data:aerodynamics:propeller:installation_effect:effective_advance_ratio"
-            ],
+            ].item(),
             "effective_efficiency_ls": inputs[
                 "data:aerodynamics:propeller:installation_effect:effective_efficiency:low_speed"
-            ],
+            ].item(),
             "effective_efficiency_cruise": inputs[
                 "data:aerodynamics:propeller:installation_effect:effective_efficiency:cruise"
-            ],
-            "turbo_mach_SL": inputs["data:propulsion:turboprop:sea_level:mach"],
-            "turbo_thrust_SL": inputs["data:propulsion:turboprop:sea_level:thrust"],
-            "turbo_thrust_max_SL": inputs["data:propulsion:turboprop:sea_level:thrust_limit"],
-            "turbo_sfc_SL": inputs["data:propulsion:turboprop:sea_level:sfc"],
-            "turbo_mach_CL": inputs["data:propulsion:turboprop:cruise_level:mach"],
-            "turbo_thrust_CL": inputs["data:propulsion:turboprop:cruise_level:thrust"],
-            "turbo_thrust_max_CL": inputs["data:propulsion:turboprop:cruise_level:thrust_limit"],
-            "turbo_sfc_CL": inputs["data:propulsion:turboprop:cruise_level:sfc"],
-            "turbo_mach_IL": inputs["data:propulsion:turboprop:intermediate_level:mach"],
-            "turbo_thrust_IL": inputs["data:propulsion:turboprop:intermediate_level:thrust"],
-            "turbo_thrust_max_IL": inputs[
+            ].item(),
+            "turbo_mach_sl": inputs["data:propulsion:turboprop:sea_level:mach"],
+            "turbo_thrust_sl": inputs["data:propulsion:turboprop:sea_level:thrust"],
+            "turbo_thrust_max_sl": inputs["data:propulsion:turboprop:sea_level:thrust_limit"],
+            "turbo_sfc_sl": inputs["data:propulsion:turboprop:sea_level:sfc"],
+            "turbo_mach_cl": inputs["data:propulsion:turboprop:cruise_level:mach"],
+            "turbo_thrust_cl": inputs["data:propulsion:turboprop:cruise_level:thrust"],
+            "turbo_thrust_max_cl": inputs["data:propulsion:turboprop:cruise_level:thrust_limit"],
+            "turbo_sfc_cl": inputs["data:propulsion:turboprop:cruise_level:sfc"],
+            "turbo_mach_il": inputs["data:propulsion:turboprop:intermediate_level:mach"],
+            "turbo_thrust_il": inputs["data:propulsion:turboprop:intermediate_level:thrust"],
+            "turbo_thrust_max_il": inputs[
                 "data:propulsion:turboprop:intermediate_level:thrust_limit"
             ],
-            "turbo_sfc_IL": inputs["data:propulsion:turboprop:intermediate_level:sfc"],
-            "level_IL": inputs["data:propulsion:turboprop:intermediate_level:altitude"],
+            "turbo_sfc_il": inputs["data:propulsion:turboprop:intermediate_level:sfc"],
+            "level_il": inputs["data:propulsion:turboprop:intermediate_level:altitude"].item(),
             "eta_225": inputs["settings:propulsion:turboprop:efficiency:first_compressor_stage"],
             "eta_253": inputs["settings:propulsion:turboprop:efficiency:second_compressor_stage"],
             "eta_445": inputs["settings:propulsion:turboprop:efficiency:high_pressure_turbine"],

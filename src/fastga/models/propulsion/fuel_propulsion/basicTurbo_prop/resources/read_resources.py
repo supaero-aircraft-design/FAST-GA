@@ -2,13 +2,13 @@
 # Electric Aircraft.
 # Copyright (C) 2022 ISAE-SUPAERO
 
-import os.path as pth
+import pathlib
 
 import pandas as pd
 
 
 def read_air_coeff():
-    file = pth.join(pth.dirname(__file__), "T_Cv_Cp.csv")
+    file = pathlib.Path(__file__).parent / "T_Cv_Cp.csv"
     db = pd.read_csv(file)
 
     temp = db["T"]
@@ -20,7 +20,7 @@ def read_air_coeff():
 
 
 def read_pressurization_coeff():
-    file = pth.join(pth.dirname(__file__), "cabin_pressurisation.csv")
+    file = pathlib.Path(__file__).parent / "cabin_pressurisation.csv"
     db = pd.read_csv(file)
 
     flight_altitude = db["FLIGHT_ALTITUDE"]

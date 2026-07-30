@@ -53,7 +53,6 @@ class ShaftPower(om.ExplicitComponent):
         )
 
         outputs["shaft_power"] = shaft_power
-        # print("shaft_power", outputs["shaft_power"])
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         air_mass_flow = inputs["air_mass_flow"]

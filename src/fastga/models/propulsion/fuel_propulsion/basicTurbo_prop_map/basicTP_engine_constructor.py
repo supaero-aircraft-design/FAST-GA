@@ -18,6 +18,7 @@ import logging
 import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
+from fastoad._utils.arrays import scalarize
 from fastoad.constants import EngineSetting
 from fastoad.module_management.constants import ModelDomain
 from stdatm import Atmosphere
@@ -34,22 +35,6 @@ _LOGGER = logging.getLogger(__name__)
 INVALID_SFC = -1e-2
 THRUST_PTS_NB_TURBOPROP = 50
 MACH_PTS_NB_TURBOPROP = 10
-
-# Set of dictionary keys that are mapped to instance attributes.
-ENGINE_LABELS = {
-    "power_SL": dict(doc="power at sea level in watts."),
-    "mass": dict(doc="Mass in kilograms."),
-    "length": dict(doc="Length in meters."),
-    "height": dict(doc="Height in meters."),
-    "width": dict(doc="Width in meters."),
-}
-# Set of dictionary keys that are mapped to instance attributes.
-NACELLE_LABELS = {
-    "wet_area": dict(doc="Wet area in meters²."),
-    "length": dict(doc="Length in meters."),
-    "height": dict(doc="Height in meters."),
-    "width": dict(doc="Width in meters."),
-}
 
 
 @oad.RegisterOpenMDAOSystem(
@@ -231,15 +216,15 @@ class ComputeTurbopropMap(om.ExplicitComponent):
             "itt_limit": inputs["data:propulsion:turboprop:off_design:itt_limit"],
             "power_limit": inputs["data:propulsion:turboprop:off_design:power_limit"],
             "opr_limit": inputs["data:propulsion:turboprop:off_design:opr_limit"],
-            "speed_SL": inputs["data:aerodynamics:propeller:sea_level:speed"],
-            "thrust_SL": inputs["data:aerodynamics:propeller:sea_level:thrust"],
-            "thrust_limit_SL": inputs["data:aerodynamics:propeller:sea_level:thrust_limit"],
-            "efficiency_SL": inputs["data:aerodynamics:propeller:sea_level:efficiency"],
-            "speed_CL": inputs["data:aerodynamics:propeller:cruise_level:speed"],
-            "thrust_CL": inputs["data:aerodynamics:propeller:cruise_level:thrust"],
-            "thrust_limit_CL": inputs["data:aerodynamics:propeller:cruise_level:thrust_limit"],
-            "efficiency_CL": inputs["data:aerodynamics:propeller:cruise_level:efficiency"],
-            "effective_J": inputs[
+            "speed_sl": inputs["data:aerodynamics:propeller:sea_level:speed"],
+            "thrust_sl": inputs["data:aerodynamics:propeller:sea_level:thrust"],
+            "thrust_limit_sl": inputs["data:aerodynamics:propeller:sea_level:thrust_limit"],
+            "efficiency_sl": inputs["data:aerodynamics:propeller:sea_level:efficiency"],
+            "speed_cl": inputs["data:aerodynamics:propeller:cruise_level:speed"],
+            "thrust_cl": inputs["data:aerodynamics:propeller:cruise_level:thrust"],
+            "thrust_limit_cl": inputs["data:aerodynamics:propeller:cruise_level:thrust_limit"],
+            "efficiency_cl": inputs["data:aerodynamics:propeller:cruise_level:efficiency"],
+            "effective_j": inputs[
                 "data:aerodynamics:propeller:installation_effect:effective_advance_ratio"
             ],
             "effective_efficiency_ls": inputs[
@@ -360,7 +345,8 @@ class ComputeTurbopropMap(om.ExplicitComponent):
         for mach in mach_array:
             atm.mach = mach
             max_thrust = engine.max_thrust(atm)
-            max_thrust_list.append(float(max_thrust))
+            # From how it is called it should be a 1 element array
+            max_thrust_list.append(max_thrust.item())
 
         max_thrust_array = np.array(max_thrust_list)
 
@@ -392,7 +378,6 @@ class ComputeTurbopropMap(om.ExplicitComponent):
             thrust_preliminary_intersect = np.union1d(thrust_preliminary_intersect, retained_thrust)
 
         thrust_preliminary_intersect = np.union1d(thrust_preliminary_intersect, max_thrust_array)
-        # print("\n", thrust_preliminary_intersect)
 
         # We now compute the sfc everywhere in the validity domain (thrust < thrust_max(mach))
         sfc_general = np.zeros((np.size(mach_array), np.size(thrust_preliminary_intersect)))
@@ -404,21 +389,21 @@ class ComputeTurbopropMap(om.ExplicitComponent):
                 if thrust > max_thrust_array[np.where(mach_array == mach)[0][0]]:
                     sfc = INVALID_SFC
                 else:
-                    thrust = np.array([thrust])
+                    thrust_as_array = np.array([thrust])
                     flight_points = oad.FlightPoint(
                         mach=mach,
                         altitude=altitude,
                         engine_setting=EngineSetting.CRUISE,
                         thrust_is_regulated=True,
                         thrust_rate=0.0,
-                        thrust=thrust,
+                        thrust=thrust_as_array,
                     )
                     engine.compute_flight_points(flight_points)
                     sfc = flight_points.sfc
                 sfc_general[
                     np.where(mach_array == mach)[0][0],
-                    np.where(thrust_preliminary_intersect == float(thrust))[0][0],
-                ] = sfc
+                    np.where(thrust_preliminary_intersect == thrust)[0][0],
+                ] = scalarize(sfc)
 
         valid_idx_previous_mach = np.array([])
         thrust_to_interpolate = np.zeros((1, 1))
@@ -437,14 +422,13 @@ class ComputeTurbopropMap(om.ExplicitComponent):
             valid_idx_set = set(valid_idx.tolist())
             valid_idx_previous_mach_set = set(valid_idx_previous_mach.tolist())
             idx_to_interpolate = np.array(list(valid_idx_previous_mach_set - valid_idx_set))
-            # print("\n", idx_to_interpolate)
 
             for idx in idx_to_interpolate:
                 thrust_to_interpolate[0, 0] = thrust_preliminary_intersect[idx]
                 predicted_fuel_flow = valid_fuel_flow[-1]
                 predicted_sfc = np.divide(predicted_fuel_flow, thrust_to_interpolate)
 
-                sfc_general[np.where(mach_array == mach)[0][0], idx] = predicted_sfc
+                sfc_general[np.where(mach_array == mach)[0][0], idx] = scalarize(predicted_sfc)
 
             valid_idx_previous_mach = valid_idx
 

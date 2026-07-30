@@ -141,23 +141,23 @@ class OMBasicICEngineWrapper(oad.IOMPropulsionWrapper):
             "strokes_nb": inputs["data:propulsion:IC_engine:strokes_nb"],
             "prop_layout": inputs["data:geometry:propulsion:engine:layout"],
             "k_factor_sfc": inputs["settings:propulsion:IC_engine:k_factor_sfc"].item(),
-            "speed_SL": inputs["data:aerodynamics:propeller:sea_level:speed"],
-            "thrust_SL": inputs["data:aerodynamics:propeller:sea_level:thrust"],
-            "thrust_limit_SL": inputs["data:aerodynamics:propeller:sea_level:thrust_limit"],
-            "efficiency_SL": inputs["data:aerodynamics:propeller:sea_level:efficiency"],
-            "speed_CL": inputs["data:aerodynamics:propeller:cruise_level:speed"],
-            "thrust_CL": inputs["data:aerodynamics:propeller:cruise_level:thrust"],
-            "thrust_limit_CL": inputs["data:aerodynamics:propeller:cruise_level:thrust_limit"],
-            "efficiency_CL": inputs["data:aerodynamics:propeller:cruise_level:efficiency"],
-            "effective_J": inputs[
+            "speed_sl": inputs["data:aerodynamics:propeller:sea_level:speed"],
+            "thrust_sl": inputs["data:aerodynamics:propeller:sea_level:thrust"],
+            "thrust_limit_sl": inputs["data:aerodynamics:propeller:sea_level:thrust_limit"],
+            "efficiency_sl": inputs["data:aerodynamics:propeller:sea_level:efficiency"],
+            "speed_cl": inputs["data:aerodynamics:propeller:cruise_level:speed"],
+            "thrust_cl": inputs["data:aerodynamics:propeller:cruise_level:thrust"],
+            "thrust_limit_cl": inputs["data:aerodynamics:propeller:cruise_level:thrust_limit"],
+            "efficiency_cl": inputs["data:aerodynamics:propeller:cruise_level:efficiency"],
+            "effective_j": inputs[
                 "data:aerodynamics:propeller:installation_effect:effective_advance_ratio"
-            ],
+            ].item(),
             "effective_efficiency_ls": inputs[
                 "data:aerodynamics:propeller:installation_effect:effective_efficiency:low_speed"
-            ],
+            ].item(),
             "effective_efficiency_cruise": inputs[
                 "data:aerodynamics:propeller:installation_effect:effective_efficiency:cruise"
-            ],
+            ].item(),
         }
 
         return FuelEngineSet(

@@ -59,7 +59,6 @@ class DistanceToLimitPowerLimit(om.ImplicitComponent):
         shaft_power_limit = inputs["shaft_power_limit"]
 
         residuals["required_thrust"] = shaft_power / shaft_power_limit - 1.0
-        # print("Constraints", total_temperature_45, opr, shaft_power)
 
     def linearize(self, inputs, outputs, jacobian, discrete_inputs=None, discrete_outputs=None):
         shaft_power = inputs["shaft_power"]

@@ -36,13 +36,8 @@ from .data.dummy_maps import (
 from ..basicTP_engine_constructor import ComputeTurbopropMap
 
 XML_FILE = "daher_tbm900.xml"
-SKIP_STEPS = True  # avoid some tests to accelerate validation process (turboprop map creation)
 
 
-@pytest.mark.skipif(
-    SKIP_STEPS,
-    reason="Skipping test because it is too long",
-)
 def test_table_construction():
     """Tests the construction of the table"""
 

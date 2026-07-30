@@ -69,7 +69,7 @@ class DynamicAttributeDict(dict):
                     raise FastUnexpectedKeywordArgumentError(key)
         elif kwargs:
             # No defined dynamic attribute, any keyword argument is illegal
-            raise FastUnexpectedKeywordArgumentError(list(kwargs.keys())[0])
+            raise FastUnexpectedKeywordArgumentError(next(iter(kwargs.keys())))
 
         super().__init__(*args, **kwargs)
 

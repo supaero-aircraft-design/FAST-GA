@@ -27,7 +27,6 @@ class Station4145Temperature(om.ExplicitComponent):
         outputs["total_temperature_45"] = (
             inputs["data:propulsion:turboprop:design_point:alpha"] * inputs["total_temperature_41"]
         )
-        # print("ITT", outputs["total_temperature_45"])
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         n = self.options["number_of_points"]
