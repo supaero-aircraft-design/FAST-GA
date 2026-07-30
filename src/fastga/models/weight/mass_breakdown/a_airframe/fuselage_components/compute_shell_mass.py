@@ -15,6 +15,9 @@
 import numpy as np
 import openmdao.api as om
 
+LOW_FUSELAGE_SLENDERNESS_LIMIT = 2.61
+HIGH_FUSELAGE_MASS_LIMIT = 286.0
+
 
 class ComputeShell(om.ExplicitComponent):
     def setup(self):
@@ -101,14 +104,14 @@ class ComputeShell(om.ExplicitComponent):
 
         # Mass of stringers (Torenbeek p459 formula D-6)
         # k_lambda is the factor which takes in account fuselage slenderness
-        if (lp_ht / (fuselage_max_height + fuselage_max_width)) <= 2.61:
+        if (lp_ht / (fuselage_max_height + fuselage_max_width)) <= LOW_FUSELAGE_SLENDERNESS_LIMIT:
             k_lambda = 0.56 * (lp_ht / (fuselage_max_height + fuselage_max_width)) ** 0.75
         else:
             k_lambda = 1.15
         mass_stringer = 0.0117 * k_lambda * fuselage_wet_area**1.45 * vd**0.39 * n_ult**0.316
 
         # Mass of frames (Torenbeek p459 formulas D-8 D-9)
-        if mass_stringer + mass_skin > 286.0:
+        if mass_stringer + mass_skin > HIGH_FUSELAGE_MASS_LIMIT:
             mass_frames = 0.19 * (mass_stringer + mass_skin)
         else:
             mass_frames = 0.0911 * (mass_stringer + mass_skin) ** 1.13

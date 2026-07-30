@@ -693,6 +693,10 @@
           </CG>
         </flight_controls>
         <fuselage>
+          <shell>
+            <area_density units="kg/m**2">2.11</area_density>
+            <added_weight_ratio>1.89</added_weight_ratio>
+          </shell>
           <k_factor is_input="True">0.925<!--proportional corrective factor for fuselage mass--></k_factor>
           <mass units="lbm" is_input="False">286.30203490508717<!--fuselage (A2): total mass--></mass>
           <CG>

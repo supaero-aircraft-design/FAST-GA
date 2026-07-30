@@ -24,6 +24,8 @@ oad.RegisterSubmodel.active_models[SERVICE_RECORDING_SYSTEM_MASS] = (
     SUBMODEL_RECORDING_SYSTEM_MASS_MINIMUM
 )
 
+NON_COMMUTER_MASS_LIMIT = 5600.0  # In kg
+
 
 @oad.RegisterSubmodel(
     SERVICE_RECORDING_SYSTEM_MASS,
@@ -52,7 +54,7 @@ class ComputeRecordingSystemsWeight(om.ExplicitComponent):
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         mtow = inputs["data:weight:aircraft:MTOW"]
 
-        if mtow > 5600:
+        if mtow > NON_COMMUTER_MASS_LIMIT:
             fdr_weight = 4.8
             cvr_weight = 4.5
             misc_weight = 10.0

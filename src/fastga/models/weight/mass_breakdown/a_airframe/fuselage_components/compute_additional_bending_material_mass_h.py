@@ -17,6 +17,8 @@ import openmdao.api as om
 from scipy.constants import g
 from stdatm import Atmosphere
 
+from fastga.models.constants import PropulsionLayout
+
 FUSELAGE_MESH_POINT = 100
 
 
@@ -86,7 +88,7 @@ class ComputeAddBendingMassHorizontal(om.ExplicitComponent):
 
         self.add_output("data:weight:airframe:fuselage:additional_mass:horizontal", units="kg")
 
-    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):  # noqa: PLR0915, PLR0912
         """Computing the horizontal additional bending material."""
         wing_area = inputs["data:geometry:wing:area"]
         lav = inputs["data:geometry:fuselage:front_length"]
@@ -159,7 +161,7 @@ class ComputeAddBendingMassHorizontal(om.ExplicitComponent):
         x_ratio_centroid_to_cabin_rear = 1 - x_ratio_centroid_to_cabin_front
 
         # The fuselage length is roughly discretized with a fixed length step.
-        nb_points_front = int(FUSELAGE_MESH_POINT * wing_centroid / tail_x_cg)
+        nb_points_front = int((FUSELAGE_MESH_POINT * wing_centroid / tail_x_cg).item())
         x_vector_front = np.linspace(0, wing_centroid, nb_points_front)
         x_vector_rear = np.linspace(wing_centroid, tail_x_cg, FUSELAGE_MESH_POINT - nb_points_front)
 
@@ -285,13 +287,13 @@ class ComputeAddBendingMassHorizontal(om.ExplicitComponent):
             # is to calculate the lift needed to match the front and the rear distributions.
             max_moment_front = load_factor * distributed_cabin_weight * (wing_centroid - lav) ** 2
 
-            if engine_layout == 3:
+            if engine_layout == PropulsionLayout.IN_THE_NOSE:
                 max_moment_front += load_factor * engine_weight * (wing_centroid - engine_cg_x)
 
             moment_to_compensate_with_lift = horizontal_bending_vector_rear[0] - max_moment_front
 
             for x_position in x_vector_front:
-                if engine_layout == 3:
+                if engine_layout == PropulsionLayout.IN_THE_NOSE:
                     if x_position <= engine_cg_x:
                         bending = moment_to_compensate_with_lift / wing_centroid * x_position
                     elif x_position <= lav:

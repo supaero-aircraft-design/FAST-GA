@@ -16,7 +16,7 @@ Test module for mass breakdown functions.
 
 import pytest
 
-from tests.testing_utilities import get_indep_var_comp, list_inputs, run_system
+from tests.testing_utilities import get_indep_var_comp, run_system, setup_and_run_system
 
 from ..a_airframe import (
     ComputeFuselageMassAnalytical,
@@ -99,10 +99,7 @@ def test_compute_fuselage_weight_roskam():
 def test_compute_fuselage_mass_analytical():
     """Tests fuselage weight analytical computation from sample XML data."""
     # Research independent input value in .xml file
-    ivc = get_indep_var_comp(list_inputs(ComputeFuselageMassAnalytical()), __file__, XML_FILE)
-
-    # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeFuselageMassAnalytical(), ivc)
+    problem = setup_and_run_system(ComputeFuselageMassAnalytical(), __file__, XML_FILE)
     assert problem["data:weight:airframe:fuselage:mass"] == pytest.approx(240.12, abs=1e-2)
 
     problem.check_partials(compact_print=True)

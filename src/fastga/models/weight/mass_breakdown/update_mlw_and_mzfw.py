@@ -17,6 +17,8 @@ Main component for mass breakdown.
 import numpy as np
 import openmdao.api as om
 
+LOW_SPEED_AIRCRAFT_SPEED_LIMIT = 250.0
+
 
 class UpdateMLWandMZFW(om.ExplicitComponent):
     """
@@ -64,7 +66,7 @@ class UpdateMLWandMZFW(om.ExplicitComponent):
         mzfw = owe + max_pl
         zfw = owe + pl
 
-        if cruise_ktas > 250.0:
+        if cruise_ktas > LOW_SPEED_AIRCRAFT_SPEED_LIMIT:
             mlw = inputs["settings:weight:aircraft:MLW_MZFW_ratio"] * mzfw
         else:
             mlw = mtow
@@ -80,7 +82,7 @@ class UpdateMLWandMZFW(om.ExplicitComponent):
 
         mzfw = owe + max_pl
 
-        if cruise_ktas > 250.0:
+        if cruise_ktas > LOW_SPEED_AIRCRAFT_SPEED_LIMIT:
             partials[
                 "data:weight:aircraft:MLW",
                 "data:weight:aircraft:MTOW",

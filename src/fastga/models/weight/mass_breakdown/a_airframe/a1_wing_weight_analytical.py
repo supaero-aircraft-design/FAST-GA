@@ -73,13 +73,10 @@ class ComputeWingMassAnalytical(om.Group):
 
         # Solver configuration
         self.nonlinear_solver.options["debug_print"] = True
-        # self.nonlinear_solver.options["err_on_non_converge"] = True
         self.nonlinear_solver.options["iprint"] = 0
         self.nonlinear_solver.options["maxiter"] = 100
-        # self.nonlinear_solver.options["reraise_child_analysiserror"] = True
         self.nonlinear_solver.options["rtol"] = 1e-4
 
-        # self.linear_solver.options["err_on_non_converge"] = True
         self.linear_solver.options["iprint"] = 0
         self.linear_solver.options["maxiter"] = 10
         self.linear_solver.options["rtol"] = 1e-4

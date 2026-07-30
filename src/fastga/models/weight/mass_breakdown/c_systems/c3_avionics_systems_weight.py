@@ -69,11 +69,7 @@ class ComputeAvionicsSystemsWeight(om.ExplicitComponent):
         n_occ = n_pax + 2.0
         # The formula differs depending on the number of propeller on the engine
 
-        if n_eng == 1.0:
-            c3 = 33.0 * n_occ
-
-        else:
-            c3 = 40 + 0.008 * mtow  # mass formula in lb
+        c3 = 33.0 * n_occ if n_eng == 1.0 else 40 + 0.008 * mtow  # mass formula in lb
 
         outputs["data:weight:systems:avionics:mass"] = c3
 

@@ -20,6 +20,8 @@ import openmdao.api as om
 from scipy.interpolate import make_interp_spline
 from stdatm import Atmosphere
 
+from .constants import NB_ENGINE_MIN_DEP
+
 
 class ComputeSkinMass(om.ExplicitComponent):
     def setup(self):
@@ -81,7 +83,7 @@ class ComputeSkinMass(om.ExplicitComponent):
 
         self.add_output("data:weight:airframe:wing:skin:mass", units="kg")
 
-    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):  # noqa: PLR0915
         """
         Component that computes the skin mass necessary to react to the given linear force
         vector, according to the methodology developed by Raquel Alonso Castilla.
@@ -98,7 +100,7 @@ class ComputeSkinMass(om.ExplicitComponent):
         aileron_span_ratio = inputs["data:geometry:wing:aileron:span_ratio"]
         aileron_max_deflection = inputs["data:geometry:wing:aileron:max_deflection"]
 
-        cruise_alt = inputs["data:mission:sizing:main_route:cruise:altitude"]
+        cruise_alt = inputs["data:mission:sizing:main_route:cruise:altitude"].item()
 
         rho_m = inputs["settings:materials:aluminium:density"]
         shear_modulus = inputs["settings:materials:aluminium:shear_modulus"]
@@ -216,7 +218,7 @@ class ComputeSkinMass(om.ExplicitComponent):
             / np.cos(sweep_e)
         )
 
-        if inputs["data:geometry:propulsion:engine:count"] > 4:
+        if inputs["data:geometry:propulsion:engine:count"] > NB_ENGINE_MIN_DEP:
             skin_mass *= 1.1
 
         outputs["data:weight:airframe:wing:skin:mass"] = skin_mass

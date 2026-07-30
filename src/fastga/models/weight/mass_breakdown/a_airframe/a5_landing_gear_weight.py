@@ -18,6 +18,8 @@ import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
 
+from fastga.models.constants import WingLayout
+
 from .constants import SERVICE_LANDING_GEAR_MASS, SUBMODEL_LANDING_GEAR_MASS_LEGACY
 
 oad.RegisterSubmodel.active_models[SERVICE_LANDING_GEAR_MASS] = SUBMODEL_LANDING_GEAR_MASS_LEGACY
@@ -92,10 +94,7 @@ class ComputeLandingGearWeight(om.ExplicitComponent):
         else:
             weight_reduction_factor = 1.0
 
-        if wing_config == 3.0:
-            wing_config_const = 1.08
-        else:
-            wing_config_const = 1.0
+        wing_config_const = 1.08 if wing_config == WingLayout.HIGH_WING else 1.0
 
         outputs["data:weight:airframe:landing_gear:main:mass"] = (
             mlg_weight * weight_reduction_factor * wing_config_const
@@ -124,10 +123,7 @@ class ComputeLandingGearWeight(om.ExplicitComponent):
             * (1.0 + 0.8 * carrier_based)
         )
 
-        if wing_config == 3.0:
-            wing_config_const = 1.08
-        else:
-            wing_config_const = 1.0
+        wing_config_const = 1.08 if wing_config == WingLayout.HIGH_WING else 1.0
 
         if not is_retractable:
             weight_reduction = 1.4 * mtow / 100.0

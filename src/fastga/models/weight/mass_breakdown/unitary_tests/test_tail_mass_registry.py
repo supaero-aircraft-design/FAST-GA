@@ -14,7 +14,8 @@ Test module for tail weight services registry.
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-import os.path as pth
+
+import pathlib
 
 import fastoad.api as oad
 import pytest
@@ -35,14 +36,14 @@ from ..a_airframe.constants import (
 )
 from ..a_airframe.sum import AirframeWeight
 
-DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
+DATA_FOLDER_PATH = pathlib.Path(__file__).parent / "data"
 XML_FILE = "cirrus_sr22.xml"
 
 
 def test_tail_mass_registry(_reset_tail_submodel_registry):
     """Tests tail mass submodel registry with integration ."""
     process_file_name = "dummy_conf.yml"
-    configurator = oad.FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, process_file_name))
+    configurator = oad.FASTOADProblemConfigurator(DATA_FOLDER_PATH / process_file_name)
     problem = configurator.get_problem()
     problem.setup()
 

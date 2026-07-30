@@ -22,12 +22,14 @@ from stdatm import Atmosphere
 
 from fastga.models.load_analysis.wing.aerostructural_loads import AerostructuralLoad
 
+from .constants import NB_ENGINE_MIN_DEP
+
 
 class ComputeUpperFlange(om.ExplicitComponent):
     def initialize(self):
         self.options.declare("min_fuel_in_wing", default=False, types=bool)
 
-    def setup(self):
+    def setup(self):  # noqa: PLR0915
         self.add_input("data:geometry:flap:chord_ratio", val=np.nan)
         self.add_input("data:geometry:wing:aileron:chord_ratio", val=np.nan)
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
@@ -167,7 +169,7 @@ class ComputeUpperFlange(om.ExplicitComponent):
                 "data:weight:airframe:wing:upper_flange:mass:min_fuel_in_wing", units="kg"
             )
 
-    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):  # noqa: PLR0915
         """
         Component that computes the wing web mass necessary to react to the given linear force
         vector, according to the methodology developed by Raquel Alonso Castilla.
@@ -308,7 +310,7 @@ class ComputeUpperFlange(om.ExplicitComponent):
             upper_flange_area, y_vector
         )
 
-        if inputs["data:geometry:propulsion:engine:count"] > 4:
+        if inputs["data:geometry:propulsion:engine:count"] > NB_ENGINE_MIN_DEP:
             upper_flange_mass *= 1.1
 
         if not self.options["min_fuel_in_wing"]:

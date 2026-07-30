@@ -18,6 +18,8 @@ in her MAE research project report.
 import numpy as np
 import openmdao.api as om
 
+from .constants import NB_ENGINE_MIN_DEP
+
 
 class ComputeRibsMass(om.ExplicitComponent):
     def setup(self):
@@ -78,7 +80,7 @@ class ComputeRibsMass(om.ExplicitComponent):
             * (25.0 - 35.0)
             / 100.0
         )
-        n_ribs = int((wing_span / 2.0) / (np.cos(sweep_e) * delta_ribs)) + 1.0
+        n_ribs = int(((wing_span / 2.0) / (np.cos(sweep_e) * delta_ribs)).item()) + 1.0
         k = (1.0 - taper_ratio) * root_chord / (wing_span / 2.0)
         xe_root = -root_chord * (0.1 / (wing_span / 2.0 - fus_radius) * wing_span / 2.0 - 0.75)
         f_phi_e = 1.0 / (
@@ -103,7 +105,7 @@ class ComputeRibsMass(om.ExplicitComponent):
             * m_factor
         )
 
-        if inputs["data:geometry:propulsion:engine:count"] > 4:
+        if inputs["data:geometry:propulsion:engine:count"] > NB_ENGINE_MIN_DEP:
             ribs_mass *= 1.1
 
         outputs["data:weight:airframe:wing:ribs:mass"] = ribs_mass

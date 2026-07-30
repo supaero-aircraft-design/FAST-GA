@@ -64,7 +64,7 @@ class ComputeOilWeight(om.ExplicitComponent):
         propulsion_model.compute_flight_points(flight_point)
 
         # This should give the UNINSTALLED weight
-        sl_thrust_newton = float(flight_point.thrust)
+        sl_thrust_newton = flight_point.thrust
         sl_thrust_lbs = sl_thrust_newton / lbf
 
         b1_2 = 0.082 * n_eng * sl_thrust_lbs**0.65

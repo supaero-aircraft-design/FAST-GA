@@ -79,7 +79,7 @@ class ComputeUnusableFuelWeight(om.ExplicitComponent):
         )  # with engine_setting as EngineSetting
         propulsion_model.compute_flight_points(flight_point)
 
-        sl_thrust_newton = float(flight_point.thrust)
+        sl_thrust_newton = flight_point.thrust
         sl_thrust_lbs = sl_thrust_newton / lbf
         sl_thrust_lbs_per_engine = sl_thrust_lbs / n_eng
 
@@ -105,7 +105,7 @@ class ComputeUnusableFuelWeight(om.ExplicitComponent):
         )  # with engine_setting as EngineSetting
         propulsion_model.compute_flight_points(flight_point)
 
-        sl_thrust_newton = float(flight_point.thrust)
+        sl_thrust_newton = flight_point.thrust
         sl_thrust_lbs = sl_thrust_newton / lbf
         sl_thrust_lbs_per_engine = sl_thrust_lbs / n_eng
 

@@ -15,6 +15,8 @@
 import numpy as np
 import openmdao.api as om
 
+from fastga.models.constants import PropulsionLayout
+
 
 class ComputeWingFuselageConnection(om.ExplicitComponent):
     def setup(self):
@@ -45,7 +47,7 @@ class ComputeWingFuselageConnection(om.ExplicitComponent):
         else:
             mass_wing_fuselage_connection = 0.4e-3 * (n_ult * mtow) ** 1.185
 
-        if wing_config == 3.0:
+        if wing_config == PropulsionLayout.IN_THE_NOSE:
             mass_wing_fuselage_connection *= 1.66
 
         outputs["data:weight:airframe:fuselage:wing_fuselage_connection:mass"] = (

@@ -18,6 +18,8 @@ in her MAE research project report.
 import numpy as np
 import openmdao.api as om
 
+from .constants import NB_ENGINE_MIN_DEP
+
 
 class ComputeMiscMass(om.ExplicitComponent):
     """Computes the misc mass based on the model developed in FLOPS."""
@@ -46,7 +48,7 @@ class ComputeMiscMass(om.ExplicitComponent):
 
         misc_mass = (0.16 * (1.0 - 0.3 * f_comp) * wing_area_sq_ft**1.2) * 0.453592
 
-        if inputs["data:geometry:propulsion:engine:count"] > 4:
+        if inputs["data:geometry:propulsion:engine:count"] > NB_ENGINE_MIN_DEP:
             misc_mass *= 1.1
 
         outputs["data:weight:airframe:wing:misc:mass"] = misc_mass

@@ -21,6 +21,8 @@ import numpy as np
 import openmdao.api as om
 from stdatm import AtmosphereWithPartials
 
+from fastga.models.constants import WingLayout
+
 from .constants import (
     SERVICE_FUSELAGE_MASS,
     SUBMODEL_FUSELAGE_MASS_LEGACY,
@@ -29,6 +31,8 @@ from .constants import (
 )
 
 _LOGGER = logging.getLogger(__name__)
+
+MIN_ALT_PRESSURIZATION = 10000.0
 
 oad.RegisterSubmodel.active_models[SERVICE_FUSELAGE_MASS] = SUBMODEL_FUSELAGE_MASS_LEGACY
 
@@ -254,10 +258,7 @@ class ComputeFuselageWeightRaymer(om.ExplicitComponent):
 
         dynamic_pressure = 1.0 / 2.0 * rho_cruise * v_cruise**2.0 * 0.020885434273039
 
-        if cruise_alt > 10000.0:
-            is_pressurized = 1.0
-        else:
-            is_pressurized = 0.0
+        is_pressurized = 1.0 if cruise_alt > MIN_ALT_PRESSURIZATION else 0.0
 
         # is_pressurized is an option that affects the fuselage sizing.
         # It describes whether the fuselage is pressurized or not depending on the cruise altitude.
@@ -307,10 +308,7 @@ class ComputeFuselageWeightRaymer(om.ExplicitComponent):
         v_press = (fus_length - lar - lav) * np.pi * (fus_dia / 2.0) ** 2.0
         delta_p = (pressure_sl - pressure_cruise) * 0.000145038
 
-        if cruise_alt > 10000.0:
-            is_pressurized = 1.0
-        else:
-            is_pressurized = 0.0
+        is_pressurized = 1.0 if cruise_alt > MIN_ALT_PRESSURIZATION else 0.0
 
         # is_pressurized is an option that affects the fuselage sizing.
         # It describes whether the fuselage is pressurized or not depending on the cruise altitude.
@@ -564,7 +562,7 @@ class ComputeFuselageWeightRoskam(om.ExplicitComponent):
         fus_dia = (maximum_height + maximum_width) / 2.0
         p_max = 2 * np.pi * (fus_dia / 2)  # maximum perimeter of the fuselage
 
-        if wing_config == 1.0:
+        if wing_config == WingLayout.LOW_WING:
             # The formula found in Roskam originally contains a division by 100, but it leads to
             # results way too low. It will be omitted here. It does not seem to cause an issue
             # for the high wing configuration however, so we will simply issue a warning with a
@@ -576,7 +574,7 @@ class ComputeFuselageWeightRoskam(om.ExplicitComponent):
                 "wing aircraft as it gives very small results. Consider switching submodel"
             )
 
-        elif wing_config == 3.0:
+        elif wing_config == WingLayout.HIGH_WING:
             a2 = 14.86 * (
                 mtow**0.144
                 * ((fus_length - lav) / p_max) ** 0.778
@@ -603,7 +601,7 @@ class ComputeFuselageWeightRoskam(om.ExplicitComponent):
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         wing_config = inputs["data:geometry:wing_configuration"]
 
-        if wing_config == 1.0:
+        if wing_config == WingLayout.LOW_WING:
             fus_length = inputs["data:geometry:fuselage:length"]
             lav = inputs["data:geometry:fuselage:front_length"]
             mtow = inputs["data:weight:aircraft:MTOW"]
