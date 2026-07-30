@@ -22,6 +22,7 @@ import numpy as np
 import openmdao.api as om
 from fastoad.constants import EngineSetting
 from fastoad.exceptions import FastUnknownEngineSettingError
+from fastoad._utils.arrays import scalarize
 from scipy.interpolate import RectBivariateSpline
 from stdatm import Atmosphere
 
@@ -1376,8 +1377,8 @@ class BasicTPEngine(AbstractFuelPropulsion):
                 np.interp(list(installed_airspeed), self.speed_cl, self.thrust_limit_cl),
             )
         if np.size(thrust) == 1:  # calculate for float
-            lower_bound = float(propeller_efficiency_sl(thrust_interp_sl, installed_airspeed))
-            upper_bound = float(propeller_efficiency_cl(thrust_interp_cl, installed_airspeed))
+            lower_bound = scalarize(propeller_efficiency_sl(thrust_interp_sl, installed_airspeed))
+            upper_bound = scalarize(propeller_efficiency_cl(thrust_interp_cl, installed_airspeed))
             altitude = atmosphere.get_altitude(altitude_in_feet=False)
             propeller_efficiency = np.interp(
                 altitude, [0.0, self.cruise_altitude_propeller], [lower_bound, upper_bound]

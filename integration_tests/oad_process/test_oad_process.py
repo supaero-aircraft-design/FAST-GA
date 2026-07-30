@@ -13,8 +13,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-import os
-import os.path as pth
+import pathlib
 import shutil
 from platform import system
 from shutil import rmtree
@@ -26,14 +25,9 @@ from numpy.testing import assert_allclose
 
 from fastga.models.performances.mission import resources
 
-DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
-RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")
-WORKDIR_FOLDER_PATH = pth.join(pth.dirname(__file__), "workdir")
-PATH = pth.dirname(__file__).split(os.path.sep)
-NOTEBOOKS_PATH = PATH[0] + os.path.sep
-for folder in PATH[1 : len(PATH) - 3]:
-    NOTEBOOKS_PATH = pth.join(NOTEBOOKS_PATH, folder)
-NOTEBOOKS_PATH = pth.join(NOTEBOOKS_PATH, "notebooks")
+DATA_FOLDER_PATH = pathlib.Path(__file__).parent / "data"
+WORKDIR_FOLDER_PATH = pathlib.Path(__file__).parent / "workdir"
+RESULTS_FOLDER_PATH = pathlib.Path(__file__).parent / "results"
 
 
 @pytest.fixture(scope="module")
@@ -53,10 +47,10 @@ def test_oad_process_vlm_sr22(cleanup):
     xml_file_name = "input_sr22.xml"
     process_file_name = "oad_process_sr22.yml"
 
-    configurator = oad.FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, process_file_name))
+    configurator = oad.FASTOADProblemConfigurator(DATA_FOLDER_PATH / process_file_name)
 
     # Create inputs
-    ref_inputs = pth.join(DATA_FOLDER_PATH, xml_file_name)
+    ref_inputs = DATA_FOLDER_PATH / xml_file_name
 
     # Create problems with inputs
     problem = configurator.get_problem()
@@ -66,14 +60,14 @@ def test_oad_process_vlm_sr22(cleanup):
     problem.run_model()
     problem.write_outputs()
 
-    if not pth.exists(RESULTS_FOLDER_PATH):
-        os.mkdir(RESULTS_FOLDER_PATH)
+    if not RESULTS_FOLDER_PATH.exists():
+        RESULTS_FOLDER_PATH.mkdir()
     om.view_connections(
         problem,
-        outfile=pth.join(RESULTS_FOLDER_PATH, "connections.html"),
+        outfile=(RESULTS_FOLDER_PATH / "connections.html").as_posix(),
         show_browser=False,
     )
-    om.n2(problem, outfile=pth.join(RESULTS_FOLDER_PATH, "n2.html"), show_browser=False)
+    om.n2(problem, outfile=(RESULTS_FOLDER_PATH / "n2").as_posix(), show_browser=False)
 
     # Check that weight-performances loop correctly converged
     _check_weight_performance_loop(problem)
@@ -97,10 +91,10 @@ def test_oad_process_vlm_be76(cleanup):
     xml_file_name = "input_be76.xml"
     process_file_name = "oad_process_be76.yml"
 
-    configurator = oad.FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, process_file_name))
+    configurator = oad.FASTOADProblemConfigurator(DATA_FOLDER_PATH / process_file_name)
 
     # Create inputs
-    ref_inputs = pth.join(DATA_FOLDER_PATH, xml_file_name)
+    ref_inputs = DATA_FOLDER_PATH / xml_file_name
 
     # Create problems with inputs
     problem = configurator.get_problem()
@@ -110,14 +104,14 @@ def test_oad_process_vlm_be76(cleanup):
     problem.run_model()
     problem.write_outputs()
 
-    if not pth.exists(RESULTS_FOLDER_PATH):
-        os.mkdir(RESULTS_FOLDER_PATH)
+    if not RESULTS_FOLDER_PATH.exists():
+        RESULTS_FOLDER_PATH.mkdir()
     om.view_connections(
         problem,
-        outfile=pth.join(RESULTS_FOLDER_PATH, "connections.html"),
+        outfile=(RESULTS_FOLDER_PATH / "connections.html").as_posix(),
         show_browser=False,
     )
-    om.n2(problem, outfile=pth.join(RESULTS_FOLDER_PATH, "n2.html"), show_browser=False)
+    om.n2(problem, outfile=(RESULTS_FOLDER_PATH / "n2").as_posix(), show_browser=False)
 
     # Check that weight-performances loop correctly converged
     _check_weight_performance_loop(problem)
@@ -141,10 +135,10 @@ def test_oad_process_tbm_900(cleanup):
     xml_file_name = "input_tbm900.xml"
     process_file_name = "oad_process_tbm900.yml"
 
-    configurator = oad.FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, process_file_name))
+    configurator = oad.FASTOADProblemConfigurator(DATA_FOLDER_PATH / process_file_name)
 
     # Create inputs
-    ref_inputs = pth.join(DATA_FOLDER_PATH, xml_file_name)
+    ref_inputs = DATA_FOLDER_PATH / xml_file_name
 
     # Create problems with inputs
     problem = configurator.get_problem()
@@ -154,14 +148,14 @@ def test_oad_process_tbm_900(cleanup):
     problem.run_model()
     problem.write_outputs()
 
-    if not pth.exists(RESULTS_FOLDER_PATH):
-        os.mkdir(RESULTS_FOLDER_PATH)
+    if not RESULTS_FOLDER_PATH.exists():
+        RESULTS_FOLDER_PATH.mkdir()
     om.view_connections(
         problem,
-        outfile=pth.join(RESULTS_FOLDER_PATH, "connections.html"),
+        outfile=(RESULTS_FOLDER_PATH / "connections.html").as_posix(),
         show_browser=False,
     )
-    om.n2(problem, outfile=pth.join(RESULTS_FOLDER_PATH, "n2.html"), show_browser=False)
+    om.n2(problem, outfile=(RESULTS_FOLDER_PATH / "n2").as_posix(), show_browser=False)
 
     # Check that weight-performances loop correctly converged
     _check_weight_performance_loop(problem)
@@ -185,10 +179,10 @@ def test_oad_process_vlm_mission_vector(cleanup):
     xml_file_name = "input_sr22.xml"
     process_file_name = "oad_process_sr22_mission_vector.yml"
 
-    configurator = oad.FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, process_file_name))
+    configurator = oad.FASTOADProblemConfigurator(DATA_FOLDER_PATH / process_file_name)
 
     # Create inputs
-    ref_inputs = pth.join(DATA_FOLDER_PATH, xml_file_name)
+    ref_inputs = DATA_FOLDER_PATH / xml_file_name
 
     # Create problems with inputs
     problem = configurator.get_problem()
@@ -201,14 +195,14 @@ def test_oad_process_vlm_mission_vector(cleanup):
     problem.run_model()
     problem.write_outputs()
 
-    if not pth.exists(RESULTS_FOLDER_PATH):
-        os.mkdir(RESULTS_FOLDER_PATH)
+    if not RESULTS_FOLDER_PATH.exists():
+        RESULTS_FOLDER_PATH.mkdir()
     om.view_connections(
         problem,
-        outfile=pth.join(RESULTS_FOLDER_PATH, "connections.html"),
+        outfile=(RESULTS_FOLDER_PATH / "connections.html").as_posix(),
         show_browser=False,
     )
-    om.n2(problem, outfile=pth.join(RESULTS_FOLDER_PATH, "n2.html"), show_browser=False)
+    om.n2(problem, outfile=(RESULTS_FOLDER_PATH / "n2").as_posix(), show_browser=False)
 
     # Check that weight-performances loop correctly converged
     _check_weight_performance_loop(problem)
@@ -236,10 +230,10 @@ def test_oad_process_openvsp(cleanup):
     xml_file_name = "input_sr22.xml"
     process_file_name = "oad_process_sr22_openvsp.yml"
 
-    configurator = oad.FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, process_file_name))
+    configurator = oad.FASTOADProblemConfigurator(DATA_FOLDER_PATH / process_file_name)
 
     # Create inputs
-    ref_inputs = pth.join(DATA_FOLDER_PATH, xml_file_name)
+    ref_inputs = DATA_FOLDER_PATH / xml_file_name
 
     # Create problems with inputs
     problem = configurator.get_problem()
@@ -249,14 +243,14 @@ def test_oad_process_openvsp(cleanup):
     problem.run_model()
     problem.write_outputs()
 
-    if not pth.exists(RESULTS_FOLDER_PATH):
-        os.mkdir(RESULTS_FOLDER_PATH)
+    if not RESULTS_FOLDER_PATH.exists():
+        RESULTS_FOLDER_PATH.mkdir()
     om.view_connections(
         problem,
-        outfile=pth.join(RESULTS_FOLDER_PATH, "connections.html"),
+        outfile=(RESULTS_FOLDER_PATH / "connections.html").as_posix(),
         show_browser=False,
     )
-    om.n2(problem, outfile=pth.join(RESULTS_FOLDER_PATH, "n2.html"), show_browser=False)
+    om.n2(problem, outfile=(RESULTS_FOLDER_PATH / "n2").as_posix(), show_browser=False)
 
     # Check that weight-performances loop correctly converged
     _check_weight_performance_loop(problem)
@@ -277,11 +271,11 @@ def test_oad_process_mission_builder_1_engine(cleanup):
     method with the mission builder from FAST OAD.
     """
     # Copy the mission file in the path we indicated in the configuration file
-    source_mission_path = pth.join(pth.split(resources.__file__)[0], "sizing_mission_fastga.yml")
-    target_mission_path = pth.join(WORKDIR_FOLDER_PATH, "sizing_mission_fastga.yml")
+    source_mission_path = pathlib.Path(resources.__file__).parent / "sizing_mission_fastga.yml"
+    target_mission_path = WORKDIR_FOLDER_PATH / "sizing_mission_fastga.yml"
 
-    if not os.path.exists(WORKDIR_FOLDER_PATH):
-        os.mkdir(WORKDIR_FOLDER_PATH)
+    if not WORKDIR_FOLDER_PATH.exists():
+        WORKDIR_FOLDER_PATH.mkdir()
 
     shutil.copy(source_mission_path, target_mission_path)
 
@@ -293,10 +287,10 @@ def test_oad_process_mission_builder_1_engine(cleanup):
     xml_file_name = "input_sr22.xml"
     process_file_name = "oad_process_sr22_mission_builder.yml"
 
-    configurator = oad.FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, process_file_name))
+    configurator = oad.FASTOADProblemConfigurator(DATA_FOLDER_PATH / process_file_name)
 
     # Create inputs
-    ref_inputs = pth.join(DATA_FOLDER_PATH, xml_file_name)
+    ref_inputs = DATA_FOLDER_PATH / xml_file_name
 
     # Create problems with inputs
     problem = configurator.get_problem()
@@ -306,14 +300,14 @@ def test_oad_process_mission_builder_1_engine(cleanup):
     problem.run_model()
     problem.write_outputs()
 
-    if not pth.exists(RESULTS_FOLDER_PATH):
-        os.mkdir(RESULTS_FOLDER_PATH)
+    if not RESULTS_FOLDER_PATH.exists():
+        RESULTS_FOLDER_PATH.mkdir()
     om.view_connections(
         problem,
-        outfile=pth.join(RESULTS_FOLDER_PATH, "connections.html"),
+        outfile=(RESULTS_FOLDER_PATH / "connections.html").as_posix(),
         show_browser=False,
     )
-    om.n2(problem, outfile=pth.join(RESULTS_FOLDER_PATH, "n2.html"), show_browser=False)
+    om.n2(problem, outfile=(RESULTS_FOLDER_PATH / "n2").as_posix(), show_browser=False)
 
     # Check that weight-performances loop correctly converged
     _check_weight_performance_loop(problem)
@@ -334,11 +328,11 @@ def test_oad_process_mission_builder_2_engine(cleanup):
     method with the mission builder from FAST OAD.
     """
     # Copy the mission file in the path we indicated in the configuration file
-    source_mission_path = pth.join(pth.split(resources.__file__)[0], "sizing_mission_fastga.yml")
-    target_mission_path = pth.join(WORKDIR_FOLDER_PATH, "sizing_mission_fastga.yml")
+    source_mission_path = pathlib.Path(resources.__file__).parent / "sizing_mission_fastga.yml"
+    target_mission_path = WORKDIR_FOLDER_PATH / "sizing_mission_fastga.yml"
 
-    if not os.path.exists(WORKDIR_FOLDER_PATH):
-        os.mkdir(WORKDIR_FOLDER_PATH)
+    if not WORKDIR_FOLDER_PATH.exists():
+        WORKDIR_FOLDER_PATH.mkdir()
 
     shutil.copy(source_mission_path, target_mission_path)
 
@@ -350,10 +344,10 @@ def test_oad_process_mission_builder_2_engine(cleanup):
     xml_file_name = "input_be76.xml"
     process_file_name = "oad_process_be76_mission_builder.yml"
 
-    configurator = oad.FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, process_file_name))
+    configurator = oad.FASTOADProblemConfigurator(DATA_FOLDER_PATH / process_file_name)
 
     # Create inputs
-    ref_inputs = pth.join(DATA_FOLDER_PATH, xml_file_name)
+    ref_inputs = DATA_FOLDER_PATH / xml_file_name
 
     # Create problems with inputs
     problem = configurator.get_problem()
@@ -363,14 +357,14 @@ def test_oad_process_mission_builder_2_engine(cleanup):
     problem.run_model()
     problem.write_outputs()
 
-    if not pth.exists(RESULTS_FOLDER_PATH):
-        os.mkdir(RESULTS_FOLDER_PATH)
+    if not RESULTS_FOLDER_PATH.exists():
+        RESULTS_FOLDER_PATH.mkdir()
     om.view_connections(
         problem,
-        outfile=pth.join(RESULTS_FOLDER_PATH, "connections.html"),
+        outfile=(RESULTS_FOLDER_PATH / "connections.html").as_posix(),
         show_browser=False,
     )
-    om.n2(problem, outfile=pth.join(RESULTS_FOLDER_PATH, "n2.html"), show_browser=False)
+    om.n2(problem, outfile=(RESULTS_FOLDER_PATH / "n2").as_posix(), show_browser=False)
 
     # Check that weight-performances loop correctly converged
     _check_weight_performance_loop(problem)
@@ -395,10 +389,10 @@ def test_oad_process_neuralfoil(cleanup):
     xml_file_name = "input_sr22.xml"
     process_file_name = "oad_process_sr22_neuralfoil.yml"
 
-    configurator = oad.FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, process_file_name))
+    configurator = oad.FASTOADProblemConfigurator(DATA_FOLDER_PATH / process_file_name)
 
     # Create inputs
-    ref_inputs = pth.join(DATA_FOLDER_PATH, xml_file_name)
+    ref_inputs = DATA_FOLDER_PATH / xml_file_name
 
     # Create problems with inputs
     problem = configurator.get_problem()
@@ -408,14 +402,14 @@ def test_oad_process_neuralfoil(cleanup):
     problem.run_model()
     problem.write_outputs()
 
-    if not pth.exists(RESULTS_FOLDER_PATH):
-        os.mkdir(RESULTS_FOLDER_PATH)
+    if not RESULTS_FOLDER_PATH.exists():
+        RESULTS_FOLDER_PATH.mkdir()
     om.view_connections(
         problem,
-        outfile=pth.join(RESULTS_FOLDER_PATH, "connections.html"),
+        outfile=(RESULTS_FOLDER_PATH / "connections.html").as_posix(),
         show_browser=False,
     )
-    om.n2(problem, outfile=pth.join(RESULTS_FOLDER_PATH, "n2.html"), show_browser=False)
+    om.n2(problem, outfile=(RESULTS_FOLDER_PATH / "n2").as_posix(), show_browser=False)
 
     # Check that weight-performances loop correctly converged
     _check_weight_performance_loop(problem)

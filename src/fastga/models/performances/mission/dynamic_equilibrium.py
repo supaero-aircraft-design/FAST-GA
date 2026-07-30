@@ -310,7 +310,7 @@ class DynamicEquilibrium(om.ExplicitComponent):
             dataframe_to_add.index = range(len(dataframe_to_add))
             out_dir = out_file.parent
             if out_dir:
-                out_dir.mkdir(parents=True)
+                out_dir.mkdir(parents=True, exist_ok=True)
             dataframe_to_add.to_csv(out_file)
         else:
             dataframe_existing = pd.read_csv(self.options["out_file"])

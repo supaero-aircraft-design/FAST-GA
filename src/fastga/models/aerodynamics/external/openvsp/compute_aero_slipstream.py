@@ -21,6 +21,7 @@ from fastoad.constants import EngineSetting
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
+from fastoad._utils.arrays import scalarize
 from stdatm import Atmosphere
 
 from fastga.utils.options_checkers import check_propulsion_id
@@ -381,7 +382,7 @@ class PropulsionForDPComputation(om.ExplicitComponent):
         atm = Atmosphere(inputs["altitude"], altitude_in_feet=False)
         atm.mach = inputs["mach"]
 
-        propeller_efficiency = float(
+        propeller_efficiency = scalarize(
             propulsion_model.engine.propeller_efficiency(thrust_one_prop, atm)
         )
 

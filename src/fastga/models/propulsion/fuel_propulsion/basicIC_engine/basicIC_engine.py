@@ -20,6 +20,7 @@ from collections.abc import Sequence
 import fastoad.api as oad
 import numpy as np
 import pandas as pd
+from fastoad._utils.arrays import scalarize
 from fastoad.constants import EngineSetting
 from fastoad.exceptions import FastUnknownEngineSettingError
 from scipy.interpolate import RectBivariateSpline
@@ -556,8 +557,8 @@ class BasicICEngine(AbstractFuelPropulsion):
 
         # Define RPM & mixture using engine settings
         if np.size(engine_setting) == 1:
-            rpm_values = self.rpm_values[int(engine_setting)]
-            mixture_values = self.mixture_values[int(engine_setting)]
+            rpm_values = self.rpm_values[int(scalarize(engine_setting))]
+            mixture_values = self.mixture_values[int(scalarize(engine_setting))]
         else:
             rpm_values = np.array(
                 [self.rpm_values[engine_setting[idx]] for idx in range(np.size(engine_setting))]
@@ -636,7 +637,7 @@ class BasicICEngine(AbstractFuelPropulsion):
         torque_vect = pme_limit_vect * 1e5 * self.volume / (8.0 * np.pi)
         power_max_vect = torque_vect * rpm_vect * (np.pi / 30.0)
         if np.size(engine_setting) == 1:
-            rpm_values = np.array(self.rpm_values[int(engine_setting)])
+            rpm_values = np.array(self.rpm_values[int(engine_setting.item())])
             max_power_sl = np.interp(rpm_values, rpm_vect, power_max_vect)
         else:
             rpm_values = np.array(

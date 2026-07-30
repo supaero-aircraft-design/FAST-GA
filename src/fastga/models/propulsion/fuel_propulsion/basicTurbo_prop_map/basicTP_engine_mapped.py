@@ -20,6 +20,7 @@ import fastoad.api as oad
 import numpy as np
 from fastoad.constants import EngineSetting
 from fastoad.exceptions import FastUnknownEngineSettingError
+from fastoad._utils.arrays import scalarize
 from scipy.interpolate import LinearNDInterpolator
 from stdatm import Atmosphere
 
@@ -518,11 +519,11 @@ class BasicTPEngineMapped(AbstractFuelPropulsion):
                 min(self.turbo_thrust_cl),
                 np.interp(mach_cl, self.turbo_mach_cl, self.turbo_thrust_max_cl),
             )
-            lower_bound = float(self.sfc_interpolator_il((thrust_interp_il, mach_il)))
-            upper_bound = float(self.sfc_interpolator_cl((thrust_interp_cl, mach_cl)))
-            sfc = float(
+            lower_bound = scalarize(self.sfc_interpolator_il((thrust_interp_il, mach_il)))
+            upper_bound = scalarize(self.sfc_interpolator_cl((thrust_interp_cl, mach_cl)))
+            sfc = scalarize(
                 np.interp(
-                    max(float(altitude), 0.0),
+                    max(scalarize(altitude), 0.0),
                     [self.intermediate_altitude, self.cruise_altitude_propeller],
                     [lower_bound, upper_bound],
                 )
@@ -540,11 +541,11 @@ class BasicTPEngineMapped(AbstractFuelPropulsion):
                 min(self.turbo_thrust_il),
                 np.interp(mach_il, self.turbo_mach_il, self.turbo_thrust_max_il),
             )
-            lower_bound = float(self.sfc_interpolator_sl((thrust_interp_sl, mach_sl)))
-            upper_bound = float(self.sfc_interpolator_il((thrust_interp_il, mach_il)))
-            sfc = float(
+            lower_bound = scalarize(self.sfc_interpolator_sl((thrust_interp_sl, mach_sl)))
+            upper_bound = scalarize(self.sfc_interpolator_il((thrust_interp_il, mach_il)))
+            sfc = scalarize(
                 np.interp(
-                    max(float(altitude), 0.0),
+                    max(scalarize(altitude), 0.0),
                     [0.0, self.intermediate_altitude],
                     [lower_bound, upper_bound],
                 )
@@ -607,45 +608,45 @@ class BasicTPEngineMapped(AbstractFuelPropulsion):
 
     def _max_thrust(self, altitude: float, mach: float) -> float:
         if altitude > self.intermediate_altitude:
-            max_thrust_il = float(
+            max_thrust_il = scalarize(
                 np.interp(
                     np.clip(mach, min(self.turbo_mach_il), max(self.turbo_mach_il)),
                     self.turbo_mach_il,
                     self.turbo_thrust_max_il,
                 )
             )
-            max_thrust_cl = float(
+            max_thrust_cl = scalarize(
                 np.interp(
                     np.clip(mach, min(self.turbo_mach_cl), max(self.turbo_mach_cl)),
                     self.turbo_mach_cl,
                     self.turbo_thrust_max_cl,
                 )
             )
-            max_thrust = float(
+            max_thrust = scalarize(
                 np.interp(
-                    max(float(altitude), 0.0),
+                    max(scalarize(altitude), 0.0),
                     [self.intermediate_altitude, self.cruise_altitude_propeller],
                     [max_thrust_il, max_thrust_cl],
                 )
             )
         else:
-            max_thrust_sl = float(
+            max_thrust_sl = scalarize(
                 np.interp(
                     np.clip(mach, min(self.turbo_mach_sl), max(self.turbo_mach_sl)),
                     self.turbo_mach_sl,
                     self.turbo_thrust_max_sl,
                 )
             )
-            max_thrust_il = float(
+            max_thrust_il = scalarize(
                 np.interp(
                     np.clip(mach, min(self.turbo_mach_il), max(self.turbo_mach_il)),
                     self.turbo_mach_il,
                     self.turbo_thrust_max_il,
                 )
             )
-            max_thrust = float(
+            max_thrust = scalarize(
                 np.interp(
-                    max(float(altitude), 0.0),
+                    max(scalarize(altitude), 0.0),
                     [0.0, self.intermediate_altitude],
                     [max_thrust_sl, max_thrust_il],
                 )
