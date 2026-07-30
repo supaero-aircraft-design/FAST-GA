@@ -15,9 +15,7 @@ Convenience functions for helping tests
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-import os.path as pth
 import pathlib
-import time
 from copy import deepcopy
 
 import fastoad.api as oad
@@ -26,7 +24,6 @@ import openmdao.api as om
 from fastoad.io import VariableIO
 
 # noinspection PyProtectedMember
-from fastoad.module_management.service_registry import _RegisterOpenMDAOService
 from fastoad.openmdao.problem import AutoUnitsDefaultGroup
 from openmdao.core.system import System
 
@@ -37,6 +34,7 @@ def run_system(
     component: System,
     input_vars: om.IndepVarComp,
     setup_mode="auto",
+    *,
     add_solvers=False,
     check=False,
 ):
@@ -59,31 +57,18 @@ def run_system(
         for var in oad.VariableList.from_problem(problem, io_status="inputs")
         if np.any(np.isnan(var.val))
     ]
-    assert not variables, "These inputs are not provided: %s" % variables
+    assert not variables, f"These inputs are not provided: {variables}"
 
     problem.run_model()
 
     return problem
 
 
-# FIXME: problem to be solved on the register
-def register_wrappers():
-    """Register all the wrappers from models"""
-    path, folder_name = pth.dirname(__file__), None
-    unsplit_path = path
-    while folder_name != "models":
-        unsplit_path = path
-        path, folder_name = pth.split(path)
-    _RegisterOpenMDAOService.explore_folder(unsplit_path)
-
-
 def get_indep_var_comp(var_names: list[str], test_file: str, xml_file_name: str) -> om.IndepVarComp:
     """Reads required input data from xml file and returns an IndepVarcomp() instance"""
-    reader = VariableIO(pth.join(pth.dirname(test_file), "data", xml_file_name))
+    reader = VariableIO(pathlib.Path(test_file).parent / "data" / xml_file_name)
     reader.path_separator = ":"
-    ivc = reader.read(only=var_names).to_ivc()
-
-    return ivc
+    return reader.read(only=var_names).to_ivc()
 
 
 class VariableListLocal(oad.VariableList):
@@ -115,15 +100,12 @@ class VariableListLocal(oad.VariableList):
 
 def list_inputs(component: om.ExplicitComponent | om.Group) -> list:
     """Reads input variables from a component/problem and return as a list"""
-    # register_wrappers()
     if isinstance(component, om.Group):
         new_component = AutoUnitsDefaultGroup()
         new_component.add_subsystem("system", component, promotes=["*"])
         component = new_component
     variables = VariableListLocal.from_system(component)
-    input_names = [var.name for var in variables if var.is_input]
-
-    return input_names
+    return [var.name for var in variables if var.is_input]
 
 
 def setup_and_run_system(
@@ -166,24 +148,8 @@ def setup_and_run_system(
             ):  # Unit doesn't matter we just want to check if nan
                 missing.append(variable)
 
-    assert not missing, "These inputs are not provided: %s" % missing
+    assert not missing, f"These inputs are not provided: {variables}"
 
     problem.run_model()
 
     return problem
-
-
-class Timer:
-    def __init__(self, name=None):
-        self.name = name
-
-    def __enter__(self):
-        self.tstart = time.time()
-
-    def __exit__(self, type, value, traceback):
-        print("\n")
-        if self.name:
-            print(
-                "[%s]" % self.name,
-            )
-        print("Elapsed: %s" % (time.time() - self.tstart))

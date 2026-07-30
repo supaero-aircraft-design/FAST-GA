@@ -23,10 +23,11 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 
-import os
+import pathlib
 import sys
 
-sys.path.insert(0, os.path.abspath("../src"))
+# For autodoc... and custom directives
+sys.path.insert(0, str(pathlib.Path("../src").resolve()))
 
 # -- Run sphinx-apidoc ------------------------------------------------------
 try:  # for Sphinx >= 1.7
@@ -36,21 +37,11 @@ except ImportError:
 
 
 def run_apidoc(_):
-    sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-    cur_dir = os.path.abspath(os.path.dirname(__file__))
-    output_dir = os.path.join(cur_dir, "api")
-    module = os.path.join(cur_dir, "..", "src", "fastga")
-    apidoc.main(
-        [
-            "-d",
-            "1",
-            "-e",
-            "-o",
-            output_dir,
-            module,
-            "--force",
-        ]
-    )
+    sys.path.append(str(pathlib.Path(__file__).parent.parent))  # Append project root
+    cur_dir = pathlib.Path(__file__).parent.resolve()
+    output_dir = cur_dir / "api"
+    module = cur_dir.parent / "src" / "fastga"
+    apidoc.main(["-d", "1", "-e", "-o", output_dir, module, "--force"])
 
 
 def setup(app):
@@ -60,7 +51,7 @@ def setup(app):
 # -- Project information -----------------------------------------------------
 
 project = "FAST-(OAD)-GA"
-copyright = "2021, ONERA & ISAE-SUPAERO"
+copyright = "2021, ONERA & ISAE-SUPAERO"  # noqa: A001 copyright is a keyword for the sphinx setup
 
 
 # -- General configuration ---------------------------------------------------
