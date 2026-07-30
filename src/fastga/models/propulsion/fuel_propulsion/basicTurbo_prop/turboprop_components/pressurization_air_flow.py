@@ -43,11 +43,29 @@ class PressurizationAirFlow(om.ExplicitComponent):
 
         self.add_output("pressurization_mass_flow", units="kg/s", val=0.045, shape=n)
 
-        self.declare_partials("pressurization_mass_flow", self.input_name, method="fd", step=50)
+    def setup_partials(self):
+        n = self.options["number_of_points"]
         self.declare_partials(
             "pressurization_mass_flow",
-            ["data:geometry:cabin:volume", "bleed_control", "cabin_air_renewal_time"],
+            self.input_name,
+            method="fd",
+            step=50,
+            rows=np.arange(n),
+            cols=np.arange(n),
+        )
+        self.declare_partials(
+            "pressurization_mass_flow",
+            ["bleed_control", "cabin_air_renewal_time"],
             method="exact",
+            rows=np.arange(n),
+            cols=np.arange(n),
+        )
+        self.declare_partials(
+            "pressurization_mass_flow",
+            "data:geometry:cabin:volume",
+            method="exact",
+            rows=np.arange(n),
+            cols=np.zeros(n),
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
@@ -88,7 +106,7 @@ class PressurizationAirFlow(om.ExplicitComponent):
         partials["pressurization_mass_flow", "data:geometry:cabin:volume"] = (
             cabin_air_density / renewal_time * (0.3 + 0.7 * bleed_control)
         )
-        partials["pressurization_mass_flow", "bleed_control"] = np.diag(
+        partials["pressurization_mass_flow", "bleed_control"] = (
             cabin_volume * cabin_air_density / renewal_time * 0.7
         )
         partials["pressurization_mass_flow", "cabin_air_renewal_time"] = -(

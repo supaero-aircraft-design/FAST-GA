@@ -15,15 +15,22 @@ class Station58Pressure(om.ExplicitComponent):
 
         self.add_output("total_pressure_5", units="Pa", shape=n, val=1e6)
 
+    def setup_partials(self):
+        n = self.options["number_of_points"]
+
         self.declare_partials(
             of="total_pressure_5",
             wrt=["static_pressure_0", "mach_8"],
             method="exact",
+            rows=np.arange(n),
+            cols=np.arange(n),
         )
         self.declare_partials(
             of="total_pressure_5",
             wrt="gamma_5",
             method="fd",
+            rows=np.arange(n),
+            cols=np.arange(n),
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
@@ -42,7 +49,7 @@ class Station58Pressure(om.ExplicitComponent):
         static_pressure_0 = inputs["static_pressure_0"]
         gamma_5 = inputs["gamma_5"]
 
-        partials["total_pressure_5", "mach_8"] = np.diag(
+        partials["total_pressure_5", "mach_8"] = (
             static_pressure_0
             * gamma_5
             / (gamma_5 - 1.0)
@@ -50,6 +57,6 @@ class Station58Pressure(om.ExplicitComponent):
             * (gamma_5 - 1.0)
             * mach_8
         )
-        partials["total_pressure_5", "static_pressure_0"] = np.diag(
+        partials["total_pressure_5", "static_pressure_0"] = (
             1.0 + (gamma_5 - 1.0) / 2.0 * mach_8**2.0
         ) ** (gamma_5 / (gamma_5 - 1.0))

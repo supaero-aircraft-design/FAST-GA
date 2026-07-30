@@ -14,10 +14,21 @@ class Station341Pressure(om.ExplicitComponent):
 
         self.add_output("total_pressure_41", units="Pa", shape=n, val=1e5)
 
+    def setup_partials(self):
+        n = self.options["number_of_points"]
         self.declare_partials(
             of="total_pressure_41",
-            wrt=["total_pressure_3", "pressure_loss_34"],
+            wrt="total_pressure_3",
             method="exact",
+            rows=np.arange(n),
+            cols=np.arange(n),
+        )
+        self.declare_partials(
+            of="total_pressure_41",
+            wrt="pressure_loss_34",
+            method="exact",
+            rows=np.arange(n),
+            cols=np.zeros(n),
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
@@ -32,5 +43,5 @@ class Station341Pressure(om.ExplicitComponent):
         total_pressure_3 = inputs["total_pressure_3"]
         pressure_loss_34 = inputs["pressure_loss_34"]
 
-        partials["total_pressure_41", "total_pressure_3"] = np.eye(n) * pressure_loss_34
+        partials["total_pressure_41", "total_pressure_3"] = np.ones(n) * pressure_loss_34
         partials["total_pressure_41", "pressure_loss_34"] = total_pressure_3

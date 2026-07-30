@@ -14,13 +14,22 @@ class Station4145Temperature(om.ExplicitComponent):
 
         self.add_output("total_temperature_45", units="K", shape=n, val=1.2e3)
 
+    def setup_partials(self):
+        n = self.options["number_of_points"]
+
         self.declare_partials(
             of="total_temperature_45",
-            wrt=[
-                "total_temperature_41",
-                "data:propulsion:turboprop:design_point:alpha",
-            ],
+            wrt="total_temperature_41",
             method="exact",
+            rows=np.arange(n),
+            cols=np.arange(n),
+        )
+        self.declare_partials(
+            of="total_temperature_45",
+            wrt="data:propulsion:turboprop:design_point:alpha",
+            method="exact",
+            rows=np.arange(n),
+            cols=np.zeros(n),
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
@@ -31,8 +40,8 @@ class Station4145Temperature(om.ExplicitComponent):
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         n = self.options["number_of_points"]
 
-        partials["total_temperature_45", "total_temperature_41"] = np.diag(
-            np.full(n, inputs["data:propulsion:turboprop:design_point:alpha"])
+        partials["total_temperature_45", "total_temperature_41"] = np.full(
+            n, inputs["data:propulsion:turboprop:design_point:alpha"]
         )
         partials["total_temperature_45", "data:propulsion:turboprop:design_point:alpha"] = inputs[
             "total_temperature_41"
@@ -51,13 +60,21 @@ class Station4145Pressure(om.ExplicitComponent):
 
         self.add_output("total_pressure_45", units="Pa", shape=n, val=1.2e3)
 
+    def setup_partials(self):
+        n = self.options["number_of_points"]
         self.declare_partials(
             of="total_pressure_45",
-            wrt=[
-                "total_pressure_41",
-                "data:propulsion:turboprop:design_point:alpha_p",
-            ],
+            wrt="total_pressure_41",
             method="exact",
+            rows=np.arange(n),
+            cols=np.arange(n),
+        )
+        self.declare_partials(
+            of="total_pressure_45",
+            wrt="data:propulsion:turboprop:design_point:alpha_p",
+            method="exact",
+            rows=np.arange(n),
+            cols=np.zeros(n),
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
@@ -68,8 +85,8 @@ class Station4145Pressure(om.ExplicitComponent):
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         n = self.options["number_of_points"]
 
-        partials["total_pressure_45", "total_pressure_41"] = np.diag(
-            np.full(n, inputs["data:propulsion:turboprop:design_point:alpha_p"])
+        partials["total_pressure_45", "total_pressure_41"] = np.full(
+            n, inputs["data:propulsion:turboprop:design_point:alpha_p"]
         )
         partials["total_pressure_45", "data:propulsion:turboprop:design_point:alpha_p"] = inputs[
             "total_pressure_41"

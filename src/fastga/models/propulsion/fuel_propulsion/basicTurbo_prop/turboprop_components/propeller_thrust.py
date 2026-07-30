@@ -19,7 +19,15 @@ class PropellerThrustRequired(om.ExplicitComponent):
 
         self.add_output("propeller_thrust", units="N", shape=n, val=2e3)
 
-        self.declare_partials(of="*", wrt="*", method="exact")
+    def setup_partials(self):
+        n = self.options["number_of_points"]
+        self.declare_partials(
+            of="*",
+            wrt="*",
+            method="exact",
+            rows=np.arange(n),
+            cols=np.arange(n),
+        )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         outputs["propeller_thrust"] = inputs["required_thrust"] - inputs["exhaust_thrust"]
@@ -27,8 +35,8 @@ class PropellerThrustRequired(om.ExplicitComponent):
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         n = self.options["number_of_points"]
 
-        partials["propeller_thrust", "required_thrust"] = np.eye(n)
-        partials["propeller_thrust", "exhaust_thrust"] = -np.eye(n)
+        partials["propeller_thrust", "required_thrust"] = np.ones(n)
+        partials["propeller_thrust", "exhaust_thrust"] = -np.ones(n)
 
 
 class ShaftPowerRequired(om.ExplicitComponent):
@@ -101,14 +109,34 @@ class ShaftPowerRequired(om.ExplicitComponent):
 
         self.add_output("required_shaft_power", units="W", shape=n, val=500e3)
 
+    def setup_partials(self):
+        n = self.options["number_of_points"]
         self.declare_partials(
-            of="required_shaft_power", wrt="altitude", method="fd", step=1.0, form="central"
+            of="required_shaft_power",
+            wrt="altitude",
+            method="fd",
+            step=1.0,
+            form="central",
+            rows=np.arange(n),
+            cols=np.arange(n),
         )
         self.declare_partials(
-            of="required_shaft_power", wrt="mach_0", method="fd", step=1e-4, form="central"
+            of="required_shaft_power",
+            wrt="mach_0",
+            method="fd",
+            step=1e-4,
+            form="central",
+            rows=np.arange(n),
+            cols=np.arange(n),
         )
         self.declare_partials(
-            of="required_shaft_power", wrt="propeller_thrust", method="fd", step=1.0, form="central"
+            of="required_shaft_power",
+            wrt="propeller_thrust",
+            method="fd",
+            step=1.0,
+            form="central",
+            rows=np.arange(n),
+            cols=np.arange(n),
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
@@ -219,10 +247,14 @@ class PropellerMaxThrust(om.ExplicitComponent):
 
         self.add_output("propeller_max_thrust", units="N", shape=n, val=5000.0)
 
+    def setup_partials(self):
+        n = self.options["number_of_points"]
         self.declare_partials(
             of="propeller_max_thrust",
             wrt=["altitude", "mach_0"],
             method="fd",
+            rows=np.arange(n),
+            cols=np.arange(n),
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):

@@ -38,8 +38,11 @@ class A81(om.ExplicitComponent):
 
         self.add_output("data:propulsion:turboprop:section:81", val=0.00457, units="m**2")
 
+    def setup_partials(self):
+        n = self.options["number_of_points"]
+
         self.declare_partials(
-            of="*",
+            of="data:propulsion:turboprop:section:81",
             wrt=[
                 "air_mass_flow",
                 "total_pressure_5",
@@ -49,6 +52,8 @@ class A81(om.ExplicitComponent):
                 "pressurization_bleed_ratio",
             ],
             method="exact",
+            rows=np.zeros(n),
+            cols=np.arange(n),
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
@@ -125,12 +130,20 @@ class A82(om.ExplicitComponent):
 
         self.add_output("data:propulsion:turboprop:section:82", val=0.00457, units="m**2")
 
+    def setup_partials(self):
+        n = self.options["number_of_points"]
         self.declare_partials(
             of="data:propulsion:turboprop:section:82",
             wrt="settings:propulsion:turboprop:design_point:mach_exhaust",
             method="exact",
         )
-        self.declare_partials(of="data:propulsion:turboprop:section:82", wrt="gamma_5", method="fd")
+        self.declare_partials(
+            of="data:propulsion:turboprop:section:82",
+            wrt="gamma_5",
+            method="fd",
+            rows=np.zeros(n),
+            cols=np.arange(n),
+        )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         gamma_5 = inputs["gamma_5"]
@@ -169,6 +182,7 @@ class A8(om.ExplicitComponent):
 
         self.add_output("data:propulsion:turboprop:section:8", val=0.00457, units="m**2")
 
+    def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):

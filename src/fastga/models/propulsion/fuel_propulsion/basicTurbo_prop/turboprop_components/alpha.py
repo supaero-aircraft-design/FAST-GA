@@ -41,13 +41,22 @@ class AlphaRatio(om.ExplicitComponent):
         self.add_output("data:propulsion:turboprop:design_point:alpha", val=np.full(n, 0.8))
         self.add_output("data:propulsion:turboprop:design_point:alpha_p", val=np.full(n, 0.3))
 
+    def setup_partials(self):
+        n = self.options["number_of_points"]
+
         self.declare_partials(
             of="data:propulsion:turboprop:design_point:alpha",
-            wrt=[
-                "data:propulsion:turboprop:design_point:turbine_entry_temperature",
-                "total_temperature_45",
-            ],
+            wrt="data:propulsion:turboprop:design_point:turbine_entry_temperature",
             method="exact",
+            rows=np.arange(n),
+            cols=np.zeros(n),
+        )
+        self.declare_partials(
+            of="data:propulsion:turboprop:design_point:alpha",
+            wrt="total_temperature_45",
+            method="exact",
+            rows=np.arange(n),
+            cols=np.arange(n),
         )
         self.declare_partials(
             of="data:propulsion:turboprop:design_point:alpha_p",
@@ -56,6 +65,8 @@ class AlphaRatio(om.ExplicitComponent):
                 "total_pressure_45",
             ],
             method="exact",
+            rows=np.arange(n),
+            cols=np.arange(n),
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
@@ -83,7 +94,7 @@ class AlphaRatio(om.ExplicitComponent):
         total_pressure_45 = inputs["total_pressure_45"]
         total_pressure_41 = inputs["total_pressure_41"]
 
-        partials["data:propulsion:turboprop:design_point:alpha", "total_temperature_45"] = np.diag(
+        partials["data:propulsion:turboprop:design_point:alpha", "total_temperature_45"] = (
             1.0 / total_temperature_41
         )
         partials[
@@ -91,9 +102,9 @@ class AlphaRatio(om.ExplicitComponent):
             "data:propulsion:turboprop:design_point:turbine_entry_temperature",
         ] = -total_temperature_45 / total_temperature_41**2.0
 
-        partials["data:propulsion:turboprop:design_point:alpha_p", "total_pressure_45"] = np.diag(
+        partials["data:propulsion:turboprop:design_point:alpha_p", "total_pressure_45"] = (
             1.0 / total_pressure_41
         )
-        partials["data:propulsion:turboprop:design_point:alpha_p", "total_pressure_41"] = -np.diag(
+        partials["data:propulsion:turboprop:design_point:alpha_p", "total_pressure_41"] = -(
             total_pressure_45 / total_pressure_41**2.0
         )

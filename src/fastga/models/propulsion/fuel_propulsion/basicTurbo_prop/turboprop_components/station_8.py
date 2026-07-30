@@ -27,21 +27,29 @@ class Station8Mach(om.ExplicitComponent):
 
         self.add_output("mach_8", shape=n, val=0.5)
 
+    def setup_partials(self):
+        n = self.options["number_of_points"]
         self.declare_partials(
             of="mach_8",
-            wrt=[
-                "data:propulsion:turboprop:section:45",
-                "data:propulsion:turboprop:section:8",
-                "total_pressure_45",
-                "static_pressure_0",
-            ],
+            wrt=["data:propulsion:turboprop:section:45", "data:propulsion:turboprop:section:8"],
             method="exact",
+            rows=np.arange(n),
+            cols=np.zeros(n),
+        )
+        self.declare_partials(
+            of="mach_8",
+            wrt=["total_pressure_45", "static_pressure_0"],
+            method="exact",
+            rows=np.arange(n),
+            cols=np.zeros(n),
         )
         self.declare_partials(
             of="mach_8",
             wrt="gamma_5",
             method="fd",
             step=1e-4,
+            rows=np.arange(n),
+            cols=np.arange(n),
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
@@ -69,7 +77,7 @@ class Station8Mach(om.ExplicitComponent):
 
         f_gamma_5 = (2.0 / (gamma_5 + 1.0)) ** ((gamma_5 + 1) / 2.0 / (gamma_5 - 1.0))
 
-        partials["mach_8", "static_pressure_0"] = -np.diag(
+        partials["mach_8", "static_pressure_0"] = -(
             f_gamma_5
             * a_45
             / a_8
@@ -78,7 +86,7 @@ class Station8Mach(om.ExplicitComponent):
             * total_pressure_45
             / static_pressure_0**2.0
         )
-        partials["mach_8", "total_pressure_45"] = np.diag(
+        partials["mach_8", "total_pressure_45"] = (
             f_gamma_5
             * a_45
             / a_8
@@ -112,7 +120,15 @@ class Station8Temperature(om.ExplicitComponent):
 
         self.add_output("static_temperature_8", units="K", shape=n, val=3e2)
 
-        self.declare_partials(of="static_temperature_8", wrt="*", method="exact")
+    def setup_partials(self):
+        n = self.options["number_of_points"]
+        self.declare_partials(
+            of="static_temperature_8",
+            wrt="*",
+            method="exact",
+            rows=np.arange(n),
+            cols=np.arange(n),
+        )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         gamma_5 = inputs["gamma_5"]
@@ -128,16 +144,16 @@ class Station8Temperature(om.ExplicitComponent):
         mach_8 = inputs["mach_8"]
         total_temperature_5 = inputs["total_temperature_5"]
 
-        partials["static_temperature_8", "total_temperature_5"] = np.diag(
-            1.0 / (1.0 + (gamma_5 - 1.0) / 2 * mach_8**2.0)
+        partials["static_temperature_8", "total_temperature_5"] = 1.0 / (
+            1.0 + (gamma_5 - 1.0) / 2 * mach_8**2.0
         )
-        partials["static_temperature_8", "gamma_5"] = np.diag(
+        partials["static_temperature_8", "gamma_5"] = (
             -total_temperature_5
             / (1.0 + (gamma_5 - 1.0) / 2 * mach_8**2.0) ** 2.0
             * mach_8**2.0
             / 2.0
         )
-        partials["static_temperature_8", "mach_8"] = np.diag(
+        partials["static_temperature_8", "mach_8"] = (
             -total_temperature_5
             / (1.0 + (gamma_5 - 1.0) / 2 * mach_8**2.0) ** 2.0
             * mach_8
@@ -158,7 +174,15 @@ class Station8Velocity(om.ExplicitComponent):
 
         self.add_output("velocity_8", units="m/s", shape=n, val=1e2)
 
-        self.declare_partials(of="velocity_8", wrt="*", method="exact")
+    def setup_partials(self):
+        n = self.options["number_of_points"]
+        self.declare_partials(
+            of="velocity_8",
+            wrt="*",
+            method="exact",
+            rows=np.arange(n),
+            cols=np.arange(n),
+        )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         r_g = 287.0  # Perfect gas constant
@@ -176,10 +200,10 @@ class Station8Velocity(om.ExplicitComponent):
         mach_8 = inputs["mach_8"]
         static_temperature_8 = inputs["static_temperature_8"]
 
-        partials["velocity_8", "mach_8"] = np.diag(np.sqrt(gamma_5 * r_g * static_temperature_8))
-        partials["velocity_8", "gamma_5"] = np.diag(
+        partials["velocity_8", "mach_8"] = np.sqrt(gamma_5 * r_g * static_temperature_8)
+        partials["velocity_8", "gamma_5"] = (
             mach_8 / 2.0 * np.sqrt(r_g * static_temperature_8 / gamma_5)
         )
-        partials["velocity_8", "static_temperature_8"] = np.diag(
+        partials["velocity_8", "static_temperature_8"] = (
             mach_8 / 2.0 * np.sqrt(r_g / static_temperature_8 * gamma_5)
         )

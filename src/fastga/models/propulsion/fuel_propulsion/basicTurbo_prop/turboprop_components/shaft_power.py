@@ -26,10 +26,30 @@ class ShaftPower(om.ExplicitComponent):
 
         self.add_output("shaft_power", units="W", shape=n, val=300e3)
 
+    def setup_partials(self):
+        n = self.options["number_of_points"]
         self.declare_partials(
             of="shaft_power",
-            wrt=["*"],
+            wrt=[
+                "air_mass_flow",
+                "fuel_air_ratio",
+                "compressor_bleed_ratio",
+                "pressurization_bleed_ratio",
+                "cp_45",
+                "total_temperature_45",
+                "cp_5",
+                "total_temperature_5",
+            ],
             method="exact",
+            rows=np.arange(n),
+            cols=np.arange(n),
+        )
+        self.declare_partials(
+            of="shaft_power",
+            wrt="settings:propulsion:turboprop:efficiency:gearbox",
+            method="exact",
+            rows=np.arange(n),
+            cols=np.zeros(n),
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
@@ -67,45 +87,45 @@ class ShaftPower(om.ExplicitComponent):
 
         gearbox_efficiency = inputs["settings:propulsion:turboprop:efficiency:gearbox"]
 
-        partials["shaft_power", "air_mass_flow"] = np.diag(
+        partials["shaft_power", "air_mass_flow"] = (
             (1.0 + fuel_air_ratio - pressurization_bleed_ratio - compressor_bleed_ratio)
             * (cp_45 * total_temperature_45 - cp_5 * total_temperature_5)
             * gearbox_efficiency
         )
-        partials["shaft_power", "fuel_air_ratio"] = np.diag(
+        partials["shaft_power", "fuel_air_ratio"] = (
             air_mass_flow
             * (cp_45 * total_temperature_45 - cp_5 * total_temperature_5)
             * gearbox_efficiency
         )
-        partials["shaft_power", "compressor_bleed_ratio"] = -np.diag(
+        partials["shaft_power", "compressor_bleed_ratio"] = -(
             air_mass_flow
             * (cp_45 * total_temperature_45 - cp_5 * total_temperature_5)
             * gearbox_efficiency
         )
-        partials["shaft_power", "pressurization_bleed_ratio"] = -np.diag(
+        partials["shaft_power", "pressurization_bleed_ratio"] = -(
             air_mass_flow
             * (cp_45 * total_temperature_45 - cp_5 * total_temperature_5)
             * gearbox_efficiency
         )
-        partials["shaft_power", "cp_45"] = np.diag(
+        partials["shaft_power", "cp_45"] = (
             air_mass_flow
             * (1.0 + fuel_air_ratio - pressurization_bleed_ratio - compressor_bleed_ratio)
             * total_temperature_45
             * gearbox_efficiency
         )
-        partials["shaft_power", "total_temperature_45"] = np.diag(
+        partials["shaft_power", "total_temperature_45"] = (
             air_mass_flow
             * (1.0 + fuel_air_ratio - pressurization_bleed_ratio - compressor_bleed_ratio)
             * cp_45
             * gearbox_efficiency
         )
-        partials["shaft_power", "cp_5"] = -np.diag(
+        partials["shaft_power", "cp_5"] = -(
             air_mass_flow
             * (1.0 + fuel_air_ratio - pressurization_bleed_ratio - compressor_bleed_ratio)
             * total_temperature_5
             * gearbox_efficiency
         )
-        partials["shaft_power", "total_temperature_5"] = -np.diag(
+        partials["shaft_power", "total_temperature_5"] = -(
             air_mass_flow
             * (1.0 + fuel_air_ratio - pressurization_bleed_ratio - compressor_bleed_ratio)
             * cp_5

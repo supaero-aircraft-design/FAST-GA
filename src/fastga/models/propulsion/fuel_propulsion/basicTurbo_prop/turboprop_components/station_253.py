@@ -15,14 +15,22 @@ class Station253Pressure(om.ExplicitComponent):
 
         self.add_output("total_pressure_3", units="Pa", shape=n, val=1e6)
 
+    def setup_partials(self):
+        n = self.options["number_of_points"]
+
         self.declare_partials(
             of="total_pressure_3",
-            wrt=[
-                "total_pressure_25",
-                "total_pressure_2",
-                "data:propulsion:turboprop:design_point:opr_2_opr_1",
-            ],
+            wrt=["total_pressure_25", "total_pressure_2"],
             method="exact",
+            rows=np.arange(n),
+            cols=np.arange(n),
+        )
+        self.declare_partials(
+            of="total_pressure_3",
+            wrt="data:propulsion:turboprop:design_point:opr_2_opr_1",
+            method="exact",
+            rows=np.arange(n),
+            cols=np.zeros(n),
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
@@ -41,10 +49,10 @@ class Station253Pressure(om.ExplicitComponent):
 
         opr_ratio = inputs["data:propulsion:turboprop:design_point:opr_2_opr_1"]
 
-        partials["total_pressure_3", "total_pressure_25"] = np.diag(
+        partials["total_pressure_3", "total_pressure_25"] = (
             2.0 * total_pressure_25 / total_pressure_2 * opr_ratio
         )
-        partials["total_pressure_3", "total_pressure_2"] = np.diag(
+        partials["total_pressure_3", "total_pressure_2"] = (
             -((total_pressure_25 / total_pressure_2) ** 2.0) * opr_ratio
         )
         partials["total_pressure_3", "data:propulsion:turboprop:design_point:opr_2_opr_1"] = (
@@ -67,6 +75,9 @@ class Station253Temperature(om.ExplicitComponent):
 
         self.add_output("total_temperature_3", units="K", shape=n, val=0.5e3)
 
+    def setup_partials(self):
+        n = self.options["number_of_points"]
+
         self.declare_partials(
             of="total_temperature_3",
             wrt=[
@@ -74,9 +85,17 @@ class Station253Temperature(om.ExplicitComponent):
                 "total_pressure_25",
                 "total_temperature_25",
                 "gamma_25",
-                "eta_253",
             ],
             method="exact",
+            rows=np.arange(n),
+            cols=np.arange(n),
+        )
+        self.declare_partials(
+            of="total_temperature_3",
+            wrt="eta_253",
+            method="exact",
+            rows=np.arange(n),
+            cols=np.zeros(n),
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
@@ -101,17 +120,17 @@ class Station253Temperature(om.ExplicitComponent):
 
         eta_253 = inputs["eta_253"]
 
-        partials["total_temperature_3", "total_temperature_25"] = np.diag(
-            (total_pressure_3 / total_pressure_25) ** ((gamma_25 - 1) / (gamma_25 * eta_253))
-        )
-        partials["total_temperature_3", "total_pressure_3"] = np.diag(
+        partials["total_temperature_3", "total_temperature_25"] = (
+            total_pressure_3 / total_pressure_25
+        ) ** ((gamma_25 - 1) / (gamma_25 * eta_253))
+        partials["total_temperature_3", "total_pressure_3"] = (
             total_temperature_25
             * ((gamma_25 - 1) / (gamma_25 * eta_253))
             * (total_pressure_3 / total_pressure_25)
             ** ((gamma_25 - 1) / (gamma_25 * eta_253) - 1.0)
             / total_pressure_25
         )
-        partials["total_temperature_3", "total_pressure_25"] = -np.diag(
+        partials["total_temperature_3", "total_pressure_25"] = -(
             total_temperature_25
             * ((gamma_25 - 1) / (gamma_25 * eta_253))
             * (total_pressure_3 / total_pressure_25)
@@ -119,7 +138,7 @@ class Station253Temperature(om.ExplicitComponent):
             * total_pressure_3
             / total_pressure_25**2.0
         )
-        partials["total_temperature_3", "gamma_25"] = np.diag(
+        partials["total_temperature_3", "gamma_25"] = (
             total_temperature_25
             * np.log(total_pressure_3 / total_pressure_25)
             * (total_pressure_3 / total_pressure_25) ** ((gamma_25 - 1) / (gamma_25 * eta_253))
@@ -147,7 +166,15 @@ class Station253PressureDesignPoint(om.ExplicitComponent):
 
         self.add_output("total_pressure_3", units="Pa", shape=n, val=1e6)
 
-        self.declare_partials(of="*", wrt="*", method="exact")
+    def setup_partials(self):
+        n = self.options["number_of_points"]
+        self.declare_partials(
+            of="*",
+            wrt="*",
+            method="exact",
+            rows=np.arange(n),
+            cols=np.arange(n),
+        )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         total_pressure_25 = inputs["total_pressure_25"]
@@ -159,5 +186,5 @@ class Station253PressureDesignPoint(om.ExplicitComponent):
         total_pressure_25 = inputs["total_pressure_25"]
         opr_2 = inputs["opr_2"]
 
-        partials["total_pressure_3", "total_pressure_25"] = np.diag(opr_2)
-        partials["total_pressure_3", "opr_2"] = np.diag(total_pressure_25)
+        partials["total_pressure_3", "total_pressure_25"] = opr_2
+        partials["total_pressure_3", "opr_2"] = total_pressure_25

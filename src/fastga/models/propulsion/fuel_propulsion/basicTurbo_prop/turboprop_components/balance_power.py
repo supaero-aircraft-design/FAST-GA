@@ -14,7 +14,15 @@ class BalancePower(om.ImplicitComponent):
 
         self.add_output("fuel_mass_flow", units="kg/h", shape=n, val=150.0)
 
-        self.declare_partials(of="*", wrt="*", method="exact")
+    def setup_partials(self):
+        n = self.options["number_of_points"]
+        self.declare_partials(
+            of="*",
+            wrt="*",
+            method="exact",
+            rows=np.arange(n),
+            cols=np.arange(n),
+        )
 
     def apply_nonlinear(
         self, inputs, outputs, residuals, discrete_inputs=None, discrete_outputs=None
@@ -22,7 +30,7 @@ class BalancePower(om.ImplicitComponent):
         residuals["fuel_mass_flow"] = 1.0 - inputs["shaft_power"] / inputs["required_shaft_power"]
 
     def linearize(self, inputs, outputs, jacobian, discrete_inputs=None, discrete_outputs=None):
-        jacobian["fuel_mass_flow", "required_shaft_power"] = np.diag(
+        jacobian["fuel_mass_flow", "required_shaft_power"] = (
             inputs["shaft_power"] / inputs["required_shaft_power"] ** 2.0
         )
-        jacobian["fuel_mass_flow", "shaft_power"] = -np.diag(1.0 / inputs["required_shaft_power"])
+        jacobian["fuel_mass_flow", "shaft_power"] = -1.0 / inputs["required_shaft_power"]

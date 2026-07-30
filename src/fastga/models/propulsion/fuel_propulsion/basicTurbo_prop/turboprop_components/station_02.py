@@ -16,11 +16,31 @@ class Station02(om.ExplicitComponent):
         self.add_output("total_temperature_2", units="K", shape=n, val=3e2)
         self.add_output("total_pressure_2", units="Pa", shape=n, val=0.5e6)
 
-        self.declare_partials(of="total_temperature_2", wrt="total_temperature_0", method="exact")
+    def setup_partials(self):
+        n = self.options["number_of_points"]
+
+        self.declare_partials(
+            of="total_temperature_2",
+            wrt="total_temperature_0",
+            method="exact",
+            rows=np.arange(n),
+            cols=np.arange(n),
+            val=1,
+        )
+
         self.declare_partials(
             of="total_pressure_2",
-            wrt=["total_pressure_0", "total_pressure_loss_02"],
+            wrt="total_pressure_0",
             method="exact",
+            rows=np.arange(n),
+            cols=np.arange(n),
+        )
+        self.declare_partials(
+            of="total_pressure_2",
+            wrt="total_pressure_loss_02",
+            method="exact",
+            rows=np.arange(n),
+            cols=np.zeros(n),
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
@@ -35,9 +55,7 @@ class Station02(om.ExplicitComponent):
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         n = self.options["number_of_points"]
 
-        partials["total_temperature_2", "total_temperature_0"] = np.eye(n)
-
         partials["total_pressure_2", "total_pressure_0"] = inputs[
             "total_pressure_loss_02"
-        ] * np.eye(n)
+        ] * np.ones(n)
         partials["total_pressure_2", "total_pressure_loss_02"] = inputs["total_pressure_0"]

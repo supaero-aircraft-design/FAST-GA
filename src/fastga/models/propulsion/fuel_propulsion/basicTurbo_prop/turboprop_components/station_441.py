@@ -18,6 +18,9 @@ class Station441Temperature(om.ExplicitComponent):
 
         self.add_output("total_temperature_4", units="K", shape=n, val=1e3)
 
+    def setup_partials(self):
+        n = self.options["number_of_points"]
+
         self.declare_partials(
             of="total_temperature_4",
             wrt=[
@@ -28,6 +31,9 @@ class Station441Temperature(om.ExplicitComponent):
                 "cooling_bleed_ratio",
                 "pressurization_bleed_ratio",
             ],
+            method="exact",
+            rows=np.arange(n),
+            cols=np.arange(n),
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
@@ -62,17 +68,16 @@ class Station441Temperature(om.ExplicitComponent):
         cooling_bleed_ratio = inputs["cooling_bleed_ratio"]
         pressurization_bleed_ratio = inputs["pressurization_bleed_ratio"]
 
-        partials["total_temperature_4", "total_temperature_41"] = np.diag(
-            (1.0 + fuel_air_ratio - pressurization_bleed_ratio - compressor_bleed_ratio)
-            / (
-                1.0
-                + fuel_air_ratio
-                - pressurization_bleed_ratio
-                - cooling_bleed_ratio
-                - compressor_bleed_ratio
-            )
+        partials["total_temperature_4", "total_temperature_41"] = (
+            1.0 + fuel_air_ratio - pressurization_bleed_ratio - compressor_bleed_ratio
+        ) / (
+            1.0
+            + fuel_air_ratio
+            - pressurization_bleed_ratio
+            - cooling_bleed_ratio
+            - compressor_bleed_ratio
         )
-        partials["total_temperature_4", "total_temperature_3"] = -np.diag(
+        partials["total_temperature_4", "total_temperature_3"] = -(
             cooling_bleed_ratio
             / (
                 1.0
@@ -82,7 +87,7 @@ class Station441Temperature(om.ExplicitComponent):
                 - compressor_bleed_ratio
             )
         )
-        partials["total_temperature_4", "fuel_air_ratio"] = np.diag(
+        partials["total_temperature_4", "fuel_air_ratio"] = (
             (total_temperature_3 - total_temperature_41)
             * cooling_bleed_ratio
             / (
@@ -94,7 +99,7 @@ class Station441Temperature(om.ExplicitComponent):
             )
             ** 2.0
         )
-        partials["total_temperature_4", "pressurization_bleed_ratio"] = -np.diag(
+        partials["total_temperature_4", "pressurization_bleed_ratio"] = -(
             (total_temperature_3 - total_temperature_41)
             * cooling_bleed_ratio
             / (
@@ -106,7 +111,7 @@ class Station441Temperature(om.ExplicitComponent):
             )
             ** 2.0
         )
-        partials["total_temperature_4", "compressor_bleed_ratio"] = -np.diag(
+        partials["total_temperature_4", "compressor_bleed_ratio"] = -(
             (total_temperature_3 - total_temperature_41)
             * cooling_bleed_ratio
             / (
@@ -118,7 +123,7 @@ class Station441Temperature(om.ExplicitComponent):
             )
             ** 2.0
         )
-        partials["total_temperature_4", "cooling_bleed_ratio"] = -np.diag(
+        partials["total_temperature_4", "cooling_bleed_ratio"] = -(
             (1.0 + fuel_air_ratio - pressurization_bleed_ratio - compressor_bleed_ratio)
             * (total_temperature_3 - total_temperature_41)
             / (
@@ -143,10 +148,15 @@ class Station441PressureDesignPoint(om.ExplicitComponent):
 
         self.add_output("total_pressure_4", units="Pa", shape=n, val=1e5)
 
+    def setup_partials(self):
+        n = self.options["number_of_points"]
         self.declare_partials(
             of="total_pressure_4",
             wrt="total_pressure_41",
-            val=np.eye(n),
+            method="exact",
+            rows=np.arange(n),
+            cols=np.arange(n),
+            val=1,
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):

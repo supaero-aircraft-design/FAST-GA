@@ -50,7 +50,15 @@ class DistanceToLimitPowerLimit(om.ImplicitComponent):
 
         self.add_output("required_thrust", units="kN", val=np.full(n, 5.0))
 
-        self.declare_partials(of="*", wrt="*", method="exact")
+    def setup_partials(self):
+        n = self.options["number_of_points"]
+        self.declare_partials(
+            of="*",
+            wrt=["shaft_power", "shaft_power_limit"],
+            method="exact",
+            rows=np.arange(n),
+            cols=np.arange(n),
+        )
 
     def apply_nonlinear(
         self, inputs, outputs, residuals, discrete_inputs=None, discrete_outputs=None
@@ -64,12 +72,8 @@ class DistanceToLimitPowerLimit(om.ImplicitComponent):
         shaft_power = inputs["shaft_power"]
         shaft_power_limit = inputs["shaft_power_limit"]
 
-        jacobian["required_thrust", "shaft_power"] = np.diag(1.0 / shaft_power_limit)
-        jacobian["required_thrust", "shaft_power_limit"] = np.diag(
-            -shaft_power / shaft_power_limit**2.0
-        )
-
-        jacobian["required_thrust", "required_thrust"] = np.diag(np.zeros_like(shaft_power))
+        jacobian["required_thrust", "shaft_power"] = 1.0 / shaft_power_limit
+        jacobian["required_thrust", "shaft_power_limit"] = -shaft_power / shaft_power_limit**2.0
 
 
 ####################################################################################################
@@ -106,7 +110,15 @@ class DistanceToLimitOPRLimit(om.ImplicitComponent):
 
         self.add_output("required_thrust", units="kN", val=np.full(n, 5.0))
 
-        self.declare_partials(of="*", wrt="*", method="exact")
+    def setup_partials(self):
+        n = self.options["number_of_points"]
+        self.declare_partials(
+            of="*",
+            wrt=["opr", "opr_limit"],
+            method="exact",
+            rows=np.arange(n),
+            cols=np.arange(n),
+        )
 
     def apply_nonlinear(
         self, inputs, outputs, residuals, discrete_inputs=None, discrete_outputs=None
@@ -120,10 +132,8 @@ class DistanceToLimitOPRLimit(om.ImplicitComponent):
         opr = inputs["opr"]
         opr_limit = inputs["opr_limit"]
 
-        jacobian["required_thrust", "opr"] = np.diag(1.0 / opr_limit)
-        jacobian["required_thrust", "opr_limit"] = np.diag(-opr / opr_limit**2.0)
-
-        jacobian["required_thrust", "required_thrust"] = np.diag(np.zeros_like(opr))
+        jacobian["required_thrust", "opr"] = 1.0 / opr_limit
+        jacobian["required_thrust", "opr_limit"] = -opr / opr_limit**2.0
 
 
 ####################################################################################################
@@ -160,7 +170,15 @@ class DistanceToLimitITTLimit(om.ImplicitComponent):
 
         self.add_output("required_thrust", units="kN", val=np.full(n, 5.0))
 
-        self.declare_partials(of="*", wrt="*", method="exact")
+    def setup_partials(self):
+        n = self.options["number_of_points"]
+        self.declare_partials(
+            of="*",
+            wrt=["total_temperature_45", "itt_limit"],
+            method="exact",
+            rows=np.arange(n),
+            cols=np.arange(n),
+        )
 
     def apply_nonlinear(
         self, inputs, outputs, residuals, discrete_inputs=None, discrete_outputs=None
@@ -174,12 +192,8 @@ class DistanceToLimitITTLimit(om.ImplicitComponent):
         total_temperature_45 = inputs["total_temperature_45"]
         itt_limit = inputs["itt_limit"]
 
-        jacobian["required_thrust", "total_temperature_45"] = np.diag(1.0 / itt_limit)
-        jacobian["required_thrust", "itt_limit"] = np.diag(-total_temperature_45 / itt_limit**2.0)
-
-        jacobian["required_thrust", "required_thrust"] = np.diag(
-            np.zeros_like(total_temperature_45)
-        )
+        jacobian["required_thrust", "total_temperature_45"] = 1.0 / itt_limit
+        jacobian["required_thrust", "itt_limit"] = -total_temperature_45 / itt_limit**2.0
 
 
 ####################################################################################################
@@ -216,8 +230,15 @@ class DistanceToLimitPropellerThrustLimit(om.ImplicitComponent):
 
         self.add_output("required_thrust", units="kN", val=np.full(n, 5.0))
 
+    def setup_partials(self):
+        n = self.options["number_of_points"]
+
         self.declare_partials(
-            of="required_thrust", wrt=["propeller_max_thrust", "propeller_thrust"], method="exact"
+            of="required_thrust",
+            wrt=["propeller_max_thrust", "propeller_thrust"],
+            method="exact",
+            rows=np.arange(n),
+            cols=np.arange(n),
         )
 
     def apply_nonlinear(
@@ -232,7 +253,7 @@ class DistanceToLimitPropellerThrustLimit(om.ImplicitComponent):
         propeller_thrust = inputs["propeller_thrust"]
         propeller_max_thrust = inputs["propeller_max_thrust"]
 
-        jacobian["required_thrust", "propeller_thrust"] = np.diag(1.0 / propeller_max_thrust)
-        jacobian["required_thrust", "propeller_max_thrust"] = np.diag(
+        jacobian["required_thrust", "propeller_thrust"] = 1.0 / propeller_max_thrust
+        jacobian["required_thrust", "propeller_max_thrust"] = (
             -propeller_thrust / propeller_max_thrust**2.0
         )
