@@ -28,7 +28,8 @@ dependencies = [
     # doing again the commit including changes in docs/requirements.txt will succeed.
     "fast-oad-core>=1.7.0,<2",
     "stdatm>=0.2.0,<1",
-    "neuralfoil>=0.3.0,<1"
+    "neuralfoil>=0.3.0,<1",
+    "stdatm>=0.2.0,<1"
 ]
 
 [project.urls]
