@@ -12,7 +12,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import os.path as pth
+import pathlib
 
 from ..analysis_and_plots import (
     aircraft_geometry_plot,
@@ -27,13 +27,13 @@ from ..analysis_and_plots import (
     payload_range,
 )
 
-DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
+DATA_FOLDER_PATH = pathlib.Path(__file__).parent / "data"
 
 
 def test_aircraft_geometry_plot():
     """Basic tests for testing the plotting."""
 
-    filename = pth.join(DATA_FOLDER_PATH, "problem_outputs.xml")
+    filename = DATA_FOLDER_PATH / "problem_outputs.xml"
 
     # First plot
     # This is a rudimentary test as plot are difficult to verify
@@ -54,7 +54,7 @@ def test_aircraft_geometry_plot():
 def test_evolution_diagram_plot():
     """Basic tests for testing the plotting."""
 
-    filename = pth.join(DATA_FOLDER_PATH, "problem_outputs.xml")
+    filename = DATA_FOLDER_PATH / "problem_outputs.xml"
 
     # First plot
     # This is a rudimentary test as plot are difficult to verify
@@ -75,7 +75,7 @@ def test_evolution_diagram_plot():
 def test_compressibility_effect_plot():
     """Basic tests for testing the plotting."""
 
-    filename = pth.join(DATA_FOLDER_PATH, "problem_outputs.xml")
+    filename = DATA_FOLDER_PATH / "problem_outputs.xml"
 
     # First plot
     # This is a rudimentary test as plot are difficult to verify
@@ -96,7 +96,7 @@ def test_compressibility_effect_plot():
 def test_cl_wing_diagram_plot():
     """Basic tests for testing the plotting."""
 
-    filename = pth.join(DATA_FOLDER_PATH, "problem_outputs.xml")
+    filename = DATA_FOLDER_PATH / "problem_outputs.xml"
 
     # First plot
     # This is a rudimentary test as plot are difficult to verify
@@ -122,7 +122,7 @@ def test_cl_wing_diagram_plot():
 def test_cg_lateral_diagram_plot():
     """Basic tests for testing the plotting."""
 
-    filename = pth.join(DATA_FOLDER_PATH, "problem_outputs.xml")
+    filename = DATA_FOLDER_PATH / "problem_outputs.xml"
 
     # First plot
     # This is a rudimentary test as plot are difficult to verify
@@ -143,7 +143,7 @@ def test_cg_lateral_diagram_plot():
 def test_mass_breakdown_bar_plot():
     """Basic tests for testing the plotting."""
 
-    filename = pth.join(DATA_FOLDER_PATH, "problem_outputs.xml")
+    filename = DATA_FOLDER_PATH / "problem_outputs.xml"
 
     # First plot
     # This is a rudimentary test as plot are difficult to verify
@@ -164,7 +164,7 @@ def test_mass_breakdown_bar_plot():
 def test_mass_breakdown_sun_plot():
     """Basic tests for testing the plotting."""
 
-    filename = pth.join(DATA_FOLDER_PATH, "problem_outputs.xml")
+    filename = DATA_FOLDER_PATH / "problem_outputs.xml"
 
     # First plot
     # This is a rudimentary test as plot are difficult to verify
@@ -175,7 +175,7 @@ def test_mass_breakdown_sun_plot():
 def test_drag_breakdown_diagram_plot():
     """Basic tests for testing the plotting."""
 
-    filename = pth.join(DATA_FOLDER_PATH, "problem_outputs.xml")
+    filename = DATA_FOLDER_PATH / "problem_outputs.xml"
 
     # First plot
     # This is a rudimentary test as plot are difficult to verify
@@ -186,7 +186,7 @@ def test_drag_breakdown_diagram_plot():
 def test_payload_range_plot():
     """Basic tests for testing the plotting."""
 
-    filename = pth.join(DATA_FOLDER_PATH, "problem_outputs.xml")
+    filename = DATA_FOLDER_PATH / "problem_outputs.xml"
 
     # First plot
     # This is a rudimentary test as plot are difficult to verify
@@ -207,7 +207,7 @@ def test_payload_range_plot():
 def test_aircraft_polar_plot():
     """Basic tests for testing the plotting."""
 
-    filename = pth.join(DATA_FOLDER_PATH, "problem_outputs.xml")
+    filename = DATA_FOLDER_PATH / "problem_outputs.xml"
 
     # First plot
     # This is a rudimentary test as plot are difficult to verify
