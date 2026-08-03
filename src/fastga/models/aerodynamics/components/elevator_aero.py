@@ -33,9 +33,13 @@ class ComputeDeltaElevator(FigureDigitization):
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:horizontal_tail:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:horizontal_tail:sweep_25", val=np.nan, units="rad")
-        self.add_input("data:geometry:horizontal_tail:elevator_chord_ratio", val=np.nan)
-        self.add_input("data:geometry:horizontal_tail:thickness_ratio", val=np.nan)
-        self.add_input("data:aerodynamics:low_speed:mach", val=np.nan)
+        self.add_input(
+            "data:geometry:horizontal_tail:elevator_chord_ratio", val=np.nan, units="unitless"
+        )
+        self.add_input(
+            "data:geometry:horizontal_tail:thickness_ratio", val=np.nan, units="unitless"
+        )
+        self.add_input("data:aerodynamics:low_speed:mach", val=np.nan, units="unitless")
         self.add_input(
             "data:aerodynamics:horizontal_tail:airfoil:CL_alpha", val=np.nan, units="rad**-1"
         )
@@ -44,6 +48,7 @@ class ComputeDeltaElevator(FigureDigitization):
         self.add_output("data:aerodynamics:elevator:low_speed:CL_delta", units="rad**-1")
         self.add_output("data:aerodynamics:elevator:low_speed:CD_delta", units="rad**-2")
 
+    def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):

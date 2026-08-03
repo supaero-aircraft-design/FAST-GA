@@ -111,17 +111,40 @@ class ComputeExtremeCLHtp(om.Group):
 
 class ComputeLocalReynolds(om.ExplicitComponent):
     def setup(self):
-        self.add_input("data:aerodynamics:low_speed:mach", val=np.nan)
+        self.add_input("data:aerodynamics:low_speed:mach", val=np.nan, units="unitless")
         self.add_input("data:aerodynamics:low_speed:unit_reynolds", val=np.nan, units="m**-1")
         self.add_input("data:geometry:horizontal_tail:root:chord", val=np.nan, units="m")
         self.add_input("data:geometry:horizontal_tail:tip:chord", val=np.nan, units="m")
-        self.add_input("data:aerodynamics:horizontal_tail:efficiency", val=0.9)
+        self.add_input("data:aerodynamics:horizontal_tail:efficiency", val=0.9, units="unitless")
 
-        self.add_output("data:aerodynamics:horizontal_tail:root:low_speed:reynolds")
-        self.add_output("data:aerodynamics:horizontal_tail:tip:low_speed:reynolds")
-        self.add_output(name="mach")
+        self.add_output(
+            "data:aerodynamics:horizontal_tail:root:low_speed:reynolds", units="unitless"
+        )
+        self.add_output(
+            "data:aerodynamics:horizontal_tail:tip:low_speed:reynolds", units="unitless"
+        )
+        self.add_output(name="mach", units="unitless")
 
-        self.declare_partials("*", "*", method="fd")
+    def setup_partials(self):
+        self.declare_partials(
+            "data:aerodynamics:horizontal_tail:root:low_speed:reynolds",
+            [
+                "data:aerodynamics:low_speed:unit_reynolds",
+                "data:geometry:horizontal_tail:root:chord",
+                "data:aerodynamics:horizontal_tail:efficiency",
+            ],
+            method="exact",
+        )
+        self.declare_partials(
+            "data:aerodynamics:horizontal_tail:tip:low_speed:reynolds",
+            [
+                "data:aerodynamics:low_speed:unit_reynolds",
+                "data:geometry:horizontal_tail:tip:chord",
+                "data:aerodynamics:horizontal_tail:efficiency",
+            ],
+            method="exact",
+        )
+        self.declare_partials("mach", "data:aerodynamics:low_speed:mach", method="exact", val=1)
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         outputs["data:aerodynamics:horizontal_tail:root:low_speed:reynolds"] = (
@@ -136,6 +159,53 @@ class ComputeLocalReynolds(om.ExplicitComponent):
         )
         outputs["mach"] = inputs["data:aerodynamics:low_speed:mach"]
 
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+        partials[
+            "data:aerodynamics:horizontal_tail:root:low_speed:reynolds",
+            "data:aerodynamics:low_speed:unit_reynolds",
+        ] = inputs["data:geometry:horizontal_tail:root:chord"] * np.sqrt(
+            inputs["data:aerodynamics:horizontal_tail:efficiency"]
+        )
+        partials[
+            "data:aerodynamics:horizontal_tail:root:low_speed:reynolds",
+            "data:geometry:horizontal_tail:root:chord",
+        ] = inputs["data:aerodynamics:low_speed:unit_reynolds"] * np.sqrt(
+            inputs["data:aerodynamics:horizontal_tail:efficiency"]
+        )
+        partials[
+            "data:aerodynamics:horizontal_tail:root:low_speed:reynolds",
+            "data:aerodynamics:horizontal_tail:efficiency",
+        ] = (
+            1
+            / 2
+            * inputs["data:aerodynamics:low_speed:unit_reynolds"]
+            * inputs["data:geometry:horizontal_tail:root:chord"]
+            / np.sqrt(inputs["data:aerodynamics:horizontal_tail:efficiency"])
+        )
+
+        partials[
+            "data:aerodynamics:horizontal_tail:tip:low_speed:reynolds",
+            "data:aerodynamics:low_speed:unit_reynolds",
+        ] = inputs["data:geometry:horizontal_tail:tip:chord"] * np.sqrt(
+            inputs["data:aerodynamics:horizontal_tail:efficiency"]
+        )
+        partials[
+            "data:aerodynamics:horizontal_tail:tip:low_speed:reynolds",
+            "data:geometry:horizontal_tail:tip:chord",
+        ] = inputs["data:aerodynamics:low_speed:unit_reynolds"] * np.sqrt(
+            inputs["data:aerodynamics:horizontal_tail:efficiency"]
+        )
+        partials[
+            "data:aerodynamics:horizontal_tail:tip:low_speed:reynolds",
+            "data:aerodynamics:horizontal_tail:efficiency",
+        ] = (
+            1
+            / 2
+            * inputs["data:aerodynamics:low_speed:unit_reynolds"]
+            * inputs["data:geometry:horizontal_tail:tip:chord"]
+            / np.sqrt(inputs["data:aerodynamics:horizontal_tail:efficiency"])
+        )
+
 
 class ComputeHtp3DExtremeCL(om.ExplicitComponent):
     """Computes HTP 3D min/max CL from 2D CL (XFOIL-computed) and lift repartition."""
@@ -145,21 +215,47 @@ class ComputeHtp3DExtremeCL(om.ExplicitComponent):
         self.add_input("data:geometry:horizontal_tail:span", val=np.nan, units="m")
         self.add_input("data:geometry:horizontal_tail:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
-        self.add_input("data:aerodynamics:horizontal_tail:low_speed:tip:CL_max_2D", val=np.nan)
-        self.add_input("data:aerodynamics:horizontal_tail:low_speed:root:CL_max_2D", val=np.nan)
-        self.add_input("data:aerodynamics:horizontal_tail:low_speed:tip:CL_min_2D", val=np.nan)
-        self.add_input("data:aerodynamics:horizontal_tail:low_speed:root:CL_min_2D", val=np.nan)
-        self.add_input("data:aerodynamics:horizontal_tail:low_speed:CL_ref", val=np.nan)
+        self.add_input(
+            "data:aerodynamics:horizontal_tail:low_speed:tip:CL_max_2D",
+            val=np.nan,
+            units="unitless",
+        )
+        self.add_input(
+            "data:aerodynamics:horizontal_tail:low_speed:root:CL_max_2D",
+            val=np.nan,
+            units="unitless",
+        )
+        self.add_input(
+            "data:aerodynamics:horizontal_tail:low_speed:tip:CL_min_2D",
+            val=np.nan,
+            units="unitless",
+        )
+        self.add_input(
+            "data:aerodynamics:horizontal_tail:low_speed:root:CL_min_2D",
+            val=np.nan,
+            units="unitless",
+        )
+        self.add_input(
+            "data:aerodynamics:horizontal_tail:low_speed:CL_ref", val=np.nan, units="unitless"
+        )
         self.add_input(
             "data:aerodynamics:horizontal_tail:low_speed:Y_vector", val=nans_array, units="m"
         )
-        self.add_input("data:aerodynamics:horizontal_tail:low_speed:CL_vector", val=nans_array)
+        self.add_input(
+            "data:aerodynamics:horizontal_tail:low_speed:CL_vector",
+            val=nans_array,
+            units="unitless",
+        )
         self.add_input(
             "data:aerodynamics:horizontal_tail:low_speed:CL_alpha", val=np.nan, units="rad**-1"
         )
 
-        self.add_output("data:aerodynamics:horizontal_tail:low_speed:CL_max_clean")
-        self.add_output("data:aerodynamics:horizontal_tail:low_speed:CL_min_clean")
+        self.add_output(
+            "data:aerodynamics:horizontal_tail:low_speed:CL_max_clean", units="unitless"
+        )
+        self.add_output(
+            "data:aerodynamics:horizontal_tail:low_speed:CL_min_clean", units="unitless"
+        )
         self.add_output(
             "data:aerodynamics:horizontal_tail:low_speed:clean:alpha_aircraft_max", units="deg"
         )
@@ -167,6 +263,7 @@ class ComputeHtp3DExtremeCL(om.ExplicitComponent):
             "data:aerodynamics:horizontal_tail:low_speed:clean:alpha_aircraft_min", units="deg"
         )
 
+    def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):

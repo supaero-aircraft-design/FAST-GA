@@ -108,26 +108,27 @@ class XfoilPolar(ExternalCodeComp):
 
         multiple_aoa = not self.options["single_AoA"]
 
-        self.add_input("mach", val=np.nan)
-        self.add_input("reynolds", val=np.nan)
+        self.add_input("mach", val=np.nan, units="unitless")
+        self.add_input("reynolds", val=np.nan, units="unitless")
 
         if multiple_aoa:
             self.add_output("alpha", shape=POLAR_POINT_COUNT, units="deg")
-            self.add_output("CL", shape=POLAR_POINT_COUNT)
-            self.add_output("CD", shape=POLAR_POINT_COUNT)
-            self.add_output("CDp", shape=POLAR_POINT_COUNT)
-            self.add_output("CM", shape=POLAR_POINT_COUNT)
-            self.add_output("CL_max_2D")
-            self.add_output("CL_min_2D")
-            self.add_output("CD_min_2D")
+            self.add_output("CL", shape=POLAR_POINT_COUNT, units="unitless")
+            self.add_output("CD", shape=POLAR_POINT_COUNT, units="unitless")
+            self.add_output("CDp", shape=POLAR_POINT_COUNT, units="unitless")
+            self.add_output("CM", shape=POLAR_POINT_COUNT, units="unitless")
+            self.add_output("CL_max_2D", units="unitless")
+            self.add_output("CL_min_2D", units="unitless")
+            self.add_output("CD_min_2D", units="unitless")
 
         else:
             self.add_output("alpha", units="deg")
-            self.add_output("CL")
-            self.add_output("CD")
-            self.add_output("CDp")
-            self.add_output("CM")
+            self.add_output("CL", units="unitless")
+            self.add_output("CD", units="unitless")
+            self.add_output("CDp", units="unitless")
+            self.add_output("CM", units="unitless")
 
+    def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
     def check_config(self, logger):

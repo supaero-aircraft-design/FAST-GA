@@ -98,7 +98,8 @@ class _SumCLRollRateContributions(om.ExplicitComponent):
 
             self.add_output("data:aerodynamics:aircraft:cruise:Cl_p", units="rad**-1")
 
-        self.declare_partials(of="*", wrt="*", method="exact")
+    def setup_partials(self):
+        self.declare_partials(of="*", wrt="*", method="exact", val=1.0)
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         if self.options["low_speed_aero"]:
@@ -113,30 +114,3 @@ class _SumCLRollRateContributions(om.ExplicitComponent):
                 + inputs["data:aerodynamics:horizontal_tail:cruise:Cl_p"]
                 + inputs["data:aerodynamics:vertical_tail:cruise:Cl_p"]
             )
-
-    def compute_partials(self, inputs, partials, discrete_inputs=None):
-        if self.options["low_speed_aero"]:
-            partials[
-                "data:aerodynamics:aircraft:low_speed:Cl_p",
-                "data:aerodynamics:wing:low_speed:Cl_p",
-            ] = 1.0
-            partials[
-                "data:aerodynamics:aircraft:low_speed:Cl_p",
-                "data:aerodynamics:horizontal_tail:low_speed:Cl_p",
-            ] = 1.0
-            partials[
-                "data:aerodynamics:aircraft:low_speed:Cl_p",
-                "data:aerodynamics:vertical_tail:low_speed:Cl_p",
-            ] = 1.0
-        else:
-            partials[
-                "data:aerodynamics:aircraft:cruise:Cl_p", "data:aerodynamics:wing:cruise:Cl_p"
-            ] = 1.0
-            partials[
-                "data:aerodynamics:aircraft:cruise:Cl_p",
-                "data:aerodynamics:horizontal_tail:cruise:Cl_p",
-            ] = 1.0
-            partials[
-                "data:aerodynamics:aircraft:cruise:Cl_p",
-                "data:aerodynamics:vertical_tail:cruise:Cl_p",
-            ] = 1.0

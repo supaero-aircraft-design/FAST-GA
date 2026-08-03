@@ -45,15 +45,19 @@ class ComputeCMAlphaDotAircraft(om.ExplicitComponent):
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:horizontal_tail:area", units="m**2", val=np.nan)
-        self.add_input("data:geometry:horizontal_tail:volume_coefficient", val=np.nan)
-        self.add_input("data:aerodynamics:horizontal_tail:efficiency", val=np.nan)
+        self.add_input(
+            "data:geometry:horizontal_tail:volume_coefficient", val=np.nan, units="unitless"
+        )
+        self.add_input("data:aerodynamics:horizontal_tail:efficiency", val=np.nan, units="unitless")
         self.add_input(
             "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="m"
         )
 
         if self.options["low_speed_aero"]:
             self.add_input(
-                "data:aerodynamics:horizontal_tail:low_speed:downwash_gradient", val=np.nan
+                "data:aerodynamics:horizontal_tail:low_speed:downwash_gradient",
+                val=np.nan,
+                units="unitless",
             )
             self.add_input(
                 "data:aerodynamics:horizontal_tail:low_speed:CL_alpha", val=np.nan, units="rad**-1"
@@ -62,13 +66,18 @@ class ComputeCMAlphaDotAircraft(om.ExplicitComponent):
             self.add_output("data:aerodynamics:aircraft:low_speed:Cm_alpha_dot", units="rad**-1")
 
         else:
-            self.add_input("data:aerodynamics:horizontal_tail:cruise:downwash_gradient", val=np.nan)
+            self.add_input(
+                "data:aerodynamics:horizontal_tail:cruise:downwash_gradient",
+                val=np.nan,
+                units="unitless",
+            )
             self.add_input(
                 "data:aerodynamics:horizontal_tail:cruise:CL_alpha", val=np.nan, units="rad**-1"
             )
 
             self.add_output("data:aerodynamics:aircraft:cruise:Cm_alpha_dot", units="rad**-1")
 
+    def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):

@@ -38,12 +38,16 @@ class ComputeCLAlphaDotAircraft(om.ExplicitComponent):
     def setup(self):
         self.add_input("data:geometry:wing:area", units="m**2", val=np.nan)
         self.add_input("data:geometry:horizontal_tail:area", units="m**2", val=np.nan)
-        self.add_input("data:geometry:horizontal_tail:volume_coefficient", val=np.nan)
-        self.add_input("data:aerodynamics:horizontal_tail:efficiency", val=np.nan)
+        self.add_input(
+            "data:geometry:horizontal_tail:volume_coefficient", val=np.nan, units="unitless"
+        )
+        self.add_input("data:aerodynamics:horizontal_tail:efficiency", val=np.nan, units="unitless")
 
         if self.options["low_speed_aero"]:
             self.add_input(
-                "data:aerodynamics:horizontal_tail:low_speed:downwash_gradient", val=np.nan
+                "data:aerodynamics:horizontal_tail:low_speed:downwash_gradient",
+                val=np.nan,
+                units="unitless",
             )
             self.add_input(
                 "data:aerodynamics:horizontal_tail:low_speed:CL_alpha", val=np.nan, units="rad**-1"
@@ -51,38 +55,20 @@ class ComputeCLAlphaDotAircraft(om.ExplicitComponent):
 
             self.add_output("data:aerodynamics:aircraft:low_speed:CL_alpha_dot", units="rad**-1")
 
-            self.declare_partials(
-                of="data:aerodynamics:aircraft:low_speed:CL_alpha_dot",
-                wrt=[
-                    "data:geometry:wing:area",
-                    "data:geometry:horizontal_tail:area",
-                    "data:geometry:horizontal_tail:volume_coefficient",
-                    "data:aerodynamics:horizontal_tail:low_speed:CL_alpha",
-                    "data:aerodynamics:horizontal_tail:low_speed:downwash_gradient",
-                    "data:aerodynamics:horizontal_tail:efficiency",
-                ],
-                method="exact",
-            )
         else:
-            self.add_input("data:aerodynamics:horizontal_tail:cruise:downwash_gradient", val=np.nan)
+            self.add_input(
+                "data:aerodynamics:horizontal_tail:cruise:downwash_gradient",
+                val=np.nan,
+                units="unitless",
+            )
             self.add_input(
                 "data:aerodynamics:horizontal_tail:cruise:CL_alpha", val=np.nan, units="rad**-1"
             )
 
             self.add_output("data:aerodynamics:aircraft:cruise:CL_alpha_dot", units="rad**-1")
 
-            self.declare_partials(
-                of="data:aerodynamics:aircraft:cruise:CL_alpha_dot",
-                wrt=[
-                    "data:geometry:wing:area",
-                    "data:geometry:horizontal_tail:area",
-                    "data:geometry:horizontal_tail:volume_coefficient",
-                    "data:aerodynamics:horizontal_tail:cruise:CL_alpha",
-                    "data:aerodynamics:horizontal_tail:cruise:downwash_gradient",
-                    "data:aerodynamics:horizontal_tail:efficiency",
-                ],
-                method="exact",
-            )
+    def setup_partials(self):
+        self.declare_partials(of="*", wrt="*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         eta_h = inputs["data:aerodynamics:horizontal_tail:efficiency"]

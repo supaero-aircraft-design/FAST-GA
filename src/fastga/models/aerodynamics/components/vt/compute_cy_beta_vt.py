@@ -36,7 +36,7 @@ class ComputeCyBetaVerticalTail(om.ExplicitComponent):
 
     def setup(self):
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
-        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan, units="unitless")
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="rad")
         self.add_input("data:geometry:wing:root:z", val=np.nan, units="m")
         self.add_input("data:geometry:vertical_tail:area", val=np.nan, units="m**2")
@@ -44,7 +44,7 @@ class ComputeCyBetaVerticalTail(om.ExplicitComponent):
         self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:average_depth", val=np.nan, units="m")
 
-        self.add_input("data:aerodynamics:vertical_tail:efficiency", val=0.95)
+        self.add_input("data:aerodynamics:vertical_tail:efficiency", val=0.95, units="unitless")
 
         if self.options["low_speed_aero"]:
             self.add_input(
@@ -57,6 +57,7 @@ class ComputeCyBetaVerticalTail(om.ExplicitComponent):
             )
             self.add_output("data:aerodynamics:vertical_tail:cruise:Cy_beta", units="rad**-1")
 
+    def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):

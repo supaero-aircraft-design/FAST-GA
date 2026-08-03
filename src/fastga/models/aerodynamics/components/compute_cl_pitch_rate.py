@@ -82,7 +82,8 @@ class _SumCLPitchVelocityContributions(om.ExplicitComponent):
 
             self.add_output("data:aerodynamics:aircraft:cruise:CL_q", units="rad**-1")
 
-        self.declare_partials(of="*", wrt="*", method="exact")
+    def setup_partials(self):
+        self.declare_partials(of="*", wrt="*", method="exact", val=1.0)
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         if self.options["low_speed_aero"]:
@@ -95,21 +96,3 @@ class _SumCLPitchVelocityContributions(om.ExplicitComponent):
                 inputs["data:aerodynamics:wing:cruise:CL_q"]
                 + inputs["data:aerodynamics:horizontal_tail:cruise:CL_q"]
             )
-
-    def compute_partials(self, inputs, partials, discrete_inputs=None):
-        if self.options["low_speed_aero"]:
-            partials[
-                "data:aerodynamics:aircraft:low_speed:CL_q", "data:aerodynamics:wing:low_speed:CL_q"
-            ] = 1.0
-            partials[
-                "data:aerodynamics:aircraft:low_speed:CL_q",
-                "data:aerodynamics:horizontal_tail:low_speed:CL_q",
-            ] = 1.0
-        else:
-            partials[
-                "data:aerodynamics:aircraft:cruise:CL_q", "data:aerodynamics:wing:cruise:CL_q"
-            ] = 1.0
-            partials[
-                "data:aerodynamics:aircraft:cruise:CL_q",
-                "data:aerodynamics:horizontal_tail:cruise:CL_q",
-            ] = 1.0

@@ -207,6 +207,8 @@ def compute_reynolds(
         "data:aerodynamics:low_speed:unit_reynolds", units="m**-1"
     ) == pytest.approx(reynolds_low_speed, abs=1)
 
+    problem.check_partials(compact_print=True)
+
     # Research independent input value in .xml file
     problem = setup_and_run_system(
         ComputeUnitReynolds(low_speed_aero=False), __file__, xml_file_name
@@ -215,6 +217,8 @@ def compute_reynolds(
     assert problem.get_val(
         "data:aerodynamics:cruise:unit_reynolds", units="m**-1"
     ) == pytest.approx(reynolds_high_speed, abs=1)
+
+    problem.check_partials(compact_print=True)
 
 
 def cd0_high_speed(

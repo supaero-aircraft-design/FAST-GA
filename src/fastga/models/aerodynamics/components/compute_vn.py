@@ -88,11 +88,14 @@ class ComputeVh(om.ExplicitComponent):
 
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="kg")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
-        self.add_input("data:aerodynamics:aircraft:cruise:CD0", val=np.nan)
-        self.add_input("data:aerodynamics:wing:cruise:induced_drag_coefficient", val=np.nan)
+        self.add_input("data:aerodynamics:aircraft:cruise:CD0", val=np.nan, units="unitless")
+        self.add_input(
+            "data:aerodynamics:wing:cruise:induced_drag_coefficient", val=np.nan, units="unitless"
+        )
 
         self.add_output("data:TLAR:v_max_sl", units="m/s")
 
+    def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
@@ -155,17 +158,21 @@ class ComputeVN(om.ExplicitComponent):
         self.lbf_to_N = lbf  # Converting from pound force to Newtons
 
     def setup(self):
-        self.add_input("data:TLAR:category", val=3.0)
-        self.add_input("data:TLAR:level", val=2.0)
+        self.add_input("data:TLAR:category", val=3.0, units="unitless")
+        self.add_input("data:TLAR:level", val=2.0, units="unitless")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:tip:chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:root:chord", val=np.nan, units="m")
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="kg")
         self.add_input("data:weight:aircraft:MZFW", val=np.nan, units="kg")
         self.add_input("data:TLAR:v_max_sl", val=np.nan, units="m/s")
-        self.add_input("data:aerodynamics:aircraft:landing:CL_max", val=np.nan)
-        self.add_input("data:aerodynamics:wing:low_speed:CL_max_clean", val=np.nan)
-        self.add_input("data:aerodynamics:wing:low_speed:CL_min_clean", val=np.nan)
+        self.add_input("data:aerodynamics:aircraft:landing:CL_max", val=np.nan, units="unitless")
+        self.add_input(
+            "data:aerodynamics:wing:low_speed:CL_max_clean", val=np.nan, units="unitless"
+        )
+        self.add_input(
+            "data:aerodynamics:wing:low_speed:CL_min_clean", val=np.nan, units="unitless"
+        )
         self.add_input(
             "data:aerodynamics:aircraft:mach_interpolation:CL_alpha_vector",
             val=np.nan,
@@ -176,6 +183,7 @@ class ComputeVN(om.ExplicitComponent):
         self.add_input(
             "data:aerodynamics:aircraft:mach_interpolation:mach_vector",
             val=np.nan,
+            units="unitless",
             shape_by_conn=True,
         )
         self.add_input("data:TLAR:v_cruise", val=np.nan, units="m/s")
@@ -185,16 +193,21 @@ class ComputeVN(om.ExplicitComponent):
             "data:mission:sizing:cs23:flight_domain:mtow:velocity", units="m/s", shape=DOMAIN_PTS_NB
         )
         self.add_output(
-            "data:mission:sizing:cs23:flight_domain:mtow:load_factor", shape=DOMAIN_PTS_NB
+            "data:mission:sizing:cs23:flight_domain:mtow:load_factor",
+            shape=DOMAIN_PTS_NB,
+            units="unitless",
         )
 
         self.add_output(
             "data:mission:sizing:cs23:flight_domain:mzfw:velocity", units="m/s", shape=DOMAIN_PTS_NB
         )
         self.add_output(
-            "data:mission:sizing:cs23:flight_domain:mzfw:load_factor", shape=DOMAIN_PTS_NB
+            "data:mission:sizing:cs23:flight_domain:mzfw:load_factor",
+            shape=DOMAIN_PTS_NB,
+            units="unitless",
         )
 
+    def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
     def check_config(self, logger):

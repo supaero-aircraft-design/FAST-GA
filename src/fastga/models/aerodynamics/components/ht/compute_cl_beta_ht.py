@@ -36,8 +36,8 @@ class ComputeClBetaHorizontalTail(FigureDigitization):
         self.options.declare("low_speed_aero", default=False, types=bool)
 
     def setup(self):
-        self.add_input("data:geometry:horizontal_tail:aspect_ratio", val=np.nan)
-        self.add_input("data:geometry:horizontal_tail:taper_ratio", val=np.nan)
+        self.add_input("data:geometry:horizontal_tail:aspect_ratio", val=np.nan, units="unitless")
+        self.add_input("data:geometry:horizontal_tail:taper_ratio", val=np.nan, units="unitless")
         self.add_input("data:geometry:horizontal_tail:sweep_50", val=np.nan, units="rad")
         self.add_input("data:geometry:horizontal_tail:sweep_25", val=np.nan, units="rad")
         self.add_input("data:geometry:horizontal_tail:dihedral", val=0.0, units="deg")
@@ -66,14 +66,17 @@ class ComputeClBetaHorizontalTail(FigureDigitization):
             units="rad",
             val=ref_aoa * np.pi / 180.0,
         )
-        self.add_input("data:aerodynamics:" + ls_tag + ":mach", val=np.nan)
-        self.add_input("data:aerodynamics:horizontal_tail:" + ls_tag + ":CL0", val=np.nan)
+        self.add_input("data:aerodynamics:" + ls_tag + ":mach", val=np.nan, units="unitless")
+        self.add_input(
+            "data:aerodynamics:horizontal_tail:" + ls_tag + ":CL0", val=np.nan, units="unitless"
+        )
         self.add_input(
             "data:aerodynamics:horizontal_tail:" + ls_tag + ":CL_alpha", val=np.nan, units="rad**-1"
         )
 
         self.add_output("data:aerodynamics:horizontal_tail:" + ls_tag + ":Cl_beta", units="rad**-1")
 
+    def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):

@@ -38,8 +38,10 @@ class ComputeCLPitchVelocityHorizontalTail(om.ExplicitComponent):
     def setup(self):
         self.add_input("data:geometry:wing:area", units="m**2", val=np.nan)
         self.add_input("data:geometry:horizontal_tail:area", units="m**2", val=np.nan)
-        self.add_input("data:geometry:horizontal_tail:volume_coefficient", val=np.nan)
-        self.add_input("data:aerodynamics:horizontal_tail:efficiency", val=np.nan)
+        self.add_input(
+            "data:geometry:horizontal_tail:volume_coefficient", val=np.nan, units="unitless"
+        )
+        self.add_input("data:aerodynamics:horizontal_tail:efficiency", val=np.nan, units="unitless")
 
         ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
 
@@ -48,6 +50,9 @@ class ComputeCLPitchVelocityHorizontalTail(om.ExplicitComponent):
         )
 
         self.add_output("data:aerodynamics:horizontal_tail:" + ls_tag + ":CL_q", units="rad**-1")
+
+    def setup_partials(self):
+        ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
 
         self.declare_partials(
             of="data:aerodynamics:horizontal_tail:" + ls_tag + ":CL_q",

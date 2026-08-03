@@ -37,32 +37,46 @@ class Cd0Total(om.ExplicitComponent):
         self.add_input(
             "settings:aerodynamics:aircraft:undesirable_drag:k_factor",
             val=1.25,
+            units="unitless",
             desc="Correction coefficient to take into account the other undesirable drag, "
             "default is 1.25 as suggested in Gudmundsson",
         )
 
         if self.options["low_speed_aero"]:
-            self.add_input("data:aerodynamics:wing:low_speed:CD0", val=np.nan)
-            self.add_input("data:aerodynamics:fuselage:low_speed:CD0", val=np.nan)
-            self.add_input("data:aerodynamics:horizontal_tail:low_speed:CD0", val=np.nan)
-            self.add_input("data:aerodynamics:vertical_tail:low_speed:CD0", val=np.nan)
-            self.add_input("data:aerodynamics:nacelles:low_speed:CD0", val=np.nan)
-            self.add_input("data:aerodynamics:landing_gear:low_speed:CD0", val=np.nan)
-            self.add_input("data:aerodynamics:other:low_speed:CD0", val=np.nan)
-            self.add_output("data:aerodynamics:aircraft:low_speed:CD0")
+            self.add_input("data:aerodynamics:wing:low_speed:CD0", val=np.nan, units="unitless")
+            self.add_input("data:aerodynamics:fuselage:low_speed:CD0", val=np.nan, units="unitless")
+            self.add_input(
+                "data:aerodynamics:horizontal_tail:low_speed:CD0", val=np.nan, units="unitless"
+            )
+            self.add_input(
+                "data:aerodynamics:vertical_tail:low_speed:CD0", val=np.nan, units="unitless"
+            )
+            self.add_input("data:aerodynamics:nacelles:low_speed:CD0", val=np.nan, units="unitless")
+            self.add_input(
+                "data:aerodynamics:landing_gear:low_speed:CD0", val=np.nan, units="unitless"
+            )
+            self.add_input("data:aerodynamics:other:low_speed:CD0", val=np.nan, units="unitless")
+            self.add_output("data:aerodynamics:aircraft:low_speed:CD0", units="unitless")
 
             self.declare_partials("*", "*", method="exact")
         else:
-            self.add_input("data:aerodynamics:wing:cruise:CD0", val=np.nan)
-            self.add_input("data:aerodynamics:fuselage:cruise:CD0", val=np.nan)
-            self.add_input("data:aerodynamics:horizontal_tail:cruise:CD0", val=np.nan)
-            self.add_input("data:aerodynamics:vertical_tail:cruise:CD0", val=np.nan)
-            self.add_input("data:aerodynamics:nacelles:cruise:CD0", val=np.nan)
-            self.add_input("data:aerodynamics:landing_gear:cruise:CD0", val=np.nan)
-            self.add_input("data:aerodynamics:other:cruise:CD0", val=np.nan)
-            self.add_output("data:aerodynamics:aircraft:cruise:CD0")
+            self.add_input("data:aerodynamics:wing:cruise:CD0", val=np.nan, units="unitless")
+            self.add_input("data:aerodynamics:fuselage:cruise:CD0", val=np.nan, units="unitless")
+            self.add_input(
+                "data:aerodynamics:horizontal_tail:cruise:CD0", val=np.nan, units="unitless"
+            )
+            self.add_input(
+                "data:aerodynamics:vertical_tail:cruise:CD0", val=np.nan, units="unitless"
+            )
+            self.add_input("data:aerodynamics:nacelles:cruise:CD0", val=np.nan, units="unitless")
+            self.add_input(
+                "data:aerodynamics:landing_gear:cruise:CD0", val=np.nan, units="unitless"
+            )
+            self.add_input("data:aerodynamics:other:cruise:CD0", val=np.nan, units="unitless")
+            self.add_output("data:aerodynamics:aircraft:cruise:CD0", units="unitless")
 
-            self.declare_partials("*", "*", method="exact")
+    def setup_partials(self):
+        self.declare_partials("*", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         if self.options["low_speed_aero"]:

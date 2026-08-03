@@ -50,26 +50,39 @@ class _LoadFactorIdentification(om.ExplicitComponent):
             "data:mission:sizing:cs23:flight_domain:mtow:load_factor",
             val=nan_array,
             shape=DOMAIN_PTS_NB,
+            units="unitless",
         )
 
         self.add_input(
             "data:mission:sizing:cs23:flight_domain:mzfw:load_factor",
             val=nan_array,
             shape=DOMAIN_PTS_NB,
+            units="unitless",
         )
 
-        self.add_input("data:mission:sizing:cs23:safety_factor", val=np.nan)
+        self.add_input("data:mission:sizing:cs23:safety_factor", val=np.nan, units="unitless")
 
-        self.add_output("data:mission:sizing:cs23:sizing_factor:ultimate_aircraft")
-        self.add_output("data:mission:sizing:cs23:sizing_factor:ultimate_mtow:positive")
-        self.add_output("data:mission:sizing:cs23:sizing_factor:ultimate_mtow:negative")
-        self.add_output("data:mission:sizing:cs23:sizing_factor:ultimate_mzfw:positive")
-        self.add_output("data:mission:sizing:cs23:sizing_factor:ultimate_mzfw:negative")
+        self.add_output(
+            "data:mission:sizing:cs23:sizing_factor:ultimate_aircraft", units="unitless"
+        )
+        self.add_output(
+            "data:mission:sizing:cs23:sizing_factor:ultimate_mtow:positive", units="unitless"
+        )
+        self.add_output(
+            "data:mission:sizing:cs23:sizing_factor:ultimate_mtow:negative", units="unitless"
+        )
+        self.add_output(
+            "data:mission:sizing:cs23:sizing_factor:ultimate_mzfw:positive", units="unitless"
+        )
+        self.add_output(
+            "data:mission:sizing:cs23:sizing_factor:ultimate_mzfw:negative", units="unitless"
+        )
 
         self.add_output("data:mission:sizing:cs23:characteristic_speed:va", units="m/s")
         self.add_output("data:mission:sizing:cs23:characteristic_speed:vc", units="m/s")
         self.add_output("data:mission:sizing:cs23:characteristic_speed:vd", units="m/s")
 
+    def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):

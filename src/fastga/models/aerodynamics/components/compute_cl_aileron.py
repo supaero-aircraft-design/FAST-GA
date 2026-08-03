@@ -83,30 +83,32 @@ class ComputeCLDeltaA(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
     def setup(self):
-        self.add_input("alpha_aileron", val=np.nan)
-        self.add_input("data:geometry:wing:aileron:span_ratio", val=np.nan)
+        self.add_input("alpha_aileron", val=np.nan, units="unitless")
+        self.add_input("data:geometry:wing:aileron:span_ratio", val=np.nan, units="unitless")
 
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:root:chord", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:taper_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:taper_ratio", val=np.nan, units="unitless")
 
         self.add_input(
             "settings:aerodynamics:aileron:tip_effect:k_factor",
             val=0.9,
+            units="unitless",
             desc="Correction coefficient to take into account tip effect when "
             "computing the roll authority of the ailerons",
         )
 
         if self.options["low_speed_aero"]:
-            self.add_input("data:aerodynamics:low_speed:mach", val=np.nan)
+            self.add_input("data:aerodynamics:low_speed:mach", val=np.nan, units="unitless")
 
             self.add_output("data:aerodynamics:aileron:low_speed:Cl_delta_a", units="rad**-1")
         else:
-            self.add_input("data:aerodynamics:cruise:mach", val=np.nan)
+            self.add_input("data:aerodynamics:cruise:mach", val=np.nan, units="unitless")
 
             self.add_output("data:aerodynamics:aileron:cruise:Cl_delta_a", units="rad**-1")
 
+    def setup_partials(self):
         self.declare_partials("*", "*", method="exact")
 
     # pylint: disable=missing-function-docstring, unused-argument

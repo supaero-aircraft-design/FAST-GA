@@ -37,16 +37,16 @@ class ComputeClAlphaVerticalTail(FigureDigitization):
 
     def setup(self):
         if self.options["low_speed_aero"]:
-            self.add_input("data:aerodynamics:low_speed:mach", val=np.nan)
+            self.add_input("data:aerodynamics:low_speed:mach", val=np.nan, units="unitless")
         else:
-            self.add_input("data:aerodynamics:cruise:mach", val=np.nan)
+            self.add_input("data:aerodynamics:cruise:mach", val=np.nan, units="unitless")
 
         self.add_input(
             "data:aerodynamics:vertical_tail:airfoil:CL_alpha", val=np.nan, units="rad**-1"
         )
-        self.add_input("data:geometry:has_T_tail", val=np.nan)
-        self.add_input("data:geometry:vertical_tail:aspect_ratio", val=np.nan)
-        self.add_input("data:geometry:vertical_tail:taper_ratio", val=np.nan)
+        self.add_input("data:geometry:has_T_tail", val=np.nan, units="unitless")
+        self.add_input("data:geometry:vertical_tail:aspect_ratio", val=np.nan, units="unitless")
+        self.add_input("data:geometry:vertical_tail:taper_ratio", val=np.nan, units="unitless")
         self.add_input("data:geometry:vertical_tail:sweep_25", val=np.nan, units="deg")
         self.add_input("data:geometry:vertical_tail:span", val=np.nan, units="m")
         self.add_input("data:geometry:vertical_tail:area", val=np.nan, units="m**2")
@@ -55,7 +55,7 @@ class ComputeClAlphaVerticalTail(FigureDigitization):
 
         if self.options["low_speed_aero"]:
             self.add_output("data:aerodynamics:vertical_tail:low_speed:CL_alpha", units="rad**-1")
-            self.add_output("data:aerodynamics:vertical_tail:k_ar_effective")
+            self.add_output("data:aerodynamics:vertical_tail:k_ar_effective", units="unitless")
         else:
             self.add_output("data:aerodynamics:vertical_tail:cruise:CL_alpha", units="rad**-1")
 

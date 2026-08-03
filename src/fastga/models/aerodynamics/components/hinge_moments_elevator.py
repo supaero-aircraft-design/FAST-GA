@@ -59,8 +59,12 @@ class Compute2DHingeMomentsTail(FigureDigitization):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
     def setup(self):
-        self.add_input("data:geometry:horizontal_tail:elevator_chord_ratio", val=np.nan)
-        self.add_input("data:geometry:horizontal_tail:thickness_ratio", val=np.nan)
+        self.add_input(
+            "data:geometry:horizontal_tail:elevator_chord_ratio", val=np.nan, units="unitless"
+        )
+        self.add_input(
+            "data:geometry:horizontal_tail:thickness_ratio", val=np.nan, units="unitless"
+        )
         self.add_input("data:geometry:horizontal_tail:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input(
@@ -251,12 +255,13 @@ class Compute3DHingeMomentAlpha(om.ExplicitComponent):
             units="rad**-1",
         )
         self.add_input("data:geometry:horizontal_tail:sweep_25", val=np.nan, units="rad")
-        self.add_input("data:geometry:horizontal_tail:aspect_ratio", val=np.nan)
+        self.add_input("data:geometry:horizontal_tail:aspect_ratio", val=np.nan, units="unitless")
 
         self.add_output(
             "data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_alpha", units="rad**-1"
         )
 
+    def setup_partials(self):
         self.declare_partials(
             of="data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_alpha",
             wrt="*",
@@ -327,13 +332,14 @@ class Compute3DHingeMomentDelta(om.ExplicitComponent):
             units="rad**-1",
         )
         self.add_input("data:geometry:horizontal_tail:sweep_25", val=np.nan, units="rad")
-        self.add_input("data:geometry:horizontal_tail:aspect_ratio", val=np.nan)
-        self.add_input("max_lift_effectiveness", val=np.nan)
+        self.add_input("data:geometry:horizontal_tail:aspect_ratio", val=np.nan, units="unitless")
+        self.add_input("max_lift_effectiveness", val=np.nan, units="unitless")
 
         self.add_output(
             "data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_delta", units="rad**-1"
         )
 
+    def setup_partials(self):
         self.declare_partials(
             of="data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_delta",
             wrt="*",

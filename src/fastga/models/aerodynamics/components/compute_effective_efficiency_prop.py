@@ -39,7 +39,7 @@ class ComputeEffectiveEfficiencyPropeller(om.ExplicitComponent):
         self.options.declare("low_speed_aero", default=False, types=bool)
 
     def setup(self):
-        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan, units="unitless")
         self.add_input("data:geometry:propeller:diameter", val=np.nan, units="m")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
 
@@ -47,30 +47,32 @@ class ComputeEffectiveEfficiencyPropeller(om.ExplicitComponent):
         self.add_input("data:geometry:propulsion:nacelle:wet_area", val=np.nan, units="m**2")
 
         if self.options["low_speed_aero"]:
-            self.add_input("data:aerodynamics:nacelles:low_speed:CD0", val=np.nan)
-            self.add_input("data:aerodynamics:fuselage:low_speed:CD0", val=np.nan)
+            self.add_input("data:aerodynamics:nacelles:low_speed:CD0", val=np.nan, units="unitless")
+            self.add_input("data:aerodynamics:fuselage:low_speed:CD0", val=np.nan, units="unitless")
             self.add_output(
                 "data:aerodynamics:propeller:installation_effect:effective_efficiency:low_speed",
                 val=1.0,
+                units="unitless",
                 desc="Value to multiply the uninstalled efficiency with to obtain the effective "
                 "efficiency due to the presence of cowling (fuselage or nacelle) behind the "
                 "propeller",
             )
 
-            self.declare_partials("*", "*", method="fd")
         else:
-            self.add_input("data:aerodynamics:nacelles:cruise:CD0", val=np.nan)
-            self.add_input("data:aerodynamics:fuselage:cruise:CD0", val=np.nan)
+            self.add_input("data:aerodynamics:nacelles:cruise:CD0", val=np.nan, units="unitless")
+            self.add_input("data:aerodynamics:fuselage:cruise:CD0", val=np.nan, units="unitless")
             self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="m")
             self.add_output(
                 "data:aerodynamics:propeller:installation_effect:effective_efficiency:cruise",
                 val=1.0,
+                units="unitless",
                 desc="Value to multiply the uninstalled efficiency with to obtain the effective "
                 "efficiency due to the presence of cowling (fuselage or nacelle) behind the "
                 "propeller",
             )
 
-            self.declare_partials("*", "*", method="fd")
+    def setup_partials(self):
+        self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         propeller_diameter = inputs["data:geometry:propeller:diameter"]

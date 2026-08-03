@@ -36,8 +36,8 @@ class ComputeMachInterpolation(om.Group):
     # noinspection PyTypeChecker
     def setup(self):
         ivc_conditions = om.IndepVarComp()
-        ivc_conditions.add_output("mach", val=0.05)
-        ivc_conditions.add_output("reynolds", val=0.5e6)
+        ivc_conditions.add_output("mach", val=0.05, units="unitless")
+        ivc_conditions.add_output("reynolds", val=0.5e6, units="unitless")
         self.add_subsystem("incompressible_conditions", ivc_conditions, promotes=[])
 
         # Selects the tool for airfoil analysis: uses NeuralFoil if 'use_neuralfoil' is True;
@@ -88,15 +88,15 @@ class _ComputeMachInterpolation(om.ExplicitComponent):
     def setup(self):
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
-        self.add_input("data:geometry:wing:taper_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan, units="unitless")
+        self.add_input("data:geometry:wing:taper_ratio", val=np.nan, units="unitless")
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="deg")
         self.add_input("data:geometry:horizontal_tail:area", val=np.nan, units="m**2")
         self.add_input(
             "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="m"
         )
         self.add_input("data:geometry:horizontal_tail:z:from_wingMAC25", val=np.nan, units="m")
-        self.add_input("data:geometry:horizontal_tail:aspect_ratio", val=np.nan)
+        self.add_input("data:geometry:horizontal_tail:aspect_ratio", val=np.nan, units="unitless")
         self.add_input("data:geometry:horizontal_tail:sweep_25", val=np.nan, units="deg")
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="m")
@@ -106,13 +106,15 @@ class _ComputeMachInterpolation(om.ExplicitComponent):
 
         nans_array = np.full(POLAR_POINT_COUNT, np.nan)
         self.add_input("wing:alpha", val=nans_array, shape=POLAR_POINT_COUNT, units="deg")
-        self.add_input("wing:CL", val=nans_array, shape=POLAR_POINT_COUNT)
+        self.add_input("wing:CL", val=nans_array, shape=POLAR_POINT_COUNT, units="unitless")
         self.add_input(
             "horizontal_tail:alpha", val=nans_array, shape=POLAR_POINT_COUNT, units="deg"
         )
-        self.add_input("horizontal_tail:CL", val=nans_array, shape=POLAR_POINT_COUNT)
+        self.add_input(
+            "horizontal_tail:CL", val=nans_array, shape=POLAR_POINT_COUNT, units="unitless"
+        )
 
-        self.add_input("data:aerodynamics:horizontal_tail:efficiency", val=np.nan)
+        self.add_input("data:aerodynamics:horizontal_tail:efficiency", val=np.nan, units="unitless")
 
         self.add_output(
             "data:aerodynamics:aircraft:mach_interpolation:CL_alpha_vector",
@@ -120,7 +122,9 @@ class _ComputeMachInterpolation(om.ExplicitComponent):
             shape=MACH_NB_PTS + 1,
         )
         self.add_output(
-            "data:aerodynamics:aircraft:mach_interpolation:mach_vector", shape=MACH_NB_PTS + 1
+            "data:aerodynamics:aircraft:mach_interpolation:mach_vector",
+            shape=MACH_NB_PTS + 1,
+            units="unitless",
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):

@@ -26,29 +26,46 @@ class ComputeNonEquilibratedPolar(om.ExplicitComponent):
 
     def setup(self):
         if self.options["low_speed_aero"]:
-            self.add_input("data:aerodynamics:wing:low_speed:CL0_clean", val=np.nan)
-            self.add_input("data:aerodynamics:wing:low_speed:induced_drag_coefficient", val=np.nan)
-            self.add_input("data:aerodynamics:aircraft:low_speed:CD0", val=np.nan)
+            self.add_input(
+                "data:aerodynamics:wing:low_speed:CL0_clean", val=np.nan, units="unitless"
+            )
+            self.add_input(
+                "data:aerodynamics:wing:low_speed:induced_drag_coefficient",
+                val=np.nan,
+                units="unitless",
+            )
+            self.add_input("data:aerodynamics:aircraft:low_speed:CD0", val=np.nan, units="unitless")
             self.add_input("data:aerodynamics:wing:low_speed:CL_alpha", val=np.nan, units="rad**-1")
 
             self.add_output(
                 "data:aerodynamics:aircraft:low_speed:CD",
                 shape=POLAR_POINT_COUNT,
+                units="unitless",
             )
             self.add_output(
                 "data:aerodynamics:aircraft:low_speed:CL",
                 shape=POLAR_POINT_COUNT,
+                units="unitless",
             )
 
         else:
-            self.add_input("data:aerodynamics:wing:cruise:CL0_clean", val=np.nan)
-            self.add_input("data:aerodynamics:wing:cruise:induced_drag_coefficient", val=np.nan)
-            self.add_input("data:aerodynamics:aircraft:cruise:CD0", val=np.nan)
+            self.add_input("data:aerodynamics:wing:cruise:CL0_clean", val=np.nan, units="unitless")
+            self.add_input(
+                "data:aerodynamics:wing:cruise:induced_drag_coefficient",
+                val=np.nan,
+                units="unitless",
+            )
+            self.add_input("data:aerodynamics:aircraft:cruise:CD0", val=np.nan, units="unitless")
             self.add_input("data:aerodynamics:wing:cruise:CL_alpha", val=np.nan, units="rad**-1")
 
-            self.add_output("data:aerodynamics:aircraft:cruise:CD", shape=POLAR_POINT_COUNT)
-            self.add_output("data:aerodynamics:aircraft:cruise:CL", shape=POLAR_POINT_COUNT)
+            self.add_output(
+                "data:aerodynamics:aircraft:cruise:CD", shape=POLAR_POINT_COUNT, units="unitless"
+            )
+            self.add_output(
+                "data:aerodynamics:aircraft:cruise:CL", shape=POLAR_POINT_COUNT, units="unitless"
+            )
 
+    def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):

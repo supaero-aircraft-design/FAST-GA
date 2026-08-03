@@ -41,12 +41,16 @@ class ComputeCyDeltaRudder(FigureDigitization):
         self.add_input(
             "data:aerodynamics:vertical_tail:airfoil:CL_alpha", val=np.nan, units="rad**-1"
         )
-        self.add_input("data:geometry:vertical_tail:taper_ratio", val=np.nan)
-        self.add_input("data:geometry:vertical_tail:thickness_ratio", val=np.nan)
-        self.add_input("data:geometry:vertical_tail:aspect_ratio", val=np.nan)
-        self.add_input("data:geometry:vertical_tail:rudder:chord_ratio", val=np.nan)
+        self.add_input("data:geometry:vertical_tail:taper_ratio", val=np.nan, units="unitless")
+        self.add_input("data:geometry:vertical_tail:thickness_ratio", val=np.nan, units="unitless")
+        self.add_input("data:geometry:vertical_tail:aspect_ratio", val=np.nan, units="unitless")
+        self.add_input(
+            "data:geometry:vertical_tail:rudder:chord_ratio", val=np.nan, units="unitless"
+        )
         self.add_input("data:geometry:vertical_tail:rudder:max_deflection", val=np.nan, units="deg")
-        self.add_input("data:aerodynamics:vertical_tail:k_ar_effective", val=np.nan)
+        self.add_input(
+            "data:aerodynamics:vertical_tail:k_ar_effective", val=np.nan, units="unitless"
+        )
 
         if self.options["low_speed_aero"]:
             self.add_input(
@@ -59,6 +63,7 @@ class ComputeCyDeltaRudder(FigureDigitization):
             )
             self.add_output("data:aerodynamics:rudder:cruise:Cy_delta_r", units="rad**-1")
 
+    def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):

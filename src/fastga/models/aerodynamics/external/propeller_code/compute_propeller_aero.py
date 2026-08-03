@@ -58,8 +58,8 @@ class ComputePropellerPerformance(om.Group):
 
     def setup(self):
         ivc = om.IndepVarComp()
-        ivc.add_output("data:aerodynamics:propeller:mach", val=0.0)
-        ivc.add_output("data:aerodynamics:propeller:reynolds", val=1e6)
+        ivc.add_output("data:aerodynamics:propeller:mach", val=0.0, units="unitless")
+        ivc.add_output("data:aerodynamics:propeller:reynolds", val=1e6, units="unitless")
         self.add_subsystem("propeller_efficiency_aero_conditions", ivc, promotes=["*"])
         for profile in self.options["sections_profile_name_list"]:
             # Selects the tool for airfoil analysis: uses NeuralFoil if 'use_neuralfoil' is True;
@@ -132,7 +132,9 @@ class _ComputePropellerPerformance(PropellerCoreModule):
         self.add_input("data:TLAR:v_cruise", val=np.nan, units="m/s")
 
         self.add_output(
-            "data:aerodynamics:propeller:sea_level:efficiency", shape=(SPEED_PTS_NB, THRUST_PTS_NB)
+            "data:aerodynamics:propeller:sea_level:efficiency",
+            shape=(SPEED_PTS_NB, THRUST_PTS_NB),
+            units="unitless",
         )
         self.add_output(
             "data:aerodynamics:propeller:sea_level:thrust", shape=THRUST_PTS_NB, units="N"
@@ -146,6 +148,7 @@ class _ComputePropellerPerformance(PropellerCoreModule):
         self.add_output(
             "data:aerodynamics:propeller:cruise_level:efficiency",
             shape=(SPEED_PTS_NB, THRUST_PTS_NB),
+            units="unitless",
         )
         self.add_output(
             "data:aerodynamics:propeller:cruise_level:thrust", shape=THRUST_PTS_NB, units="N"

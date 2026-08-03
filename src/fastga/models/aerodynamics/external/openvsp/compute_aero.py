@@ -81,26 +81,32 @@ class _ComputeAeroOpenVSP(OpenVSPSimpleGeometry):
     def setup(self):
         super().setup()
         if self.options["low_speed_aero"]:
-            self.add_input("data:aerodynamics:low_speed:mach", val=np.nan)
+            self.add_input("data:aerodynamics:low_speed:mach", val=np.nan, units="unitless")
         else:
-            self.add_input("data:aerodynamics:cruise:mach", val=np.nan)
+            self.add_input("data:aerodynamics:cruise:mach", val=np.nan, units="unitless")
             self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="m")
 
         if self.options["low_speed_aero"]:
-            self.add_output("data:aerodynamics:wing:low_speed:CL0_clean")
-            self.add_output("data:aerodynamics:wing:low_speed:CL_ref")
+            self.add_output("data:aerodynamics:wing:low_speed:CL0_clean", units="unitless")
+            self.add_output("data:aerodynamics:wing:low_speed:CL_ref", units="unitless")
             self.add_output("data:aerodynamics:wing:low_speed:CL_alpha", units="rad**-1")
-            self.add_output("data:aerodynamics:wing:low_speed:CM0_clean")
+            self.add_output("data:aerodynamics:wing:low_speed:CM0_clean", units="unitless")
             self.add_output(
                 "data:aerodynamics:wing:low_speed:Y_vector", shape=SPAN_MESH_POINT, units="m"
             )
-            self.add_output("data:aerodynamics:wing:low_speed:CL_vector", shape=SPAN_MESH_POINT)
+            self.add_output(
+                "data:aerodynamics:wing:low_speed:CL_vector",
+                shape=SPAN_MESH_POINT,
+                units="unitless",
+            )
             self.add_output(
                 "data:aerodynamics:wing:low_speed:chord_vector", shape=SPAN_MESH_POINT, units="m"
             )
-            self.add_output("data:aerodynamics:wing:low_speed:induced_drag_coefficient")
-            self.add_output("data:aerodynamics:horizontal_tail:low_speed:CL0")
-            self.add_output("data:aerodynamics:horizontal_tail:low_speed:CL_ref")
+            self.add_output(
+                "data:aerodynamics:wing:low_speed:induced_drag_coefficient", units="unitless"
+            )
+            self.add_output("data:aerodynamics:horizontal_tail:low_speed:CL0", units="unitless")
+            self.add_output("data:aerodynamics:horizontal_tail:low_speed:CL_ref", units="unitless")
             self.add_output("data:aerodynamics:horizontal_tail:low_speed:CL_alpha", units="rad**-1")
             self.add_output(
                 "data:aerodynamics:horizontal_tail:low_speed:CL_alpha_isolated", units="rad**-1"
@@ -111,25 +117,36 @@ class _ComputeAeroOpenVSP(OpenVSPSimpleGeometry):
                 units="m",
             )
             self.add_output(
-                "data:aerodynamics:horizontal_tail:low_speed:CL_vector", shape=SPAN_MESH_POINT
+                "data:aerodynamics:horizontal_tail:low_speed:CL_vector",
+                shape=SPAN_MESH_POINT,
+                units="unitless",
             )
-            self.add_output("data:aerodynamics:horizontal_tail:low_speed:induced_drag_coefficient")
+            self.add_output(
+                "data:aerodynamics:horizontal_tail:low_speed:induced_drag_coefficient",
+                units="unitless",
+            )
         else:
-            self.add_output("data:aerodynamics:wing:cruise:CL0_clean")
-            self.add_output("data:aerodynamics:wing:cruise:CL_ref")
+            self.add_output("data:aerodynamics:wing:cruise:CL0_clean", units="unitless")
+            self.add_output("data:aerodynamics:wing:cruise:CL_ref", units="unitless")
             self.add_output("data:aerodynamics:wing:cruise:CL_alpha", units="rad**-1")
-            self.add_output("data:aerodynamics:wing:cruise:CM0_clean")
-            self.add_output("data:aerodynamics:wing:cruise:induced_drag_coefficient")
-            self.add_output("data:aerodynamics:horizontal_tail:cruise:CL0")
+            self.add_output("data:aerodynamics:wing:cruise:CM0_clean", units="unitless")
+            self.add_output(
+                "data:aerodynamics:wing:cruise:induced_drag_coefficient", units="unitless"
+            )
+            self.add_output("data:aerodynamics:horizontal_tail:cruise:CL0", units="unitless")
             self.add_output("data:aerodynamics:horizontal_tail:cruise:CL_alpha", units="rad**-1")
             self.add_output(
                 "data:aerodynamics:horizontal_tail:cruise:CL_alpha_isolated", units="rad**-1"
             )
-            self.add_output("data:aerodynamics:horizontal_tail:cruise:induced_drag_coefficient")
+            self.add_output(
+                "data:aerodynamics:horizontal_tail:cruise:induced_drag_coefficient",
+                units="unitless",
+            )
             if self.options["compute_mach_interpolation"]:
                 self.add_output(
                     "data:aerodynamics:aircraft:mach_interpolation:mach_vector",
                     shape=MACH_NB_PTS + 1,
+                    units="unitless",
                 )
                 self.add_output(
                     "data:aerodynamics:aircraft:mach_interpolation:CL_alpha_vector",

@@ -34,13 +34,15 @@ class Cd0Other(om.ExplicitComponent):
         self.options.declare("low_speed_aero", default=False, types=bool)
 
     def setup(self):
-        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan, units="unitless")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
 
         if self.options["low_speed_aero"]:
             # Gudmundsson p715. Assuming cx_cooling*wing area/MTOW value of the book is typical
-            self.add_input("data:aerodynamics:cooling:low_speed:CD0", val=0.0005525)
-            self.add_output("data:aerodynamics:other:low_speed:CD0")
+            self.add_input(
+                "data:aerodynamics:cooling:low_speed:CD0", val=0.0005525, units="unitless"
+            )
+            self.add_output("data:aerodynamics:other:low_speed:CD0", units="unitless")
             self.declare_partials(
                 of="data:aerodynamics:other:low_speed:CD0",
                 wrt=["data:geometry:wing:area", "data:aerodynamics:cooling:low_speed:CD0"],
@@ -49,14 +51,15 @@ class Cd0Other(om.ExplicitComponent):
 
         else:
             # Gudmundsson p715. Assuming cx_cooling*wing area/MTOW value of the book is typical
-            self.add_input("data:aerodynamics:cooling:cruise:CD0", val=0.0005525)
-            self.add_output("data:aerodynamics:other:cruise:CD0")
+            self.add_input("data:aerodynamics:cooling:cruise:CD0", val=0.0005525, units="unitless")
+            self.add_output("data:aerodynamics:other:cruise:CD0", units="unitless")
             self.declare_partials(
                 of="data:aerodynamics:other:cruise:CD0",
                 wrt=["data:geometry:wing:area", "data:aerodynamics:cooling:cruise:CD0"],
                 method="exact",
             )
 
+    def setup_partials(self):
         self.declare_partials("*", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):

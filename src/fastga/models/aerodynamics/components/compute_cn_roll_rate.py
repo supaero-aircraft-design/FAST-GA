@@ -86,7 +86,8 @@ class _SumCnRollRateContributions(om.ExplicitComponent):
 
             self.add_output("data:aerodynamics:aircraft:cruise:Cn_p", units="rad**-1")
 
-        self.declare_partials(of="*", wrt="*", method="exact")
+    def setup_partials(self):
+        self.declare_partials(of="*", wrt="*", method="exact", val=1.0)
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         if self.options["low_speed_aero"]:
@@ -99,22 +100,3 @@ class _SumCnRollRateContributions(om.ExplicitComponent):
                 inputs["data:aerodynamics:wing:cruise:Cn_p"]
                 + inputs["data:aerodynamics:vertical_tail:cruise:Cn_p"]
             )
-
-    def compute_partials(self, inputs, partials, discrete_inputs=None):
-        if self.options["low_speed_aero"]:
-            partials[
-                "data:aerodynamics:aircraft:low_speed:Cn_p",
-                "data:aerodynamics:wing:low_speed:Cn_p",
-            ] = 1.0
-            partials[
-                "data:aerodynamics:aircraft:low_speed:Cn_p",
-                "data:aerodynamics:vertical_tail:low_speed:Cn_p",
-            ] = 1.0
-        else:
-            partials[
-                "data:aerodynamics:aircraft:cruise:Cn_p", "data:aerodynamics:wing:cruise:Cn_p"
-            ] = 1.0
-            partials[
-                "data:aerodynamics:aircraft:cruise:Cn_p",
-                "data:aerodynamics:vertical_tail:cruise:Cn_p",
-            ] = 1.0

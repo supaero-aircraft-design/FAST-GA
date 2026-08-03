@@ -59,6 +59,7 @@ class ComputeCnRollRateVerticalTail(om.ExplicitComponent):
 
         self.add_output("data:aerodynamics:vertical_tail:" + ls_tag + ":Cn_p", units="rad**-1")
 
+    def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):

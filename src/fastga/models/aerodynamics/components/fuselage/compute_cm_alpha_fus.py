@@ -69,8 +69,9 @@ class ComputeQuarterRootChordPositionRatio(om.ExplicitComponent):
         self.add_input("data:geometry:wing:root:virtual_chord", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:length", val=np.nan, units="m")
 
-        self.add_output("x0_ratio", val=0.2)
+        self.add_output("x0_ratio", val=0.2, units="unitless")
 
+    def setup_partials(self):
         self.declare_partials("x0_ratio", "*", method="exact")
 
     # pylint: disable=missing-function-docstring, unused-argument
@@ -119,6 +120,7 @@ class ComputeCmAlphaFuselageNacelle(om.ExplicitComponent):
 
         self.add_output("data:aerodynamics:fuselage:cm_alpha", units="rad**-1")
 
+    def setup_partials(self):
         self.declare_partials("data:aerodynamics:fuselage:cm_alpha", "*", method="exact")
 
     # pylint: disable=missing-function-docstring, unused-argument

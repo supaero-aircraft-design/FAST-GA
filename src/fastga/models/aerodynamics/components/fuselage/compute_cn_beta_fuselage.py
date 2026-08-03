@@ -40,6 +40,7 @@ class ComputeCnBetaFuselage(om.ExplicitComponent):
 
         self.add_output("data:aerodynamics:fuselage:Cn_beta", units="rad**-1")
 
+    def setup_partials(self):
         self.declare_partials("*", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):

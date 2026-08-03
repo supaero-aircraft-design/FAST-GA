@@ -118,7 +118,7 @@ class ComputeCnrWing(om.ExplicitComponent):
         self.add_input("drag_effect", val=np.nan, units="unitless")
         self.add_input("lift_effect", val=np.nan, units="unitless")
         self.add_input("CL_wing", val=np.nan, units="unitless")
-        self.add_input("data:aerodynamics:wing:" + ls_tag + ":CD0", val=np.nan)
+        self.add_input("data:aerodynamics:wing:" + ls_tag + ":CD0", val=np.nan, units="unitless")
 
         self.add_output("data:aerodynamics:wing:" + ls_tag + ":Cn_r", units="rad**-1")
 

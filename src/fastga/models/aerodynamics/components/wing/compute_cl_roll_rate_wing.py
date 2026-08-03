@@ -38,8 +38,8 @@ class ComputeClRollRateWing(FigureDigitization):
         self.options.declare("low_speed_aero", default=False, types=bool)
 
     def setup(self):
-        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
-        self.add_input("data:geometry:wing:taper_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan, units="unitless")
+        self.add_input("data:geometry:wing:taper_ratio", val=np.nan, units="unitless")
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="rad")
         self.add_input("data:geometry:wing:dihedral", val=np.nan, units="rad")
         self.add_input("data:geometry:wing:root:z", val=np.nan, units="m")
@@ -53,10 +53,12 @@ class ComputeClRollRateWing(FigureDigitization):
                 units="rad",
                 val=5.0 * np.pi / 180.0,
             )
-            self.add_input("data:aerodynamics:low_speed:mach", val=np.nan)
-            self.add_input("data:aerodynamics:wing:low_speed:CL0_clean", val=np.nan)
+            self.add_input("data:aerodynamics:low_speed:mach", val=np.nan, units="unitless")
+            self.add_input(
+                "data:aerodynamics:wing:low_speed:CL0_clean", val=np.nan, units="unitless"
+            )
             self.add_input("data:aerodynamics:wing:low_speed:CL_alpha", val=np.nan, units="rad**-1")
-            self.add_input("data:aerodynamics:wing:low_speed:CD0", val=np.nan)
+            self.add_input("data:aerodynamics:wing:low_speed:CD0", val=np.nan, units="unitless")
 
             self.add_output("data:aerodynamics:wing:low_speed:Cl_p", units="rad**-1")
 
@@ -66,13 +68,14 @@ class ComputeClRollRateWing(FigureDigitization):
                 units="rad",
                 val=1.0 * np.pi / 180.0,
             )
-            self.add_input("data:aerodynamics:cruise:mach", val=np.nan)
-            self.add_input("data:aerodynamics:wing:cruise:CL0_clean", val=np.nan)
+            self.add_input("data:aerodynamics:cruise:mach", val=np.nan, units="unitless")
+            self.add_input("data:aerodynamics:wing:cruise:CL0_clean", val=np.nan, units="unitless")
             self.add_input("data:aerodynamics:wing:cruise:CL_alpha", val=np.nan, units="rad**-1")
-            self.add_input("data:aerodynamics:wing:cruise:CD0", val=np.nan)
+            self.add_input("data:aerodynamics:wing:cruise:CD0", val=np.nan, units="unitless")
 
             self.add_output("data:aerodynamics:wing:cruise:Cl_p", units="rad**-1")
 
+    def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):

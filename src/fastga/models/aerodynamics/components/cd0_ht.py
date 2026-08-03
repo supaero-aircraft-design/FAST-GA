@@ -41,16 +41,19 @@ class Cd0HorizontalTail(om.ExplicitComponent):
         self.add_input("data:geometry:horizontal_tail:sweep_25", val=np.nan, units="deg")
         self.add_input("data:geometry:horizontal_tail:wet_area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
-        self.add_input("data:geometry:horizontal_tail:thickness_ratio", val=np.nan)
+        self.add_input(
+            "data:geometry:horizontal_tail:thickness_ratio", val=np.nan, units="unitless"
+        )
         if self.options["low_speed_aero"]:
-            self.add_input("data:aerodynamics:low_speed:mach", val=np.nan)
+            self.add_input("data:aerodynamics:low_speed:mach", val=np.nan, units="unitless")
             self.add_input("data:aerodynamics:low_speed:unit_reynolds", val=np.nan, units="m**-1")
-            self.add_output("data:aerodynamics:horizontal_tail:low_speed:CD0")
+            self.add_output("data:aerodynamics:horizontal_tail:low_speed:CD0", units="unitless")
         else:
-            self.add_input("data:aerodynamics:cruise:mach", val=np.nan)
+            self.add_input("data:aerodynamics:cruise:mach", val=np.nan, units="unitless")
             self.add_input("data:aerodynamics:cruise:unit_reynolds", val=np.nan, units="m**-1")
-            self.add_output("data:aerodynamics:horizontal_tail:cruise:CD0")
+            self.add_output("data:aerodynamics:horizontal_tail:cruise:CD0", units="unitless")
 
+    def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):

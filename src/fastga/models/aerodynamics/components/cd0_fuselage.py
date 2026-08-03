@@ -39,19 +39,12 @@ class Cd0Fuselage(om.ExplicitComponent):
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         if self.options["low_speed_aero"]:
             self.add_input("data:aerodynamics:low_speed:unit_reynolds", val=np.nan, units="m**-1")
-            self.add_output("data:aerodynamics:fuselage:low_speed:CD0", val=0.025)
-
-            self.declare_partials(
-                of="data:aerodynamics:fuselage:low_speed:CD0", wrt="*", method="exact"
-            )
+            self.add_output("data:aerodynamics:fuselage:low_speed:CD0", val=0.025, units="unitless")
         else:
             self.add_input("data:aerodynamics:cruise:unit_reynolds", val=np.nan, units="m**-1")
-            self.add_output("data:aerodynamics:fuselage:cruise:CD0", val=0.025)
+            self.add_output("data:aerodynamics:fuselage:cruise:CD0", val=0.025, units="unitless")
 
-            self.declare_partials(
-                of="data:aerodynamics:fuselage:cruise:CD0", wrt="*", method="exact"
-            )
-
+    def setup_partials(self):
         self.declare_partials("*", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):

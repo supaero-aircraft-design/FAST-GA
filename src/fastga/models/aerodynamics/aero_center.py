@@ -31,7 +31,11 @@ class ComputeAeroCenter(om.ExplicitComponent):
         self.add_input(
             "data:aerodynamics:horizontal_tail:cruise:CL_alpha", val=np.nan, units="rad**-1"
         )
-        self.add_input("data:aerodynamics:horizontal_tail:cruise:downwash_gradient", val=np.nan)
+        self.add_input(
+            "data:aerodynamics:horizontal_tail:cruise:downwash_gradient",
+            val=np.nan,
+            units="unitless",
+        )
         self.add_input("data:aerodynamics:elevator:low_speed:CL_delta", val=np.nan, units="rad**-1")
         self.add_input("data:aerodynamics:fuselage:cm_alpha", val=np.nan, units="rad**-1")
         self.add_input(
@@ -44,14 +48,17 @@ class ComputeAeroCenter(om.ExplicitComponent):
             val=np.nan,
             units="rad**-1",
         )
-        self.add_input("data:aerodynamics:horizontal_tail:efficiency", val=np.nan)
+        self.add_input("data:aerodynamics:horizontal_tail:efficiency", val=np.nan, units="unitless")
         self.add_input("data:TLAR:v_cruise", val=np.nan, units="m/s")
         self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="ft")
 
-        self.add_output("data:aerodynamics:cruise:neutral_point:stick_fixed:x")
-        self.add_output("data:aerodynamics:cruise:neutral_point:stick_free:x")
-        self.add_output("data:aerodynamics:cruise:neutral_point:free_elevator_factor")
+        self.add_output("data:aerodynamics:cruise:neutral_point:stick_fixed:x", units="unitless")
+        self.add_output("data:aerodynamics:cruise:neutral_point:stick_free:x", units="unitless")
+        self.add_output(
+            "data:aerodynamics:cruise:neutral_point:free_elevator_factor", units="unitless"
+        )
 
+    def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
