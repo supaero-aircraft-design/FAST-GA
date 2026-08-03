@@ -23,6 +23,7 @@ from numpy.testing import assert_allclose
 
 from fastga.command import api
 from fastga.models.aerodynamics.aerodynamics import Aerodynamics
+from fastga.models.geometry.geometry import GeometryFixedTailDistance as Geometry
 from fastga.notebooks.tutorial import data
 
 DATA_FOLDER_PATH = pathlib.Path(__file__).parent / "data"
@@ -54,9 +55,6 @@ def test_analysis_mode():
         "data:geometry:wing:aspect_ratio",
         "data:geometry:wing:taper_ratio",
     ]
-
-    # Need to do these import locally to avoid circular imports
-    from fastga.models.geometry.geometry import GeometryFixedTailDistance as Geometry
 
     # Declare geometry function
     compute_geometry = api.generate_block_analysis(

@@ -18,9 +18,9 @@ from collections.abc import Sequence
 
 import fastoad.api as oad
 import numpy as np
+from fastoad._utils.arrays import scalarize
 from fastoad.constants import EngineSetting
 from fastoad.exceptions import FastUnknownEngineSettingError
-from fastoad._utils.arrays import scalarize
 from scipy.interpolate import LinearNDInterpolator
 from stdatm import Atmosphere
 

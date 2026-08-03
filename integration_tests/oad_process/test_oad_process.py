@@ -164,7 +164,7 @@ def test_oad_process_tbm_900(cleanup):
     _check_weight_performance_loop(problem)
 
     # noinspection PyTypeChecker
-    assert_allclose(problem.get_val("data:mission:sizing:fuel", units="kg"), 763., atol=1)
+    assert_allclose(problem.get_val("data:mission:sizing:fuel", units="kg"), 763.0, atol=1)
     assert_allclose(problem["data:handling_qualities:stick_fixed_static_margin"], 0.23, atol=1e-2)
     # noinspection PyTypeChecker
     assert_allclose(problem.get_val("data:weight:aircraft:MTOW", units="kg"), 3359.0, atol=1)

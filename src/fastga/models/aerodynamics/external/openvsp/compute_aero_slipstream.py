@@ -17,11 +17,11 @@ Estimation of slipstream effects using OPENVSP.
 import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
+from fastoad._utils.arrays import scalarize
 from fastoad.constants import EngineSetting
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
-from fastoad._utils.arrays import scalarize
 from stdatm import Atmosphere
 
 from fastga.utils.options_checkers import check_propulsion_id
