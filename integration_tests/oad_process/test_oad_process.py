@@ -145,6 +145,9 @@ def test_oad_process_tbm_900(cleanup):
     problem.write_needed_inputs(ref_inputs)
     problem.read_inputs()
     problem.setup()
+
+    problem.set_val("data:geometry:wing:area", val=16, units="m**2")
+
     problem.run_model()
     problem.write_outputs()
 
@@ -161,12 +164,12 @@ def test_oad_process_tbm_900(cleanup):
     _check_weight_performance_loop(problem)
 
     # noinspection PyTypeChecker
-    assert_allclose(problem.get_val("data:mission:sizing:fuel", units="kg"), 768.3, atol=1)
+    assert_allclose(problem.get_val("data:mission:sizing:fuel", units="kg"), 763., atol=1)
     assert_allclose(problem["data:handling_qualities:stick_fixed_static_margin"], 0.23, atol=1e-2)
     # noinspection PyTypeChecker
-    assert_allclose(problem.get_val("data:weight:aircraft:MTOW", units="kg"), 3361.4, atol=1)
+    assert_allclose(problem.get_val("data:weight:aircraft:MTOW", units="kg"), 3359.0, atol=1)
     # noinspection PyTypeChecker
-    assert_allclose(problem.get_val("data:weight:aircraft:OWE", units="kg"), 2113.2, atol=1)
+    assert_allclose(problem.get_val("data:weight:aircraft:OWE", units="kg"), 2115.0, atol=1)
 
 
 def test_oad_process_vlm_mission_vector(cleanup):

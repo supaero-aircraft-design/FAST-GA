@@ -108,7 +108,7 @@ class AerodynamicsHighSpeed(om.Group):
                         htp_airfoil_file=self.options["htp_airfoil"],
                         use_neuralfoil=self.options["use_neuralfoil"],
                     ),
-                    promotes=["*"],
+                    promotes=["data:*"],
                 )
         elif self.options["compute_mach_interpolation"]:
             self.add_subsystem(
@@ -150,7 +150,7 @@ class AerodynamicsHighSpeed(om.Group):
                     htp_airfoil_file=self.options["htp_airfoil"],
                     use_neuralfoil=self.options["use_neuralfoil"],
                 ),
-                promotes=["*"],
+                promotes=["data:*"],
             )
 
         options_downwash = {

@@ -34,6 +34,7 @@ model:
             result_folder_path: ../workdir
             use_openvsp: true
             compute_slipstream: true
+            result_file_name: tbm900.json
         aerodynamics_highspeed:
             id: fastga.aerodynamics.highspeed.legacy
             wing_airfoil: naca63_415.af
@@ -41,6 +42,7 @@ model:
             compute_mach_interpolation: false
             use_openvsp: true
             compute_slipstream: true
+            result_file_name: tbm900.json
         weight:
             id: fastga.weight.legacy
         performance:

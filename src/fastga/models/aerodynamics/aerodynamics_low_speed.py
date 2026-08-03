@@ -142,7 +142,7 @@ class AerodynamicsLowSpeed(om.Group):
         self.add_subsystem(
             "airfoil_lift_slope",
             oad.RegisterSubmodel.get_submodel(SUBMODEL_AIRFOIL_LIFT_SLOPE, options=options_airfoil),
-            promotes=["*"],
+            promotes=["data:*"],
         )
 
         self.add_subsystem(
