@@ -455,7 +455,7 @@ class _UpdateVTArea(VTPConstraints):
         self.add_input("data:TLAR:v_cruise", val=np.nan, units="m/s")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan, units="unitless")
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="rad")
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
         self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
@@ -472,13 +472,15 @@ class _UpdateVTArea(VTPConstraints):
             "data:geometry:propulsion:nacelle:y", val=np.nan, shape_by_conn=True, units="m"
         )
 
-        self.add_input("data:weight:aircraft:CG:aft:MAC_position", val=np.nan)
+        self.add_input("data:weight:aircraft:CG:aft:MAC_position", val=np.nan, units="unitless")
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="kg")
         self.add_input("data:weight:aircraft:OWE", val=np.nan, units="kg")
         self.add_input("data:weight:aircraft:payload", val=np.nan, units="kg")
-        self.add_input("data:aerodynamics:wing:low_speed:CL_max_clean", val=np.nan)
-        self.add_input("data:aerodynamics:aircraft:landing:CL_max", val=np.nan)
-        self.add_input("data:aerodynamics:aircraft:takeoff:CL_max", val=np.nan)
+        self.add_input(
+            "data:aerodynamics:wing:low_speed:CL_max_clean", val=np.nan, units="unitless"
+        )
+        self.add_input("data:aerodynamics:aircraft:landing:CL_max", val=np.nan, units="unitless")
+        self.add_input("data:aerodynamics:aircraft:takeoff:CL_max", val=np.nan, units="unitless")
         self.add_input("data:aerodynamics:fuselage:Cn_beta", val=np.nan, units="rad**-1")
         self.add_input(
             "data:aerodynamics:vertical_tail:cruise:CL_alpha", val=np.nan, units="rad**-1"
@@ -494,12 +496,14 @@ class _UpdateVTArea(VTPConstraints):
         self.add_input(
             "settings:handling_qualities:rudder:safety_margin",
             val=0.20,
+            units="unitless",
             desc="Ratio of the total rudder deflection not used in the computation of the VT area "
             "to leave a safety margin",
         )
 
         self.add_output("data:geometry:vertical_tail:area", val=2.5, units="m**2")
 
+    def setup_partials(self):
         self.declare_partials(
             "*",
             "*",
@@ -579,7 +583,7 @@ class _ComputeVTPAreaConstraints(VTPConstraints):
         self.add_input("data:TLAR:v_cruise", val=np.nan, units="m/s")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan, units="unitless")
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="rad")
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
         self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
@@ -596,13 +600,15 @@ class _ComputeVTPAreaConstraints(VTPConstraints):
         self.add_input(
             "data:geometry:propulsion:nacelle:y", val=np.nan, shape_by_conn=True, units="m"
         )
-        self.add_input("data:weight:aircraft:CG:aft:MAC_position", val=np.nan)
+        self.add_input("data:weight:aircraft:CG:aft:MAC_position", val=np.nan, units="unitless")
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="kg")
         self.add_input("data:weight:aircraft:OWE", val=np.nan, units="kg")
         self.add_input("data:weight:aircraft:payload", val=np.nan, units="kg")
-        self.add_input("data:aerodynamics:wing:low_speed:CL_max_clean", val=np.nan)
-        self.add_input("data:aerodynamics:aircraft:landing:CL_max", val=np.nan)
-        self.add_input("data:aerodynamics:aircraft:takeoff:CL_max", val=np.nan)
+        self.add_input(
+            "data:aerodynamics:wing:low_speed:CL_max_clean", val=np.nan, units="unitless"
+        )
+        self.add_input("data:aerodynamics:aircraft:landing:CL_max", val=np.nan, units="unitless")
+        self.add_input("data:aerodynamics:aircraft:takeoff:CL_max", val=np.nan, units="unitless")
         self.add_input("data:aerodynamics:fuselage:Cn_beta", val=np.nan, units="rad**-1")
         self.add_input(
             "data:aerodynamics:vertical_tail:cruise:CL_alpha", val=np.nan, units="rad**-1"
@@ -618,6 +624,7 @@ class _ComputeVTPAreaConstraints(VTPConstraints):
         self.add_input(
             "settings:handling_qualities:rudder:safety_margin",
             val=0.20,
+            units="unitless",
             desc="Ratio of the total rudder deflection not used in the computation of the VT area "
             "to leave a safety margin",
         )
@@ -703,7 +710,7 @@ class UpdateVTAreaVolumeCoefficient(om.ExplicitComponent):
     def setup(self):
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
-        self.add_input("data:geometry:vertical_tail:volume_coefficient", val=0.04)
+        self.add_input("data:geometry:vertical_tail:volume_coefficient", val=0.04, units="unitless")
         self.add_input(
             "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="m"
         )

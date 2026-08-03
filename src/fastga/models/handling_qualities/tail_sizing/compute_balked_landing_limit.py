@@ -43,13 +43,15 @@ class AircraftEquilibriumLimit(om.ExplicitComponent):
         self.add_input(
             "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="m"
         )
-        self.add_input("data:geometry:horizontal_tail:elevator_chord_ratio", val=np.nan)
+        self.add_input(
+            "data:geometry:horizontal_tail:elevator_chord_ratio", val=np.nan, units="unitless"
+        )
         self.add_input("data:aerodynamics:wing:low_speed:CL_alpha", np.nan, units="rad**-1")
-        self.add_input("data:aerodynamics:wing:low_speed:CL0_clean", np.nan)
-        self.add_input("data:aerodynamics:wing:low_speed:CM0_clean", np.nan)
-        self.add_input("data:aerodynamics:wing:low_speed:CL_max_clean", np.nan)
+        self.add_input("data:aerodynamics:wing:low_speed:CL0_clean", np.nan, units="unitless")
+        self.add_input("data:aerodynamics:wing:low_speed:CM0_clean", np.nan, units="unitless")
+        self.add_input("data:aerodynamics:wing:low_speed:CL_max_clean", np.nan, units="unitless")
         self.add_input("data:aerodynamics:fuselage:cm_alpha", val=np.nan, units="rad**-1")
-        self.add_input("data:aerodynamics:horizontal_tail:efficiency", val=np.nan)
+        self.add_input("data:aerodynamics:horizontal_tail:efficiency", val=np.nan, units="unitless")
         self.add_input(
             "data:aerodynamics:horizontal_tail:low_speed:CL_alpha", np.nan, units="rad**-1"
         )
@@ -67,10 +69,10 @@ class AircraftEquilibriumLimit(om.ExplicitComponent):
             units="deg",
         )
         self.add_input("data:aerodynamics:elevator:low_speed:CL_delta", np.nan, units="rad**-1")
-        self.add_input("data:aerodynamics:flaps:landing:CM", val=np.nan)
-        self.add_input("data:aerodynamics:flaps:landing:CL", val=np.nan)
-        self.add_input("data:aerodynamics:flaps:landing:CD", val=np.nan)
-        self.add_input("data:aerodynamics:flaps:landing:CL_max", val=np.nan)
+        self.add_input("data:aerodynamics:flaps:landing:CM", val=np.nan, units="unitless")
+        self.add_input("data:aerodynamics:flaps:landing:CL", val=np.nan, units="unitless")
+        self.add_input("data:aerodynamics:flaps:landing:CD", val=np.nan, units="unitless")
+        self.add_input("data:aerodynamics:flaps:landing:CL_max", val=np.nan, units="unitless")
         self.add_input("data:mission:sizing:takeoff:elevator_angle", val=np.nan, units="rad")
 
     @staticmethod
@@ -203,15 +205,25 @@ class ComputeBalkedLandingLimit(AircraftEquilibriumLimit):
 
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="kg")
         self.add_input("data:weight:aircraft:MLW", val=np.nan, units="kg")
-        self.add_input("data:aerodynamics:wing:low_speed:induced_drag_coefficient", val=np.nan)
         self.add_input(
-            "data:aerodynamics:horizontal_tail:low_speed:induced_drag_coefficient", val=np.nan
+            "data:aerodynamics:wing:low_speed:induced_drag_coefficient",
+            val=np.nan,
+            units="unitless",
         )
-        self.add_input("data:aerodynamics:aircraft:landing:CL_max", val=np.nan)
-        self.add_input("data:aerodynamics:aircraft:low_speed:CD0", val=np.nan)
+        self.add_input(
+            "data:aerodynamics:horizontal_tail:low_speed:induced_drag_coefficient",
+            val=np.nan,
+            units="unitless",
+        )
+        self.add_input("data:aerodynamics:aircraft:landing:CL_max", val=np.nan, units="unitless")
+        self.add_input("data:aerodynamics:aircraft:low_speed:CD0", val=np.nan, units="unitless")
 
         self.add_output("data:handling_qualities:balked_landing_limit:x", val=4.0, units="m")
-        self.add_output("data:handling_qualities:balked_landing_limit:MAC_position", val=np.nan)
+        self.add_output(
+            "data:handling_qualities:balked_landing_limit:MAC_position",
+            val=np.nan,
+            units="unitless",
+        )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         mlw = inputs["data:weight:aircraft:MLW"]

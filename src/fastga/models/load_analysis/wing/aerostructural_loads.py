@@ -38,8 +38,8 @@ MIN_SIGNIFICANT_FUEL_MASS = 5
 )
 class AerostructuralLoad(om.ExplicitComponent):
     def setup(self):  # noqa: PLR0915
-        self.add_input("data:TLAR:category", val=3.0)
-        self.add_input("data:TLAR:level", val=2.0)
+        self.add_input("data:TLAR:category", val=3.0, units="unitless")
+        self.add_input("data:TLAR:level", val=2.0, units="unitless")
         self.add_input("data:TLAR:v_max_sl", val=np.nan, units="kn")
         self.add_input("data:TLAR:v_cruise", val=np.nan, units="m/s")
         self.add_input("data:TLAR:v_approach", val=np.nan, units="m/s")
@@ -62,12 +62,14 @@ class AerostructuralLoad(om.ExplicitComponent):
             val=np.nan,
             shape_by_conn=True,
             copy_shape="data:aerodynamics:wing:low_speed:Y_vector",
+            units="unitless",
         )
         self.add_input(
             "data:aerodynamics:slipstream:wing:cruise:only_prop:CL_vector",
             val=np.nan,
             shape_by_conn=True,
             copy_shape="data:aerodynamics:slipstream:wing:cruise:prop_on:Y_vector",
+            units="unitless",
         )
         self.add_input(
             "data:aerodynamics:slipstream:wing:cruise:prop_on:Y_vector",
@@ -80,12 +82,16 @@ class AerostructuralLoad(om.ExplicitComponent):
             val=np.nan,
             units="m/s",
         )
-        self.add_input("data:aerodynamics:wing:low_speed:CL_ref", val=np.nan)
-        self.add_input("data:aerodynamics:wing:cruise:CM0_clean", val=np.nan)
-        self.add_input("data:aerodynamics:horizontal_tail:efficiency", val=np.nan)
-        self.add_input("data:aerodynamics:aircraft:landing:CL_max", val=np.nan)
-        self.add_input("data:aerodynamics:wing:low_speed:CL_max_clean", val=np.nan)
-        self.add_input("data:aerodynamics:wing:low_speed:CL_min_clean", val=np.nan)
+        self.add_input("data:aerodynamics:wing:low_speed:CL_ref", val=np.nan, units="unitless")
+        self.add_input("data:aerodynamics:wing:cruise:CM0_clean", val=np.nan, units="unitless")
+        self.add_input("data:aerodynamics:horizontal_tail:efficiency", val=np.nan, units="unitless")
+        self.add_input("data:aerodynamics:aircraft:landing:CL_max", val=np.nan, units="unitless")
+        self.add_input(
+            "data:aerodynamics:wing:low_speed:CL_max_clean", val=np.nan, units="unitless"
+        )
+        self.add_input(
+            "data:aerodynamics:wing:low_speed:CL_min_clean", val=np.nan, units="unitless"
+        )
         self.add_input("data:aerodynamics:wing:low_speed:CL_alpha", val=np.nan, units="rad**-1")
         self.add_input("data:aerodynamics:wing:cruise:CL_alpha", val=np.nan, units="rad**-1")
         self.add_input(
@@ -109,6 +115,7 @@ class AerostructuralLoad(om.ExplicitComponent):
             "data:aerodynamics:aircraft:mach_interpolation:mach_vector",
             val=np.nan,
             shape_by_conn=True,
+            units="unitless",
         )
 
         self.add_input("data:weight:aircraft:MZFW", val=np.nan, units="kg")
@@ -124,8 +131,8 @@ class AerostructuralLoad(om.ExplicitComponent):
         self.add_input("data:geometry:wing:tip:chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:root:y", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:y", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:root:thickness_ratio", val=np.nan)
-        self.add_input("data:geometry:wing:tip:thickness_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:root:thickness_ratio", val=np.nan, units="unitless")
+        self.add_input("data:geometry:wing:tip:thickness_ratio", val=np.nan, units="unitless")
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:MAC:leading_edge:x:local", val=np.nan, units="m")
@@ -136,28 +143,38 @@ class AerostructuralLoad(om.ExplicitComponent):
             val=np.nan,
             units="m",
         )
-        self.add_input("data:geometry:flap:chord_ratio", val=np.nan)
-        self.add_input("data:geometry:wing:aileron:chord_ratio", val=np.nan)
+        self.add_input("data:geometry:flap:chord_ratio", val=np.nan, units="unitless")
+        self.add_input("data:geometry:wing:aileron:chord_ratio", val=np.nan, units="unitless")
         self.add_input("data:geometry:fuselage:length", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
         self.add_input("data:geometry:landing_gear:y", val=np.nan, units="m")
-        self.add_input("data:geometry:landing_gear:type", val=np.nan)
-        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
-        self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
+        self.add_input("data:geometry:landing_gear:type", val=np.nan, units="unitless")
+        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan, units="unitless")
+        self.add_input("data:geometry:propulsion:engine:count", val=np.nan, units="unitless")
         self.add_input(
             "data:geometry:propulsion:engine:y_ratio",
             shape_by_conn=True,
+            units="unitless",
         )
         self.add_input("data:geometry:propulsion:nacelle:width", val=np.nan, units="m")
-        self.add_input("data:geometry:propulsion:tank:y_ratio_tank_end", val=np.nan)
-        self.add_input("data:geometry:propulsion:tank:y_ratio_tank_beginning", val=np.nan)
-        self.add_input("data:geometry:propulsion:tank:LE_chord_percentage", val=np.nan)
-        self.add_input("data:geometry:propulsion:tank:TE_chord_percentage", val=np.nan)
+        self.add_input(
+            "data:geometry:propulsion:tank:y_ratio_tank_end", val=np.nan, units="unitless"
+        )
+        self.add_input(
+            "data:geometry:propulsion:tank:y_ratio_tank_beginning", val=np.nan, units="unitless"
+        )
+        self.add_input(
+            "data:geometry:propulsion:tank:LE_chord_percentage", val=np.nan, units="unitless"
+        )
+        self.add_input(
+            "data:geometry:propulsion:tank:TE_chord_percentage", val=np.nan, units="unitless"
+        )
 
         self.add_input(
             "data:weight:airframe:wing:punctual_mass:y_ratio",
             shape_by_conn=True,
             val=0.0,
+            units="unitless",
         )
         self.add_input(
             "data:weight:airframe:wing:punctual_mass:mass",
@@ -171,21 +188,37 @@ class AerostructuralLoad(om.ExplicitComponent):
         self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="ft")
 
         self.add_input("data:mission:sizing:cs23:characteristic_speed:vc", val=np.nan, units="m/s")
-        self.add_input("data:mission:sizing:cs23:safety_factor", val=np.nan)
-        self.add_input("data:mission:sizing:cs23:sizing_factor:ultimate_mtow:positive", val=np.nan)
-        self.add_input("data:mission:sizing:cs23:sizing_factor:ultimate_mtow:negative", val=np.nan)
-        self.add_input("data:mission:sizing:cs23:sizing_factor:ultimate_mzfw:positive", val=np.nan)
-        self.add_input("data:mission:sizing:cs23:sizing_factor:ultimate_mzfw:negative", val=np.nan)
+        self.add_input("data:mission:sizing:cs23:safety_factor", val=np.nan, units="unitless")
+        self.add_input(
+            "data:mission:sizing:cs23:sizing_factor:ultimate_mtow:positive",
+            val=np.nan,
+            units="unitless",
+        )
+        self.add_input(
+            "data:mission:sizing:cs23:sizing_factor:ultimate_mtow:negative",
+            val=np.nan,
+            units="unitless",
+        )
+        self.add_input(
+            "data:mission:sizing:cs23:sizing_factor:ultimate_mzfw:positive",
+            val=np.nan,
+            units="unitless",
+        )
+        self.add_input(
+            "data:mission:sizing:cs23:sizing_factor:ultimate_mzfw:negative",
+            val=np.nan,
+            units="unitless",
+        )
 
-        self.add_input("settings:geometry:fuel_tanks:depth", val=np.nan)
+        self.add_input("settings:geometry:fuel_tanks:depth", val=np.nan, units="unitless")
 
         self.add_output("data:loads:max_shear:mass", units="kg")
-        self.add_output("data:loads:max_shear:load_factor")
+        self.add_output("data:loads:max_shear:load_factor", units="unitless")
         self.add_output("data:loads:max_shear:lift_shear", units="N", shape=SPAN_MESH_POINT_LOADS)
         self.add_output("data:loads:max_shear:weight_shear", units="N", shape=SPAN_MESH_POINT_LOADS)
 
         self.add_output("data:loads:max_rbm:mass", units="kg")
-        self.add_output("data:loads:max_rbm:load_factor")
+        self.add_output("data:loads:max_rbm:load_factor", units="unitless")
         self.add_output("data:loads:max_rbm:lift_rbm", units="N*m", shape=SPAN_MESH_POINT_LOADS)
         self.add_output("data:loads:max_rbm:weight_rbm", units="N*m", shape=SPAN_MESH_POINT_LOADS)
 

@@ -290,8 +290,8 @@ class _UpdateArea(HTPConstraints):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
 
-        self.add_input("settings:weight:aircraft:CG:range", val=0.3)
-        self.add_input("data:mission:sizing:takeoff:thrust_rate", val=np.nan)
+        self.add_input("settings:weight:aircraft:CG:range", val=0.3, units="unitless")
+        self.add_input("data:mission:sizing:takeoff:thrust_rate", val=np.nan, units="unitless")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
         self.add_input(
@@ -305,26 +305,29 @@ class _UpdateArea(HTPConstraints):
         self.add_input("data:weight:airframe:landing_gear:main:CG:x", val=np.nan, units="m")
         self.add_input("data:weight:aircraft_empty:CG:z", val=np.nan, units="m")
         self.add_input("data:weight:propulsion:engine:CG:z", val=np.nan, units="m")
-        self.add_input("data:aerodynamics:wing:low_speed:CL0_clean", val=np.nan)
-        self.add_input("data:aerodynamics:wing:low_speed:CM0_clean", val=np.nan)
-        self.add_input("data:aerodynamics:aircraft:landing:CL_max", val=np.nan)
-        self.add_input("data:aerodynamics:aircraft:takeoff:CL_max", val=np.nan)
-        self.add_input("data:aerodynamics:wing:low_speed:CL_max_clean", val=np.nan)
-        self.add_input("data:aerodynamics:flaps:landing:CL", val=np.nan)
-        self.add_input("data:aerodynamics:flaps:takeoff:CL", val=np.nan)
-        self.add_input("data:aerodynamics:flaps:landing:CM", val=np.nan)
-        self.add_input("data:aerodynamics:flaps:takeoff:CM", val=np.nan)
+        self.add_input("data:aerodynamics:wing:low_speed:CL0_clean", val=np.nan, units="unitless")
+        self.add_input("data:aerodynamics:wing:low_speed:CM0_clean", val=np.nan, units="unitless")
+        self.add_input("data:aerodynamics:aircraft:landing:CL_max", val=np.nan, units="unitless")
+        self.add_input("data:aerodynamics:aircraft:takeoff:CL_max", val=np.nan, units="unitless")
+        self.add_input(
+            "data:aerodynamics:wing:low_speed:CL_max_clean", val=np.nan, units="unitless"
+        )
+        self.add_input("data:aerodynamics:flaps:landing:CL", val=np.nan, units="unitless")
+        self.add_input("data:aerodynamics:flaps:takeoff:CL", val=np.nan, units="unitless")
+        self.add_input("data:aerodynamics:flaps:landing:CM", val=np.nan, units="unitless")
+        self.add_input("data:aerodynamics:flaps:takeoff:CM", val=np.nan, units="unitless")
         self.add_input(
             "data:aerodynamics:horizontal_tail:low_speed:CL_alpha", val=np.nan, units="rad**-1"
         )
-        self.add_input("data:aerodynamics:horizontal_tail:efficiency", val=np.nan)
+        self.add_input("data:aerodynamics:horizontal_tail:efficiency", val=np.nan, units="unitless")
 
-        self.add_input("landing:cl_htp", val=np.nan)
-        self.add_input("takeoff:cl_htp", val=np.nan)
-        self.add_input("low_speed:cl_alpha_htp_isolated", val=np.nan)
+        self.add_input("landing:cl_htp", val=np.nan, units="unitless")
+        self.add_input("takeoff:cl_htp", val=np.nan, units="unitless")
+        self.add_input("low_speed:cl_alpha_htp_isolated", val=np.nan, units="unitless")
 
         self.add_output("data:geometry:horizontal_tail:area", val=4.0, units="m**2")
 
+    def setup_partials(self):
         self.declare_partials(
             "*", "*", method="fd"
         )  # FIXME: write partial avoiding discrete parameters
@@ -364,8 +367,8 @@ class _ComputeHTPAreaConstraints(HTPConstraints):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
 
-        self.add_input("settings:weight:aircraft:CG:range", val=0.3)
-        self.add_input("data:mission:sizing:takeoff:thrust_rate", val=np.nan)
+        self.add_input("settings:weight:aircraft:CG:range", val=0.3, units="unitless")
+        self.add_input("data:mission:sizing:takeoff:thrust_rate", val=np.nan, units="unitless")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
         self.add_input(
@@ -380,23 +383,25 @@ class _ComputeHTPAreaConstraints(HTPConstraints):
         self.add_input("data:weight:airframe:landing_gear:main:CG:x", val=np.nan, units="m")
         self.add_input("data:weight:aircraft_empty:CG:z", val=np.nan, units="m")
         self.add_input("data:weight:propulsion:engine:CG:z", val=np.nan, units="m")
-        self.add_input("data:aerodynamics:wing:low_speed:CL0_clean", val=np.nan)
-        self.add_input("data:aerodynamics:wing:low_speed:CM0_clean", val=np.nan)
-        self.add_input("data:aerodynamics:aircraft:landing:CL_max", val=np.nan)
-        self.add_input("data:aerodynamics:aircraft:takeoff:CL_max", val=np.nan)
-        self.add_input("data:aerodynamics:wing:low_speed:CL_max_clean", val=np.nan)
-        self.add_input("data:aerodynamics:flaps:landing:CL", val=np.nan)
-        self.add_input("data:aerodynamics:flaps:takeoff:CL", val=np.nan)
-        self.add_input("data:aerodynamics:flaps:landing:CM", val=np.nan)
-        self.add_input("data:aerodynamics:flaps:takeoff:CM", val=np.nan)
+        self.add_input("data:aerodynamics:wing:low_speed:CL0_clean", val=np.nan, units="unitless")
+        self.add_input("data:aerodynamics:wing:low_speed:CM0_clean", val=np.nan, units="unitless")
+        self.add_input("data:aerodynamics:aircraft:landing:CL_max", val=np.nan, units="unitless")
+        self.add_input("data:aerodynamics:aircraft:takeoff:CL_max", val=np.nan, units="unitless")
+        self.add_input(
+            "data:aerodynamics:wing:low_speed:CL_max_clean", val=np.nan, units="unitless"
+        )
+        self.add_input("data:aerodynamics:flaps:landing:CL", val=np.nan, units="unitless")
+        self.add_input("data:aerodynamics:flaps:takeoff:CL", val=np.nan, units="unitless")
+        self.add_input("data:aerodynamics:flaps:landing:CM", val=np.nan, units="unitless")
+        self.add_input("data:aerodynamics:flaps:takeoff:CM", val=np.nan, units="unitless")
         self.add_input(
             "data:aerodynamics:horizontal_tail:low_speed:CL_alpha", val=np.nan, units="rad**-1"
         )
-        self.add_input("data:aerodynamics:horizontal_tail:efficiency", val=np.nan)
+        self.add_input("data:aerodynamics:horizontal_tail:efficiency", val=np.nan, units="unitless")
 
-        self.add_input("landing:cl_htp", val=np.nan)
-        self.add_input("takeoff:cl_htp", val=np.nan)
-        self.add_input("low_speed:cl_alpha_htp_isolated", val=np.nan)
+        self.add_input("landing:cl_htp", val=np.nan, units="unitless")
+        self.add_input("takeoff:cl_htp", val=np.nan, units="unitless")
+        self.add_input("low_speed:cl_alpha_htp_isolated", val=np.nan, units="unitless")
 
         self.add_output("data:constraints:horizontal_tail:takeoff_rotation", units="m**2")
         self.add_output("data:constraints:horizontal_tail:landing", units="m**2")
@@ -443,7 +448,9 @@ class _ComputeAeroCoeff(om.ExplicitComponent):
         self.add_input("data:geometry:horizontal_tail:area", val=2.0, units="m**2")
         self.add_input("data:weight:aircraft:MLW", val=np.nan, units="kg")
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="kg")
-        self.add_input("data:aerodynamics:horizontal_tail:low_speed:CL0", val=np.nan)
+        self.add_input(
+            "data:aerodynamics:horizontal_tail:low_speed:CL0", val=np.nan, units="unitless"
+        )
         self.add_input(
             "data:aerodynamics:horizontal_tail:low_speed:CL_alpha_isolated",
             val=np.nan,
@@ -452,19 +459,22 @@ class _ComputeAeroCoeff(om.ExplicitComponent):
         self.add_input(
             "data:aerodynamics:horizontal_tail:low_speed:CL_alpha", val=np.nan, units="rad**-1"
         )
-        self.add_input("data:aerodynamics:wing:low_speed:CL0_clean", val=np.nan)
+        self.add_input("data:aerodynamics:wing:low_speed:CL0_clean", val=np.nan, units="unitless")
         self.add_input("data:aerodynamics:wing:low_speed:CL_alpha", val=np.nan, units="rad**-1")
-        self.add_input("data:aerodynamics:flaps:landing:CL", val=np.nan)
-        self.add_input("data:aerodynamics:flaps:takeoff:CL", val=np.nan)
-        self.add_input("data:aerodynamics:aircraft:landing:CL_max", val=np.nan)
-        self.add_input("data:aerodynamics:wing:low_speed:CL_max_clean", val=np.nan)
+        self.add_input("data:aerodynamics:flaps:landing:CL", val=np.nan, units="unitless")
+        self.add_input("data:aerodynamics:flaps:takeoff:CL", val=np.nan, units="unitless")
+        self.add_input("data:aerodynamics:aircraft:landing:CL_max", val=np.nan, units="unitless")
+        self.add_input(
+            "data:aerodynamics:wing:low_speed:CL_max_clean", val=np.nan, units="unitless"
+        )
         self.add_input("data:aerodynamics:elevator:low_speed:CL_delta", val=np.nan, units="rad**-1")
         self.add_input("data:mission:sizing:landing:elevator_angle", val=np.nan, units="rad")
         self.add_input("data:mission:sizing:takeoff:elevator_angle", val=np.nan, units="rad")
 
-        self.add_output("cl_htp")
-        self.add_output("cl_alpha_htp_isolated")
+        self.add_output("cl_htp", units="unitless")
+        self.add_output("cl_alpha_htp_isolated", units="unitless")
 
+    def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
     # pylint: disable=missing-function-docstring, unused-argument
@@ -551,7 +561,9 @@ class UpdateHTAreaVolumeCoefficient(om.ExplicitComponent):
     def setup(self):
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
-        self.add_input("data:geometry:horizontal_tail:volume_coefficient", val=0.7)
+        self.add_input(
+            "data:geometry:horizontal_tail:volume_coefficient", val=0.7, units="unitless"
+        )
         self.add_input(
             "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="m"
         )

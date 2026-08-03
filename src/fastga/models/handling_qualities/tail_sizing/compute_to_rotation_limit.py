@@ -106,25 +106,28 @@ class ComputeTORotationLimit(om.ExplicitComponent):
         self.add_input("data:weight:airframe:landing_gear:main:CG:x", val=np.nan, units="m")
         self.add_input("data:weight:aircraft_empty:CG:z", val=np.nan, units="m")
         self.add_input("data:weight:propulsion:engine:CG:z", val=np.nan, units="m")
-        self.add_input("data:aerodynamics:wing:low_speed:CL0_clean", val=np.nan)
-        self.add_input("data:aerodynamics:aircraft:takeoff:CL_max", val=np.nan)
-        self.add_input("data:aerodynamics:wing:low_speed:CL_max_clean", val=np.nan)
-        self.add_input("data:aerodynamics:flaps:takeoff:CL", val=np.nan)
-        self.add_input("data:aerodynamics:flaps:takeoff:CM", val=np.nan)
+        self.add_input("data:aerodynamics:wing:low_speed:CL0_clean", val=np.nan, units="unitless")
+        self.add_input("data:aerodynamics:aircraft:takeoff:CL_max", val=np.nan, units="unitless")
+        self.add_input(
+            "data:aerodynamics:wing:low_speed:CL_max_clean", val=np.nan, units="unitless"
+        )
+        self.add_input("data:aerodynamics:flaps:takeoff:CL", val=np.nan, units="unitless")
+        self.add_input("data:aerodynamics:flaps:takeoff:CM", val=np.nan, units="unitless")
         self.add_input(
             "data:aerodynamics:horizontal_tail:low_speed:CL_alpha_isolated",
             val=np.nan,
             units="rad**-1",
         )
-        self.add_input("data:aerodynamics:horizontal_tail:efficiency", val=np.nan)
+        self.add_input("data:aerodynamics:horizontal_tail:efficiency", val=np.nan, units="unitless")
 
-        self.add_input("takeoff:cl_htp", val=np.nan)
-        self.add_input("takeoff:cm_wing", val=np.nan)
-        self.add_input("low_speed:cl_alpha_htp", val=np.nan)
+        self.add_input("takeoff:cl_htp", val=np.nan, units="unitless")
+        self.add_input("takeoff:cm_wing", val=np.nan, units="unitless")
+        self.add_input("low_speed:cl_alpha_htp", val=np.nan, units="unitless")
 
         self.add_output("data:handling_qualities:to_rotation_limit:x", units="m")
-        self.add_output("data:handling_qualities:to_rotation_limit:MAC_position")
+        self.add_output("data:handling_qualities:to_rotation_limit:MAC_position", units="unitless")
 
+    def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
@@ -217,8 +220,10 @@ class _ComputeAeroCoeffTO(om.ExplicitComponent):
     def setup(self):
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:horizontal_tail:area", val=2.0, units="m**2")
-        self.add_input("data:aerodynamics:wing:low_speed:CM0_clean", val=np.nan)
-        self.add_input("data:aerodynamics:horizontal_tail:low_speed:CL0", val=np.nan)
+        self.add_input("data:aerodynamics:wing:low_speed:CM0_clean", val=np.nan, units="unitless")
+        self.add_input(
+            "data:aerodynamics:horizontal_tail:low_speed:CL0", val=np.nan, units="unitless"
+        )
         self.add_input(
             "data:aerodynamics:horizontal_tail:low_speed:CL_alpha", val=np.nan, units="rad**-1"
         )
@@ -228,10 +233,11 @@ class _ComputeAeroCoeffTO(om.ExplicitComponent):
         self.add_input("data:aerodynamics:elevator:low_speed:CL_delta", val=np.nan, units="rad**-1")
         self.add_input("data:mission:sizing:takeoff:elevator_angle", val=np.nan, units="rad")
 
-        self.add_output("cl_htp")
-        self.add_output("cm_wing")
-        self.add_output("cl_alpha_htp")
+        self.add_output("cl_htp", units="unitless")
+        self.add_output("cm_wing", units="unitless")
+        self.add_output("cl_alpha_htp", units="unitless")
 
+    def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
