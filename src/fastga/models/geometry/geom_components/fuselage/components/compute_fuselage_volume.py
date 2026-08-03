@@ -45,6 +45,7 @@ class ComputeFuselageVolume(om.ExplicitComponent):
             desc="Volume of the fuselage",
         )
 
+    def setup_partials(self):
         self.declare_partials("*", "*", method="exact")
 
     # pylint: disable=missing-function-docstring, unused-argument

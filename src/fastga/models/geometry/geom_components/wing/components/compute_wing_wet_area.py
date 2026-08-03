@@ -38,6 +38,7 @@ class ComputeWingWetArea(om.ExplicitComponent):
         self.add_output("data:geometry:wing:outer_area", units="m**2")
         self.add_output("data:geometry:wing:wet_area", units="m**2")
 
+    def setup_partials(self):
         self.declare_partials("*", "*", method="exact")
 
     # pylint: disable=missing-function-docstring, unused-argument

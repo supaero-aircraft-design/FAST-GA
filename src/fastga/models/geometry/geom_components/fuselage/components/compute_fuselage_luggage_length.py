@@ -34,6 +34,7 @@ class ComputeFuselageLuggageLength(om.ExplicitComponent):
 
         self.add_output("data:geometry:fuselage:luggage_length", units="m")
 
+    def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="exact")
 
     # pylint: disable=missing-function-docstring, unused-argument

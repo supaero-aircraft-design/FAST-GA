@@ -24,12 +24,13 @@ class ComputeWingSweep50(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
     def setup(self):
-        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
-        self.add_input("data:geometry:wing:taper_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan, units="unitless")
+        self.add_input("data:geometry:wing:taper_ratio", val=np.nan, units="unitless")
         self.add_input("data:geometry:wing:sweep_0", val=np.nan, units="rad")
 
         self.add_output("data:geometry:wing:sweep_50", units="rad")
 
+    def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="exact")
 
     # pylint: disable=missing-function-docstring, unused-argument

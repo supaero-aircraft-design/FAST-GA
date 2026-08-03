@@ -46,6 +46,7 @@ class ComputeFuselageWetArea(om.ExplicitComponent):
 
         self.add_output("data:geometry:fuselage:wet_area", units="m**2")
 
+    def setup_partials(self):
         self.declare_partials("data:geometry:fuselage:wet_area", "*", method="exact")
 
     # pylint: disable=missing-function-docstring, unused-argument
@@ -106,6 +107,7 @@ class ComputeFuselageWetAreaFLOPS(om.ExplicitComponent):
 
         self.add_output("data:geometry:fuselage:wet_area", units="m**2")
 
+    def setup_partials(self):
         self.declare_partials("data:geometry:fuselage:wet_area", "*", method="exact")
 
     # pylint: disable=missing-function-docstring, unused-argument

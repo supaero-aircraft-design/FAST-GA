@@ -33,10 +33,11 @@ class ComputeTotalArea(om.ExplicitComponent):
         self.add_input("data:geometry:horizontal_tail:wet_area", val=np.nan, units="m**2")
         self.add_input("data:geometry:vertical_tail:wet_area", val=np.nan, units="m**2")
         self.add_input("data:geometry:propulsion:nacelle:wet_area", val=np.nan, units="m**2")
-        self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:count", val=np.nan, units="unitless")
 
         self.add_output("data:geometry:aircraft:wet_area", units="m**2")
 
+    def setup_partials(self):
         self.declare_partials(
             "*",
             [

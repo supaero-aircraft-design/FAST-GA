@@ -30,6 +30,7 @@ class ComputeWingSweep0(om.ExplicitComponent):
 
         self.add_output("data:geometry:wing:sweep_0", units="rad")
 
+    def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="exact")
 
     # pylint: disable=missing-function-docstring, unused-argument

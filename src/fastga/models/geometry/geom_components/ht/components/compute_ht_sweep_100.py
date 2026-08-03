@@ -33,6 +33,7 @@ class ComputeHTSweep100(om.ExplicitComponent):
 
         self.add_output("data:geometry:horizontal_tail:sweep_100", units="rad")
 
+    def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="exact")
 
     # pylint: disable=missing-function-docstring, unused-argument

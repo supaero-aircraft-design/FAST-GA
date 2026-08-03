@@ -35,8 +35,9 @@ class ComputeHTVolumeCoefficient(om.ExplicitComponent):
             "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="m"
         )
 
-        self.add_output("data:geometry:horizontal_tail:volume_coefficient")
+        self.add_output("data:geometry:horizontal_tail:volume_coefficient", units="unitless")
 
+    def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="exact")
 
     # pylint: disable=missing-function-docstring, unused-argument

@@ -33,6 +33,7 @@ class ComputeFuselageMasterCrossSection(om.ExplicitComponent):
 
         self.add_output("data:geometry:fuselage:master_cross_section", units="m**2")
 
+    def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="exact")
 
     # pylint: disable=missing-function-docstring, unused-argument

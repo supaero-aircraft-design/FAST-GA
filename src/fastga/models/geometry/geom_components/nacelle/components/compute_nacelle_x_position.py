@@ -54,6 +54,7 @@ class ComputeNacelleXPosition(om.ExplicitComponent):
             copy_shape="data:geometry:propulsion:nacelle:y",
         )
 
+    def setup_partials(self):
         self.declare_partials(
             of="*",
             wrt=[

@@ -32,6 +32,7 @@ class ComputeFuselageCabinLength(om.ExplicitComponent):
 
         self.add_output("data:geometry:cabin:length", units="m")
 
+    def setup_partials(self):
         self.declare_partials(of="*", wrt="*", val=1.0)
 
     # pylint: disable=missing-function-docstring, unused-argument

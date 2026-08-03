@@ -32,7 +32,7 @@ class ComputePropellerInstallationEffect(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
     def setup(self):
-        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan, units="unitless")
         self.add_input("data:geometry:propeller:diameter", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:master_cross_section", val=np.nan, units="m**2")
         self.add_input(
@@ -42,11 +42,13 @@ class ComputePropellerInstallationEffect(om.ExplicitComponent):
         self.add_output(
             "data:aerodynamics:propeller:installation_effect:effective_advance_ratio",
             val=1.0,
+            units="unitless",
             desc="Value to multiply the flight advance ration with to obtain the effective "
             "advance ratio due to the presence of cowling (fuselage or nacelle) behind the "
             "propeller",
         )
 
+    def setup_partials(self):
         self.declare_partials("*", "*", method="exact")
         self.declare_partials("*", "data:geometry:propulsion:engine:layout", method="fd")
 

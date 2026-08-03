@@ -27,13 +27,18 @@ class ComputeWingTankSpans(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
     def setup(self):
-        self.add_input("data:geometry:propulsion:tank:y_ratio_tank_beginning", val=np.nan)
-        self.add_input("data:geometry:propulsion:tank:y_ratio_tank_end", val=np.nan)
+        self.add_input(
+            "data:geometry:propulsion:tank:y_ratio_tank_beginning", val=np.nan, units="unitless"
+        )
+        self.add_input(
+            "data:geometry:propulsion:tank:y_ratio_tank_end", val=np.nan, units="unitless"
+        )
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
 
         self.add_output("data:geometry:propulsion:tank:y_beginning", units="m", val=1.0)
         self.add_output("data:geometry:propulsion:tank:y_end", units="m", val=6.0)
 
+    def setup_partials(self):
         self.declare_partials(
             of="data:geometry:propulsion:tank:y_beginning",
             wrt=[

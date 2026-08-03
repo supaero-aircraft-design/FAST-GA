@@ -29,15 +29,26 @@ class ComputeWingToc(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
     def setup(self):
-        self.add_input("data:geometry:wing:thickness_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:thickness_ratio", val=np.nan, units="unitless")
 
-        self.add_output("data:geometry:wing:root:thickness_ratio")
-        self.add_output("data:geometry:wing:kink:thickness_ratio")
-        self.add_output("data:geometry:wing:tip:thickness_ratio")
+        self.add_output("data:geometry:wing:root:thickness_ratio", units="unitless")
+        self.add_output("data:geometry:wing:kink:thickness_ratio", units="unitless")
+        self.add_output("data:geometry:wing:tip:thickness_ratio", units="unitless")
 
-        self.declare_partials("data:geometry:wing:root:thickness_ratio", "*", val=1.24)
-        self.declare_partials("data:geometry:wing:kink:thickness_ratio", "*", val=0.94)
-        self.declare_partials("data:geometry:wing:tip:thickness_ratio", "*", val=0.86)
+    def setup_partials(self):
+        self.declare_partials(
+            "data:geometry:wing:root:thickness_ratio",
+            "data:geometry:wing:thickness_ratio",
+            val=1.24,
+        )
+        self.declare_partials(
+            "data:geometry:wing:kink:thickness_ratio",
+            "data:geometry:wing:thickness_ratio",
+            val=0.94,
+        )
+        self.declare_partials(
+            "data:geometry:wing:tip:thickness_ratio", "data:geometry:wing:thickness_ratio", val=0.86
+        )
 
     # pylint: disable=missing-function-docstring, unused-argument
     # Overriding OpenMDAO compute, not all arguments are used

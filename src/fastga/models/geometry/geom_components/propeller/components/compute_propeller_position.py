@@ -32,7 +32,7 @@ class ComputePropellerPosition(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
     def setup(self):
-        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan, units="unitless")
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:y", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:chord", val=np.nan, units="m")
@@ -43,6 +43,7 @@ class ComputePropellerPosition(om.ExplicitComponent):
         self.add_input(
             "data:geometry:propulsion:engine:y_ratio",
             shape_by_conn=True,
+            units="unitless",
         )
         self.add_input(
             "data:geometry:propulsion:nacelle:x",
@@ -59,6 +60,7 @@ class ComputePropellerPosition(om.ExplicitComponent):
             units="m",
         )
 
+    def setup_partials(self):
         self.declare_partials("*", "data:geometry:propulsion:engine:layout", method="fd")
 
         self.declare_partials("*", "*", method="exact")

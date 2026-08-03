@@ -31,11 +31,12 @@ class ComputeWingL1AndL4(om.ExplicitComponent):
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:root:y", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:y", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:taper_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:taper_ratio", val=np.nan, units="unitless")
 
         self.add_output("data:geometry:wing:root:virtual_chord", units="m")
         self.add_output("data:geometry:wing:tip:chord", units="m")
 
+    def setup_partials(self):
         self.declare_partials(of="data:geometry:wing:root:virtual_chord", wrt="*", method="exact")
         self.declare_partials(of="data:geometry:wing:tip:chord", wrt="*", method="exact")
 

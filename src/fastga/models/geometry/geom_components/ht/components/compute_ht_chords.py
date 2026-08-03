@@ -33,13 +33,14 @@ class ComputeHTChord(om.ExplicitComponent):
     # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:horizontal_tail:area", val=np.nan, units="m**2")
-        self.add_input("data:geometry:horizontal_tail:taper_ratio", val=np.nan)
-        self.add_input("data:geometry:horizontal_tail:aspect_ratio", val=np.nan)
+        self.add_input("data:geometry:horizontal_tail:taper_ratio", val=np.nan, units="unitless")
+        self.add_input("data:geometry:horizontal_tail:aspect_ratio", val=np.nan, units="unitless")
 
         self.add_output("data:geometry:horizontal_tail:span", units="m")
         self.add_output("data:geometry:horizontal_tail:root:chord", units="m")
         self.add_output("data:geometry:horizontal_tail:tip:chord", units="m")
 
+    def setup_partials(self):
         self.declare_partials(
             of="data:geometry:horizontal_tail:span",
             wrt=[

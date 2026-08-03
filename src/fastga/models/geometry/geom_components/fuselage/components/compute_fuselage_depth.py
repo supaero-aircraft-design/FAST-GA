@@ -46,6 +46,7 @@ class ComputeFuselageDepth(om.ExplicitComponent):
             desc="Average fuselage depth at the vertical tail location",
         )
 
+    def setup_partials(self):
         self.declare_partials("*", "*", method="exact")
 
     # pylint: disable=missing-function-docstring, unused-argument

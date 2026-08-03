@@ -36,6 +36,7 @@ class ComputeVTMAC(om.ExplicitComponent):
         self.add_output("data:geometry:vertical_tail:MAC:length", units="m")
         self.add_output("data:geometry:vertical_tail:MAC:z", units="m")
 
+    def setup_partials(self):
         self.declare_partials("data:geometry:vertical_tail:MAC:z", "*", method="exact")
         self.declare_partials(
             "data:geometry:vertical_tail:MAC:length",

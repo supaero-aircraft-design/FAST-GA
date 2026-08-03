@@ -30,14 +30,15 @@ class ComputeVTChords(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
     def setup(self):
-        self.add_input("data:geometry:vertical_tail:aspect_ratio", val=np.nan)
+        self.add_input("data:geometry:vertical_tail:aspect_ratio", val=np.nan, units="unitless")
         self.add_input("data:geometry:vertical_tail:area", val=np.nan, units="m**2")
-        self.add_input("data:geometry:vertical_tail:taper_ratio", val=np.nan)
+        self.add_input("data:geometry:vertical_tail:taper_ratio", val=np.nan, units="unitless")
 
         self.add_output("data:geometry:vertical_tail:span", units="m")
         self.add_output("data:geometry:vertical_tail:root:chord", units="m")
         self.add_output("data:geometry:vertical_tail:tip:chord", units="m")
 
+    def setup_partials(self):
         self.declare_partials(
             "data:geometry:vertical_tail:span",
             ["data:geometry:vertical_tail:aspect_ratio", "data:geometry:vertical_tail:area"],

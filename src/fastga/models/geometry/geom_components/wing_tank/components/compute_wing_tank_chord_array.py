@@ -55,6 +55,9 @@ class ComputeWingTankChordArray(om.ExplicitComponent):
             val=np.linspace(1.4, 1.0, nb_point_wing),
         )
 
+    def setup_partials(self):
+        nb_point_wing = self.options["number_points_wing_mfw"]
+
         self.declare_partials(
             of="data:geometry:propulsion:tank:chord_array",
             wrt=[

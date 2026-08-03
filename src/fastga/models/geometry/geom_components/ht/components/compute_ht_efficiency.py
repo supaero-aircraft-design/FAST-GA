@@ -30,10 +30,11 @@ class ComputeHTEfficiency(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
     def setup(self):
-        self.add_input("data:geometry:has_T_tail", val=np.nan)
+        self.add_input("data:geometry:has_T_tail", val=np.nan, units="unitless")
 
-        self.add_output("data:aerodynamics:horizontal_tail:efficiency")
+        self.add_output("data:aerodynamics:horizontal_tail:efficiency", units="unitless")
 
+    def setup_partials(self):
         self.declare_partials(
             of="data:aerodynamics:horizontal_tail:efficiency",
             wrt="data:geometry:has_T_tail",

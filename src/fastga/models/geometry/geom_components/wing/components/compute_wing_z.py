@@ -41,12 +41,12 @@ class ComputeWingZ(om.ExplicitComponent):
         self.add_input("data:geometry:wing:tip:y", val=np.nan, units="m")
         self.add_input("data:geometry:wing:root:y", val=np.nan, units="m")
         self.add_input("data:geometry:wing:dihedral", val=np.nan, units="rad")
-        self.add_input("data:geometry:wing:tip:thickness_ratio", val=np.nan)
-        self.add_input("data:geometry:wing:root:thickness_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:tip:thickness_ratio", val=np.nan, units="unitless")
+        self.add_input("data:geometry:wing:root:thickness_ratio", val=np.nan, units="unitless")
         self.add_input("data:geometry:wing:root:chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:chord", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="m")
-        self.add_input("data:geometry:wing_configuration", val=np.nan)
+        self.add_input("data:geometry:wing_configuration", val=np.nan, units="unitless")
 
         self.add_output(
             "data:geometry:wing:root:z",
@@ -61,6 +61,7 @@ class ComputeWingZ(om.ExplicitComponent):
             "centerline, taken positive when wing is below the fuselage centerline",
         )
 
+    def setup_partials(self):
         self.declare_partials(
             of="data:geometry:wing:root:z",
             wrt=[

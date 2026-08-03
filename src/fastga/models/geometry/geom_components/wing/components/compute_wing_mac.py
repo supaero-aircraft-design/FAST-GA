@@ -39,6 +39,7 @@ class ComputeWingMAC(om.ExplicitComponent):
         self.add_output("data:geometry:wing:MAC:leading_edge:x:local", units="m")
         self.add_output("data:geometry:wing:MAC:y", units="m")
 
+    def setup_partials(self):
         self.declare_partials(
             "data:geometry:wing:MAC:length",
             [

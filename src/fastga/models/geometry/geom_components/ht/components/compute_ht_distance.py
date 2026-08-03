@@ -32,10 +32,11 @@ class ComputeHTDistance(om.ExplicitComponent):
     # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:vertical_tail:span", val=np.nan, units="m")
-        self.add_input("data:geometry:has_T_tail", val=np.nan)
+        self.add_input("data:geometry:has_T_tail", val=np.nan, units="unitless")
 
         self.add_output("data:geometry:horizontal_tail:z:from_wingMAC25", units="m")
 
+    def setup_partials(self):
         self.declare_partials(
             "data:geometry:horizontal_tail:z:from_wingMAC25",
             ["data:geometry:vertical_tail:span", "data:geometry:has_T_tail"],

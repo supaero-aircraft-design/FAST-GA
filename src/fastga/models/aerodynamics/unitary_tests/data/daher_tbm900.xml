@@ -114,7 +114,7 @@
         <y units="m" is_input="False">1.8165200000000001<!--landing gear position along the wing--></y>
       </landing_gear>
       <propeller>
-        <average_rpm units="unitless" is_input="True">2000.0<!--average rotation speed of the propeller--></average_rpm>
+        <average_rpm units="rpm" is_input="True">2000.0<!--average rotation speed of the propeller--></average_rpm>
         <blades_number units="unitless" is_input="True">5.0<!--number of blades on the propeller--></blades_number>
         <chord_vect units="m" is_input="True">[0.1, 0.1, 0.17, 0.23, 0.26, 0.275, 0.28, 0.265, 0.22, 0.158]<!--propeller chord defined at radius ratio points--></chord_vect>
         <depth units="m" is_input="True">0.7<!--depth of the propeller--></depth>

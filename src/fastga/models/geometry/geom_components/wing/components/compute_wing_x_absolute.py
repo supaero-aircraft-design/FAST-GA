@@ -40,6 +40,7 @@ class ComputeWingXAbsolute(om.ExplicitComponent):
         self.add_output("data:geometry:wing:tip:leading_edge:x:absolute", units="m")
         self.add_output("data:geometry:wing:MAC:leading_edge:x:absolute", units="m")
 
+    def setup_partials(self):
         self.declare_partials("*", "data:geometry:wing:MAC:at25percent:x", val=1.0)
         self.declare_partials("*", "data:geometry:wing:MAC:length", val=-0.25)
         self.declare_partials(

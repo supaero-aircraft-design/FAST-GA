@@ -34,6 +34,7 @@ class ComputeFuselageRearLength(om.ExplicitComponent):
 
         self.add_output("data:geometry:fuselage:rear_length", units="m")
 
+    def setup_partials(self):
         self.declare_partials(of="*", wrt="data:geometry:fuselage:length", val=1.0)
         self.declare_partials(
             of="*",

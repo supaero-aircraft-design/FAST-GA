@@ -29,11 +29,14 @@ class ComputeFuselagePAXLength(om.ExplicitComponent):
     def setup(self):
         self.add_input("data:geometry:cabin:seats:pilot:length", val=np.nan, units="m")
         self.add_input("data:geometry:cabin:seats:passenger:length", val=np.nan, units="m")
-        self.add_input("data:geometry:cabin:seats:passenger:count_by_row", val=np.nan)
-        self.add_input("data:geometry:cabin:NPAX", val=np.nan)
+        self.add_input(
+            "data:geometry:cabin:seats:passenger:count_by_row", val=np.nan, units="unitless"
+        )
+        self.add_input("data:geometry:cabin:NPAX", val=np.nan, units="unitless")
 
         self.add_output("data:geometry:fuselage:PAX_length", units="m")
 
+    def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="exact")
         self.declare_partials(
             "data:geometry:fuselage:PAX_length", "data:geometry:cabin:seats:pilot:length", val=1.0

@@ -34,8 +34,9 @@ class ComputeNacelleYPosition(om.ExplicitComponent):
         self.add_input(
             "data:geometry:propulsion:engine:y_ratio",
             shape_by_conn=True,
+            units="unitless",
         )
-        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan, units="unitless")
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
         self.add_input("data:geometry:propulsion:nacelle:width", val=np.nan, units="m")
 
@@ -46,6 +47,7 @@ class ComputeNacelleYPosition(om.ExplicitComponent):
             copy_shape="data:geometry:propulsion:engine:y_ratio",
         )
 
+    def setup_partials(self):
         self.declare_partials(of="*", wrt="data:geometry:propulsion:engine:layout", method="fd")
 
         self.declare_partials(

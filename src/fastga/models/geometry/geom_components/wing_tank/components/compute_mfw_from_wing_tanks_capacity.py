@@ -39,10 +39,11 @@ class ComputeMFWFromWingTanksCapacity(om.ExplicitComponent):
             val=np.nan,
             desc="Capacity of both tanks on the aircraft",
         )
-        self.add_input("data:propulsion:fuel_type", val=np.nan)
+        self.add_input("data:propulsion:fuel_type", val=np.nan, units="unitless")
 
         self.add_output("data:weight:aircraft:MFW", units="kg", val=500.0)
 
+    def setup_partials(self):
         self.declare_partials(of="*", wrt="data:geometry:propulsion:tank:capacity", method="exact")
         self.declare_partials("*", "data:propulsion:fuel_type", method="fd")
 

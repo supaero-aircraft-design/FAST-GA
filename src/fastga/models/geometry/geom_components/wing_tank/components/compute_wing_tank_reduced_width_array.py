@@ -61,12 +61,11 @@ class ComputeWingTankReducedWidthArray(om.ExplicitComponent):
 
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
         self.add_input("data:geometry:propulsion:nacelle:width", val=np.nan, units="m")
-        self.add_input("data:geometry:landing_gear:type", val=np.nan)
+        self.add_input("data:geometry:landing_gear:type", val=np.nan, units="unitless")
         self.add_input("data:geometry:landing_gear:y", val=np.nan, units="m")
-        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan, units="unitless")
         self.add_input(
-            "data:geometry:propulsion:engine:y_ratio",
-            shape_by_conn=True,
+            "data:geometry:propulsion:engine:y_ratio", shape_by_conn=True, units="unitless"
         )
 
         self.add_output(
@@ -75,6 +74,9 @@ class ComputeWingTankReducedWidthArray(om.ExplicitComponent):
             shape=nb_point_wing,
             val=np.full(nb_point_wing, 0.2),
         )
+
+    def setup_partials(self):
+        nb_point_wing = self.options["number_points_wing_mfw"]
 
         self.declare_partials(
             of="data:geometry:propulsion:tank:reduced_width_array",

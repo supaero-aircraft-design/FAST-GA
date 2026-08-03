@@ -58,6 +58,8 @@ class ComputeWingTanksCapacity(om.ExplicitComponent):
             desc="Capacity of both tanks on the aircraft",
         )
 
+    def setup_partials(self):
+        nb_point_wing = self.options["number_points_wing_mfw"]
         self.declare_partials(
             of="data:geometry:propulsion:tank:capacity",
             wrt="*",

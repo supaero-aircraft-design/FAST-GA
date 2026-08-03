@@ -31,6 +31,7 @@ class ComputeFuselageMaxHeight(om.ExplicitComponent):
 
         self.add_output("data:geometry:fuselage:maximum_height", units="m")
 
+    def setup_partials(self):
         self.declare_partials(of="*", wrt="*", val=1.0)
 
     # pylint: disable=missing-function-docstring, unused-argument

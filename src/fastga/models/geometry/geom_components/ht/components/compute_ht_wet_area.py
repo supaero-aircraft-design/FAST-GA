@@ -31,10 +31,11 @@ class ComputeHTWetArea(om.ExplicitComponent):
     # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:horizontal_tail:area", val=np.nan, units="m**2")
-        self.add_input("data:geometry:has_T_tail", val=np.nan)
+        self.add_input("data:geometry:has_T_tail", val=np.nan, units="unitless")
 
         self.add_output("data:geometry:horizontal_tail:wet_area", units="m**2")
 
+    def setup_partials(self):
         self.declare_partials("*", "*", method="exact")
 
     # pylint: disable=missing-function-docstring, unused-argument

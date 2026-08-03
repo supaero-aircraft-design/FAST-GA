@@ -32,6 +32,7 @@ class ComputeVTWetArea(om.ExplicitComponent):
 
         self.add_output("data:geometry:vertical_tail:wet_area", units="m**2")
 
+    def setup_partials(self):
         self.declare_partials("*", "*", val=2.1)
 
     # pylint: disable=missing-function-docstring, unused-argument

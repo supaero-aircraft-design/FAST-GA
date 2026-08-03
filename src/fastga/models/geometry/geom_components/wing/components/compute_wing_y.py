@@ -28,16 +28,17 @@ class ComputeWingY(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
     def setup(self):
-        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan, units="unitless")
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
-        self.add_input("data:geometry:wing:kink:span_ratio", val=0.5)
+        self.add_input("data:geometry:wing:kink:span_ratio", val=0.5, units="unitless")
 
         self.add_output("data:geometry:wing:span", units="m")
         self.add_output("data:geometry:wing:root:y", units="m")
         self.add_output("data:geometry:wing:kink:y", units="m")
         self.add_output("data:geometry:wing:tip:y", units="m")
 
+    def setup_partials(self):
         self.declare_partials(
             of="data:geometry:wing:span",
             wrt=["data:geometry:wing:area", "data:geometry:wing:aspect_ratio"],
