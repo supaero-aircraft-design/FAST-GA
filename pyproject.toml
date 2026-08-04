@@ -29,7 +29,6 @@ dependencies = [
     "fast-oad-core>=1.7.0,<2",
     "stdatm>=0.2.0,<1",
     "neuralfoil>=0.3.0,<1",
-    "stdatm>=0.2.0,<1"
 ]
 
 [project.urls]
