@@ -532,8 +532,6 @@ def test_compute_airframe_weight():
     weight_a = problem.get_val("data:weight:airframe:mass", units="kg")
     assert weight_a == pytest.approx(382.17, abs=1e-2)
 
-    problem.check_partials(compact_print=True)
-
 
 def test_compute_oil_weight():
     """Tests engine weight computation from sample XML data."""
@@ -617,8 +615,6 @@ def test_compute_propulsion_weight():
     )
     weight_b = problem.get_val("data:weight:propulsion:mass", units="kg")
     assert weight_b == pytest.approx(361.51, abs=1e-2)
-
-    problem.check_partials(compact_print=True)
 
 
 def test_compute_avionics_systems_weight():
@@ -763,8 +759,6 @@ def test_compute_systems_weight():
     weight_b = problem.get_val("data:weight:systems:mass", units="kg")
     assert weight_b == pytest.approx(210.143, abs=1e-2)
 
-    problem.check_partials(compact_print=True)
-
 
 def test_compute_passenger_seats_weight():
     """Tests passenger seats weight computation from sample XML data"""
@@ -789,8 +783,6 @@ def test_compute_furniture_weight():
     problem = setup_and_run_system(FurnitureWeight(), __file__, XML_FILE)
     weight_b = problem.get_val("data:weight:furniture:mass", units="kg")
     assert weight_b == pytest.approx(49.82, abs=1e-2)
-
-    problem.check_partials(compact_print=True)
 
 
 def test_evaluate_owe():

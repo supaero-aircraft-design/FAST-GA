@@ -67,8 +67,8 @@ def test_analysis_mode():
     # Compute long-wing aircraft
     inputs_dict = {
         "data:geometry:wing:area": (21.66, "m**2"),
-        "data:geometry:wing:aspect_ratio": (9.332, None),
-        "data:geometry:wing:taper_ratio": (0.77, None),
+        "data:geometry:wing:aspect_ratio": (9.332, "unitless"),
+        "data:geometry:wing:taper_ratio": (0.77, "unitless"),
     }
     outputs_dict = compute_geometry(inputs_dict)
     assert_allclose(outputs_dict["data:geometry:wing:tip:y"][0], 7.108, atol=1e-3)

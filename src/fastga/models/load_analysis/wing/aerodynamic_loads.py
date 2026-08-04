@@ -111,7 +111,7 @@ class AerodynamicLoads(om.ExplicitComponent):
         self.add_input("data:geometry:propulsion:engine:count", val=np.nan, units="unitless")
         self.add_input(
             "data:geometry:propulsion:engine:y_ratio",
-            shape_by_conn=True,
+            shape_by_conn=True, units="unitless",
         )
         self.add_input("data:geometry:propulsion:nacelle:width", val=np.nan, units="m")
         self.add_input(

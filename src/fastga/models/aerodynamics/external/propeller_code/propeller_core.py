@@ -51,10 +51,10 @@ class PropellerCoreModule(om.ExplicitComponent):
         self.options.declare("elements_number", default=20, types=int)
 
     def setup(self):
-        self.add_input("reference_reynolds", val=1e6)
+        self.add_input("reference_reynolds", val=1e6, units="unitless")
         self.add_input("data:geometry:propeller:diameter", val=np.nan, units="m")
         self.add_input("data:geometry:propeller:hub_diameter", val=np.nan, units="m")
-        self.add_input("data:geometry:propeller:blades_number", val=np.nan)
+        self.add_input("data:geometry:propeller:blades_number", val=np.nan, units="unitless")
         self.add_input(
             "data:geometry:propeller:average_rpm",
             val=2500,
@@ -81,15 +81,16 @@ class PropellerCoreModule(om.ExplicitComponent):
             shape_by_conn=True,
             copy_shape="data:geometry:propeller:radius_ratio_vect",
         )
-        self.add_input("data:geometry:propeller:radius_ratio_vect", val=np.nan, shape_by_conn=True)
+        self.add_input("data:geometry:propeller:radius_ratio_vect", val=np.nan, shape_by_conn=True, units="unitless")
 
         for profile in self.options["sections_profile_name_list"]:
             self.add_input(
                 profile + "_polar:alpha", val=np.nan, units="deg", shape=POLAR_POINT_COUNT
             )
-            self.add_input(profile + "_polar:CL", val=np.nan, shape=POLAR_POINT_COUNT)
-            self.add_input(profile + "_polar:CD", val=np.nan, shape=POLAR_POINT_COUNT)
+            self.add_input(profile + "_polar:CL", val=np.nan, shape=POLAR_POINT_COUNT, units="unitless")
+            self.add_input(profile + "_polar:CD", val=np.nan, shape=POLAR_POINT_COUNT, units="unitless")
 
+    def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="fd")
 
     def compute_extreme_pitch(self, inputs, v_inf):

@@ -536,8 +536,6 @@ def test_compute_airframe_weight():
     weight_a = problem.get_val("data:weight:airframe:mass", units="kg")
     assert weight_a == pytest.approx(478.16, abs=1e-2)
 
-    problem.check_partials(compact_print=True)
-
 
 def test_compute_oil_weight():
     """Tests engine weight computation from sample XML data."""
@@ -627,8 +625,6 @@ def test_compute_propulsion_weight():
     )
     weight_b = problem.get_val("data:weight:propulsion:mass", units="kg")
     assert weight_b == pytest.approx(414.46, abs=1e-2)
-
-    problem.check_partials(compact_print=True)
 
 
 def test_compute_avionics_systems_weight():
@@ -806,7 +802,6 @@ def test_evaluate_owe():
         ComputeOperatingWeightEmpty(propulsion_id=ENGINE_WRAPPER), __file__, XML_FILE
     )
 
-    print(mass_computation.get_val("data:weight:systems:mass", units="kg"))
     oew = mass_computation.get_val("data:weight:aircraft:OWE", units="kg")
     assert oew == pytest.approx(1125, abs=1)
 

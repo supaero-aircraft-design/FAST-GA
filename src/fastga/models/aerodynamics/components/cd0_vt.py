@@ -41,20 +41,19 @@ class Cd0VerticalTail(om.ExplicitComponent):
         self.add_input("data:geometry:vertical_tail:wet_area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:vertical_tail:thickness_ratio", val=np.nan, units="unitless")
-        self.add_input("data:geometry:vertical_tail:max_thickness:x_ratio", val=0.3)
+        self.add_input("data:geometry:vertical_tail:max_thickness:x_ratio", val=0.3, units="unitless")
 
         if self.options["low_speed_aero"]:
             self.add_input("data:aerodynamics:low_speed:mach", val=np.nan, units="unitless")
             self.add_input("data:aerodynamics:low_speed:unit_reynolds", val=np.nan, units="m**-1")
 
-            self.add_output("data:aerodynamics:vertical_tail:low_speed:CD0")
+            self.add_output("data:aerodynamics:vertical_tail:low_speed:CD0", units="unitless")
 
-            self.declare_partials("*", "*", method="exact")
         else:
             self.add_input("data:aerodynamics:cruise:mach", val=np.nan, units="unitless")
             self.add_input("data:aerodynamics:cruise:unit_reynolds", val=np.nan, units="m**-1")
 
-            self.add_output("data:aerodynamics:vertical_tail:cruise:CD0")
+            self.add_output("data:aerodynamics:vertical_tail:cruise:CD0", units="unitless")
 
     def setup_partials(self):
         self.declare_partials("*", "*", method="exact")
