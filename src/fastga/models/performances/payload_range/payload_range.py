@@ -20,7 +20,6 @@ import numpy as np
 import openmdao.api as om
 from fastoad.module_management.constants import ModelDomain
 from fastoad.openmdao.problem import AutoUnitsDefaultGroup
-from scipy.optimize import fsolve
 
 from fastga.command import api as api_cs23
 from fastga.models.performances.mission.mission import Mission
@@ -69,7 +68,7 @@ class ComputePayloadRange(om.ExplicitComponent):
 
         self.declare_partials("*", "*", method="fd")
 
-    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):  # noqa: PLR0915
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         payload_mission = inputs["data:weight:aircraft:payload"][0]
         max_payload = inputs["data:weight:aircraft:max_payload"][0]
         range_mission = inputs["data:TLAR:range"]
@@ -94,30 +93,14 @@ class ComputePayloadRange(om.ExplicitComponent):
 
         # Point B : max payload, enough fuel to have mass = MTOW
         fuel_target_b = mtow - mzfw
-        range_b, _, ier, message = fsolve(
-            self.fuel_function,
-            range_mission / 2,
-            args=(fuel_target_b, mtow),
-            xtol=0.01,
-            full_output=True,
-        )
-        if ier != 1:
-            _LOGGER.warning(f"Computation of point B failed. Error message : {message}")
+        range_b = self.get_range(fuel_target_b, mtow, initial_range_guess=range_mission / 2)
 
         payload_array.append(max_payload)
         range_array.append(range_b[0])
         sr_array.append(range_b[0] / fuel_target_b[0])
 
         fuel_target_c = fuel_mission
-        range_c, _, ier, message = fsolve(
-            self.fuel_function,
-            range_mission / 2,
-            args=(fuel_target_c, mtow),
-            xtol=0.01,
-            full_output=True,
-        )
-        if ier != 1:
-            _LOGGER.warning(f"Computation of point C failed. Error message : {message}")
+        range_c = self.get_range(fuel_target_c, mtow)
 
         payload_array.append(payload_mission)
         range_array.append(range_c[0])
@@ -127,15 +110,7 @@ class ComputePayloadRange(om.ExplicitComponent):
         fuel_target_d = mfw
         payload_d = max_payload - (mfw - fuel_target_b)
 
-        range_d, _, ier, message = fsolve(
-            self.fuel_function,
-            range_mission,
-            args=(fuel_target_d, mtow),
-            xtol=0.01,
-            full_output=True,
-        )
-        if ier != 1:
-            _LOGGER.warning(f"Computation of point D failed. Error message : {message}")
+        range_d = self.get_range(fuel_target_d, mtow)
 
         if payload_d < 2 * mass_pilot:
             _LOGGER.warning(
@@ -150,15 +125,7 @@ class ComputePayloadRange(om.ExplicitComponent):
         fuel_target_e = mfw
         payload_e = 0.0
         mass_aircraft = owe + mfw + payload_e
-        range_e, _, ier, message = fsolve(
-            self.fuel_function,
-            range_mission,
-            args=(fuel_target_e, mass_aircraft),
-            xtol=0.01,
-            full_output=True,
-        )
-        if ier != 1:
-            _LOGGER.warning(f"Computation of point E failed. Error message : {message}")
+        range_e = self.get_range(fuel_target_e, mass_aircraft)
 
         payload_array.append(payload_e)
         range_array.append(range_e[0])
@@ -200,6 +167,7 @@ class ComputePayloadRange(om.ExplicitComponent):
 
         model.add_subsystem("ivc", ivc, promotes_outputs=["*"])
         model.add_subsystem("mission", Mission(propulsion_id=prop_id), promotes=["*"])
+        model.add_subsystem("distance_to_target", DistanceToTarget(), promotes=["*"])
 
         model.nonlinear_solver = om.NonlinearBlockGS()
         model.nonlinear_solver.options["iprint"] = 0
@@ -214,13 +182,78 @@ class ComputePayloadRange(om.ExplicitComponent):
 
         self.fuel_problem.setup()
 
-    def fuel_function(self, range_parameter, fuel_target, mass):
+    def get_range(self, fuel_target, mass, initial_range_guess=None):
+        """
+        Runs the cached OpenMDAO problems for the target fuel and aircraft mass and finds the
+        corresponding range.
 
-        self.fuel_problem.set_val(name="data:TLAR:range", val=range_parameter, units="m")
+        :param fuel_target: target fuel to achieve
+        :param mass: aircraft mass
+        :param initial_range_guess: initial guess for the appropriate range, in m. If nothing is
+        provided, the value at which the problem last converged will be used
+
+        :return: the range which leads to the inputs fuel mass at input weight.
+        """
         self.fuel_problem.set_val(name="data:weight:aircraft:MTOW", val=mass, units="kg")
+        self.fuel_problem.set_val(
+            name="data:mission:sizing:fuel_target", val=fuel_target, units="kg"
+        )
+
+        if initial_range_guess:
+            self.fuel_problem.set_val("data:TLAR:range", val=initial_range_guess, units="m")
 
         self.fuel_problem.run_model()
 
-        fuel = self.fuel_problem.get_val("data:mission:sizing:fuel", units="kg")
+        return self.fuel_problem.get_val(name="data:TLAR:range", units="m")
 
-        return fuel - fuel_target
+
+class DistanceToTarget(om.ExplicitComponent):
+    def setup(self):
+        self.add_input("data:mission:sizing:fuel", units="kg", val=np.nan)
+        self.add_input("data:mission:sizing:fuel_target", units="kg", val=np.nan)
+        self.add_input("data:mission:sizing:main_route:climb:distance", units="m", val=np.nan)
+        self.add_input("data:mission:sizing:main_route:descent:distance", units="m", val=np.nan)
+        self.add_input("data:mission:sizing:main_route:cruise:distance", units="m", val=np.nan)
+
+        self.add_output("data:TLAR:range", 370400, units="m")  # 200 nm in m
+
+    def setup_partials(self):
+        self.declare_partials(of="*", wrt="*", method="exact")
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+
+        climb_range = inputs["data:mission:sizing:main_route:climb:distance"]
+        descent_range = inputs["data:mission:sizing:main_route:descent:distance"]
+        cruise_range = inputs["data:mission:sizing:main_route:cruise:distance"]
+
+        current_fuel = inputs["data:mission:sizing:fuel"]
+        target_fuel = inputs["data:mission:sizing:fuel_target"]
+
+        outputs["data:TLAR:range"] = (
+            (climb_range + cruise_range + descent_range) * target_fuel / current_fuel
+        )
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+        climb_range = inputs["data:mission:sizing:main_route:climb:distance"]
+        descent_range = inputs["data:mission:sizing:main_route:descent:distance"]
+        cruise_range = inputs["data:mission:sizing:main_route:cruise:distance"]
+
+        current_fuel = inputs["data:mission:sizing:fuel"]
+        target_fuel = inputs["data:mission:sizing:fuel_target"]
+
+        partials["data:TLAR:range", "data:mission:sizing:main_route:climb:distance"] = (
+            target_fuel / current_fuel
+        )
+        partials["data:TLAR:range", "data:mission:sizing:main_route:descent:distance"] = (
+            target_fuel / current_fuel
+        )
+        partials["data:TLAR:range", "data:mission:sizing:main_route:cruise:distance"] = (
+            target_fuel / current_fuel
+        )
+
+        partials["data:TLAR:range", "data:mission:sizing:fuel"] = (
+            -(climb_range + cruise_range + descent_range) * target_fuel / current_fuel**2.0
+        )
+        partials["data:TLAR:range", "data:mission:sizing:fuel_target"] = (
+            climb_range + cruise_range + descent_range
+        ) / current_fuel
