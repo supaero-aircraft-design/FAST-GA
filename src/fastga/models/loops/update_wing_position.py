@@ -23,14 +23,17 @@ from fastoad.module_management.constants import ModelDomain
 @oad.RegisterOpenMDAOSystem("fastga.loop.wing_position", domain=ModelDomain.OTHER)
 class UpdateWingPosition(om.ExplicitComponent):
     def setup(self):
-        self.add_input("data:handling_qualities:stick_fixed_static_margin", val=np.nan)
-        self.add_input("data:handling_qualities:static_margin:target", val=np.nan)
+        self.add_input(
+            "data:handling_qualities:stick_fixed_static_margin", val=np.nan, units="unitless"
+        )
+        self.add_input("data:handling_qualities:static_margin:target", val=np.nan, units="unitless")
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
-        self.add_input("data:weight:aircraft:CG:aft:MAC_position", val=np.nan)
+        self.add_input("data:weight:aircraft:CG:aft:MAC_position", val=np.nan, units="unitless")
         self.add_input("data:weight:aircraft:CG:aft:x", val=np.nan, units="m")
 
         self.add_output("data:geometry:wing:MAC:at25percent:x", units="m", val=3.5)
 
+    def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):

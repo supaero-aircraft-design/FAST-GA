@@ -45,10 +45,11 @@ class UpdateWingAreaLiftSimple(om.ExplicitComponent):
     def setup(self):
         self.add_input("data:TLAR:v_approach", val=np.nan, units="m/s")
         self.add_input("data:weight:aircraft:MLW", val=np.nan, units="kg")
-        self.add_input("data:aerodynamics:aircraft:landing:CL_max", val=np.nan)
+        self.add_input("data:aerodynamics:aircraft:landing:CL_max", val=np.nan, units="unitless")
 
         self.add_output("wing_area", val=10.0, units="m**2")
 
+    def setup_partials(self):
         self.declare_partials(
             "wing_area",
             [
@@ -98,11 +99,12 @@ class ConstraintWingAreaLiftSimple(om.ExplicitComponent):
     def setup(self):
         self.add_input("data:TLAR:v_approach", val=np.nan, units="m/s")
         self.add_input("data:weight:aircraft:MLW", val=np.nan, units="kg")
-        self.add_input("data:aerodynamics:aircraft:landing:CL_max", val=np.nan)
+        self.add_input("data:aerodynamics:aircraft:landing:CL_max", val=np.nan, units="unitless")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
 
         self.add_output("data:constraints:wing:additional_CL_capacity")
 
+    def setup_partials(self):
         self.declare_partials(
             "data:constraints:wing:additional_CL_capacity",
             [

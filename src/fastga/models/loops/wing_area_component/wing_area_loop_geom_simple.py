@@ -43,14 +43,15 @@ class UpdateWingAreaGeomSimple(om.ExplicitComponent):
 
     def setup(self):
         self.add_input("data:mission:sizing:fuel", val=np.nan, units="kg")
-        self.add_input("data:propulsion:fuel_type", val=np.nan)
+        self.add_input("data:propulsion:fuel_type", val=np.nan, units="unitless")
         self.add_input("data:geometry:wing:root:chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:chord", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:root:thickness_ratio", val=np.nan)
-        self.add_input("data:geometry:wing:tip:thickness_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:root:thickness_ratio", val=np.nan, units="unitless")
+        self.add_input("data:geometry:wing:tip:thickness_ratio", val=np.nan, units="unitless")
 
         self.add_output("wing_area", val=10.0, units="m**2")
 
+    def setup_partials(self):
         self.declare_partials(
             "wing_area",
             [
@@ -147,10 +148,18 @@ class ConstraintWingAreaGeomSimple(om.ExplicitComponent):
 
         self.add_output("data:constraints:wing:additional_fuel_capacity", units="kg")
 
+    def setup_partials(self):
         self.declare_partials(
             "data:constraints:wing:additional_fuel_capacity",
-            ["data:weight:aircraft:MFW", "data:mission:sizing:fuel"],
+            "data:weight:aircraft:MFW",
             method="exact",
+            val=1.0,
+        )
+        self.declare_partials(
+            "data:constraints:wing:additional_fuel_capacity",
+            "data:mission:sizing:fuel",
+            method="exact",
+            val=-1.0,
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
@@ -158,9 +167,3 @@ class ConstraintWingAreaGeomSimple(om.ExplicitComponent):
         mission_fuel = inputs["data:mission:sizing:fuel"]
 
         outputs["data:constraints:wing:additional_fuel_capacity"] = mfw - mission_fuel
-
-    def compute_partials(self, inputs, partials, discrete_inputs=None):
-        partials["data:constraints:wing:additional_fuel_capacity", "data:weight:aircraft:MFW"] = 1.0
-        partials[
-            "data:constraints:wing:additional_fuel_capacity", "data:mission:sizing:fuel"
-        ] = -1.0
