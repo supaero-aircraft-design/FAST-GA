@@ -85,11 +85,11 @@ class DummyEngineBE76(AbstractFuelPropulsion):
 class DummyEngineWrapperBE76(oad.IOMPropulsionWrapper):
     def setup(self, component: Component):
         component.add_input("data:propulsion:IC_engine:max_power", np.nan, units="W")
-        component.add_input("data:propulsion:fuel_type", np.nan)
-        component.add_input("data:propulsion:IC_engine:strokes_nb", np.nan)
+        component.add_input("data:propulsion:fuel_type", np.nan, units="unitless")
+        component.add_input("data:propulsion:IC_engine:strokes_nb", np.nan, units="unitless")
         component.add_input("data:aerodynamics:propeller:cruise_level:altitude", np.nan, units="m")
-        component.add_input("data:geometry:propulsion:engine:layout", np.nan)
-        component.add_input("data:geometry:propulsion:engine:count", np.nan)
+        component.add_input("data:geometry:propulsion:engine:layout", np.nan, units="unitless")
+        component.add_input("data:geometry:propulsion:engine:count", np.nan, units="unitless")
 
     @staticmethod
     def get_model(inputs) -> IPropulsion:
@@ -163,11 +163,11 @@ class DummyEngineSR22(AbstractFuelPropulsion):
 class DummyEngineWrapperSR22(oad.IOMPropulsionWrapper):
     def setup(self, component: Component):
         component.add_input("data:propulsion:IC_engine:max_power", np.nan, units="W")
-        component.add_input("data:propulsion:fuel_type", np.nan)
-        component.add_input("data:propulsion:IC_engine:strokes_nb", np.nan)
+        component.add_input("data:propulsion:fuel_type", np.nan, units="unitless")
+        component.add_input("data:propulsion:IC_engine:strokes_nb", np.nan, units="unitless")
         component.add_input("data:aerodynamics:propeller:cruise_level:altitude", np.nan, units="m")
-        component.add_input("data:geometry:propulsion:engine:layout", np.nan)
-        component.add_input("data:geometry:propulsion:engine:count", np.nan)
+        component.add_input("data:geometry:propulsion:engine:layout", np.nan, units="unitless")
+        component.add_input("data:geometry:propulsion:engine:count", np.nan, units="unitless")
 
     @staticmethod
     def get_model(inputs) -> IPropulsion:
@@ -238,8 +238,8 @@ class DummyEngineWrapperTBM900(oad.IOMPropulsionWrapper):
     def setup(self, component: Component):
         component.add_input("data:propulsion:turboprop:off_design:power_limit", np.nan, units="W")
         component.add_input("data:aerodynamics:propeller:cruise_level:altitude", np.nan, units="m")
-        component.add_input("data:geometry:propulsion:engine:layout", np.nan)
-        component.add_input("data:geometry:propulsion:engine:count", np.nan)
+        component.add_input("data:geometry:propulsion:engine:layout", np.nan, units="unitless")
+        component.add_input("data:geometry:propulsion:engine:count", np.nan, units="unitless")
 
     @staticmethod
     def get_model(inputs) -> IPropulsion:

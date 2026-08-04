@@ -69,8 +69,49 @@ jobs:
           poetry run ruff format --check .  # Check format
         shell: bash
 
-      - name: Unit tests without coverage
-        run: poetry run pytest src
+      - name: Command unit tests (without coverage)
+        if: ${{ (runner.os != 'Linux' ) || matrix.python-version != '3.10' }}
+        run: poetry run pytest src/fastga/command --no-cov
+        shell: bash
+
+      - name: Aerodynamic unit tests (without coverage)
+        if: ${{ (runner.os != 'Linux' ) || matrix.python-version != '3.10' }}
+        run: poetry run pytest src/fastga/models/aerodynamics --no-cov
+        shell: bash
+
+      - name: Geometry unit tests (without coverage)
+        if: ${{ (runner.os != 'Linux' ) || matrix.python-version != '3.10' }}
+        run: poetry run pytest src/fastga/models/geometry --no-cov
+        shell: bash
+
+      - name: HQ unit tests (without coverage)
+        if: ${{ (runner.os != 'Linux' ) || matrix.python-version != '3.10' }}
+        run: poetry run pytest src/fastga/models/handling_qualities --no-cov
+        shell: bash
+
+      - name: Loads unit tests (without coverage)
+        if: ${{ (runner.os != 'Linux' ) || matrix.python-version != '3.10' }}
+        run: poetry run pytest src/fastga/models/load_analysis --no-cov
+        shell: bash
+
+      - name: Loops unit tests (without coverage)
+        if: ${{ (runner.os != 'Linux' ) || matrix.python-version != '3.10' }}
+        run: poetry run pytest src/fastga/models/loops --no-cov
+        shell: bash
+
+      - name: Performances unit tests (without coverage)
+        if: ${{ (runner.os != 'Linux' ) || matrix.python-version != '3.10' }}
+        run: poetry run pytest src/fastga/models/performances --no-cov
+        shell: bash
+
+      - name: Weight unit tests (without coverage)
+        if: ${{ (runner.os != 'Linux' ) || matrix.python-version != '3.10' }}
+        run: poetry run pytest src/fastga/models/weight --no-cov
+        shell: bash
+
+      - name: Utils unit tests (without coverage)
+        if: ${{ (runner.os != 'Linux' ) || matrix.python-version != '3.10' }}
+        run: poetry run pytest src/fastga/utils --no-cov
         shell: bash
 
       - name: Unit tests with coverage

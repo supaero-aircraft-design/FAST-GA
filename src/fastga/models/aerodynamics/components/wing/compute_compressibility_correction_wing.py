@@ -34,7 +34,7 @@ class ComputeCompressibilityCorrectionWing(om.ExplicitComponent):
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="rad")
         self.add_input("data:aerodynamics:" + ls_tag + ":mach", val=np.nan, units="unitless")
 
-        self.add_output("mach_correction_wing", val=1.0)
+        self.add_output("mach_correction_wing", val=1.0, units="unitless")
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup_partials

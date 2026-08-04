@@ -339,8 +339,8 @@ def polar_xfoil(
 
     # Define high-speed parameters (with .xml file and additional inputs)
     ivc = get_indep_var_comp(list_inputs(XfoilPolar()), __file__, xml_file_name)
-    ivc.add_output("mach", mach_high_speed)
-    ivc.add_output("reynolds", reynolds_high_speed)
+    ivc.add_output("mach", mach_high_speed, units="unitless")
+    ivc.add_output("reynolds", reynolds_high_speed, units="unitless")
 
     # Run problem
     xfoil_comp = XfoilPolar(
@@ -362,8 +362,8 @@ def polar_xfoil(
 
     # Define low-speed parameters (with .xml file and additional inputs)
     ivc = get_indep_var_comp(list_inputs(XfoilPolar()), __file__, xml_file_name)
-    ivc.add_output("mach", mach_low_speed)
-    ivc.add_output("reynolds", reynolds_low_speed)
+    ivc.add_output("mach", mach_low_speed, units="unitless")
+    ivc.add_output("reynolds", reynolds_low_speed, units="unitless")
 
     # Run problem
     xfoil_comp = XfoilPolar(
@@ -395,8 +395,8 @@ def polar_neuralfoil(
     """Tests polar execution (NeuralFOIL) @ high and low speed!"""
     # Define high-speed parameters (with .xml file and additional inputs)
     ivc = get_indep_var_comp(list_inputs(NeuralfoilPolar()), __file__, xml_file_name)
-    ivc.add_output("mach", mach_high_speed)
-    ivc.add_output("reynolds", reynolds_high_speed)
+    ivc.add_output("mach", mach_high_speed, units="unitless")
+    ivc.add_output("reynolds", reynolds_high_speed, units="unitless")
 
     # Run problem
     neuralfoil_comp = NeuralfoilPolar(alpha_start=0.0, alpha_end=20.0)
@@ -410,8 +410,8 @@ def polar_neuralfoil(
 
     # Define low-speed parameters (with .xml file and additional inputs)
     ivc = get_indep_var_comp(list_inputs(NeuralfoilPolar()), __file__, xml_file_name)
-    ivc.add_output("mach", mach_low_speed)
-    ivc.add_output("reynolds", reynolds_low_speed)
+    ivc.add_output("mach", mach_low_speed, units="unitless")
+    ivc.add_output("reynolds", reynolds_low_speed, units="unitless")
 
     # Run problem
     neuralfoil_comp = NeuralfoilPolar(alpha_start=0.0, alpha_end=25.0)
@@ -434,8 +434,8 @@ def polar_interpolation(mach: float):
     tmp_folder = polar_result_transfer()
 
     ivc = om.IndepVarComp()
-    ivc.add_output("mach", mach)
-    ivc.add_output("reynolds", 5e6)
+    ivc.add_output("mach", mach, units="unitless")
+    ivc.add_output("reynolds", 5e6, units="unitless")
 
     # Run problem
     xfoil_comp = XfoilPolar(
@@ -447,8 +447,8 @@ def polar_interpolation(mach: float):
     t1_duration = t1_end - t1_start
 
     ivc = om.IndepVarComp()
-    ivc.add_output("mach", mach)
-    ivc.add_output("reynolds", 7e6)
+    ivc.add_output("mach", mach, units="unitless")
+    ivc.add_output("reynolds", 7e6, units="unitless")
     t2_start = time.time()
     _ = run_system(xfoil_comp, ivc)
     t2_end = time.time()
@@ -457,8 +457,8 @@ def polar_interpolation(mach: float):
     # Run a third time between the two other Reynolds
 
     ivc = om.IndepVarComp()
-    ivc.add_output("mach", mach)
-    ivc.add_output("reynolds", 6e6)
+    ivc.add_output("mach", mach, units="unitless")
+    ivc.add_output("reynolds", 6e6, units="unitless")
 
     # Run problem
     t3_start = time.time()
@@ -487,8 +487,8 @@ def polar_single_aoa_xfoil(
 
     # Define low-speed parameters (with .xml file and additional inputs)
     ivc = get_indep_var_comp(list_inputs(XfoilPolar()), __file__, xml_file_name)
-    ivc.add_output("mach", mach_low_speed)
-    ivc.add_output("reynolds", reynolds_low_speed)
+    ivc.add_output("mach", mach_low_speed, units="unitless")
+    ivc.add_output("reynolds", reynolds_low_speed, units="unitless")
 
     # Run problem
     xfoil_comp = XfoilPolar(
@@ -516,8 +516,8 @@ def polar_single_aoa_xfoil(
 
     # Define high-speed parameters (with .xml file and additional inputs)
     ivc = get_indep_var_comp(list_inputs(XfoilPolar()), __file__, xml_file_name)
-    ivc.add_output("mach", mach_low_speed)
-    ivc.add_output("reynolds", reynolds_low_speed)
+    ivc.add_output("mach", mach_low_speed, units="unitless")
+    ivc.add_output("reynolds", reynolds_low_speed, units="unitless")
     # Run problem
     xfoil_comp = XfoilPolar(
         alpha_start=5.0, iter_limit=20, xfoil_exe_path=xfoil_path, single_AoA=True
@@ -552,8 +552,8 @@ def polar_single_aoa_neuralfoil(
 
     # Define high-speed parameters (with .xml file and additional inputs)
     ivc = get_indep_var_comp(list_inputs(NeuralfoilPolar()), __file__, xml_file_name)
-    ivc.add_output("mach", mach_low_speed)
-    ivc.add_output("reynolds", reynolds_low_speed)
+    ivc.add_output("mach", mach_low_speed, units="unitless")
+    ivc.add_output("reynolds", reynolds_low_speed, units="unitless")
     # Run problem
     nfoil_comp = NeuralfoilPolar(alpha_start=alpha, single_AoA=True)
     problem = run_system(nfoil_comp, ivc)
@@ -582,8 +582,8 @@ def polar_single_aoa_inv(
 
     # Define low-speed parameters (with .xml file and additional inputs)
     ivc = get_indep_var_comp(list_inputs(XfoilPolar()), __file__, xml_file_name)
-    ivc.add_output("mach", mach_low_speed)
-    ivc.add_output("reynolds", reynolds_low_speed)
+    ivc.add_output("mach", mach_low_speed, units="unitless")
+    ivc.add_output("reynolds", reynolds_low_speed, units="unitless")
 
     # Run problem
     xfoil_comp = XfoilPolar(
@@ -614,8 +614,8 @@ def polar_single_aoa_inv(
 
     # Define high-speed parameters (with .xml file and additional inputs)
     ivc = get_indep_var_comp(list_inputs(XfoilPolar()), __file__, xml_file_name)
-    ivc.add_output("mach", mach_low_speed)
-    ivc.add_output("reynolds", reynolds_low_speed)
+    ivc.add_output("mach", mach_low_speed, units="unitless")
+    ivc.add_output("reynolds", reynolds_low_speed, units="unitless")
     # Run problem
     xfoil_comp = XfoilPolar(
         alpha_start=5.0,
@@ -655,8 +655,8 @@ def polar_ext_folder(
 
     # Define high-speed parameters (with .xml file and additional inputs)
     ivc = get_indep_var_comp(list_inputs(XfoilPolar()), __file__, xml_file_name)
-    ivc.add_output("mach", mach_high_speed)
-    ivc.add_output("reynolds", reynolds_high_speed)
+    ivc.add_output("mach", mach_high_speed, units="unitless")
+    ivc.add_output("reynolds", reynolds_high_speed, units="unitless")
 
     # Run problem
     xfoil_comp = XfoilPolar(
@@ -686,8 +686,8 @@ def polar_ext_folder(
 
     # Define low-speed parameters (with .xml file and additional inputs)
     ivc = get_indep_var_comp(list_inputs(XfoilPolar()), __file__, xml_file_name)
-    ivc.add_output("mach", mach_low_speed)
-    ivc.add_output("reynolds", reynolds_low_speed)
+    ivc.add_output("mach", mach_low_speed, units="unitless")
+    ivc.add_output("reynolds", reynolds_low_speed, units="unitless")
 
     # Run problem
     xfoil_comp = XfoilPolar(
@@ -725,8 +725,8 @@ def polar_ext_folder_inv(
 
     # Define high-speed parameters (with .xml file and additional inputs)
     ivc = get_indep_var_comp(list_inputs(XfoilPolar()), __file__, xml_file_name)
-    ivc.add_output("mach", mach_low_speed)
-    ivc.add_output("reynolds", reynolds_low_speed)
+    ivc.add_output("mach", mach_low_speed, units="unitless")
+    ivc.add_output("reynolds", reynolds_low_speed, units="unitless")
 
     # Run problem
     xfoil_comp = XfoilPolar(
@@ -755,8 +755,8 @@ def polar_ext_folder_inv(
 
     # Define high-speed parameters (with .xml file and additional inputs)
     ivc = get_indep_var_comp(list_inputs(XfoilPolar()), __file__, xml_file_name)
-    ivc.add_output("mach", mach_low_speed)
-    ivc.add_output("reynolds", reynolds_low_speed)
+    ivc.add_output("mach", mach_low_speed, units="unitless")
+    ivc.add_output("reynolds", reynolds_low_speed, units="unitless")
 
     # Run problem
     xfoil_comp = XfoilPolar(
@@ -800,8 +800,8 @@ def polar_ext_folder_neuralfoil(
 
     # Define high-speed parameters (with .xml file and additional inputs)
     ivc = get_indep_var_comp(list_inputs(NeuralfoilPolar()), __file__, xml_file_name)
-    ivc.add_output("mach", mach_high_speed)
-    ivc.add_output("reynolds", reynolds_high_speed)
+    ivc.add_output("mach", mach_high_speed, units="unitless")
+    ivc.add_output("reynolds", reynolds_high_speed, units="unitless")
 
     # Run problem
     nfoil_comp = NeuralfoilPolar(
@@ -829,8 +829,8 @@ def polar_ext_folder_neuralfoil(
 
     # Define low-speed parameters (with .xml file and additional inputs)
     ivc = get_indep_var_comp(list_inputs(NeuralfoilPolar()), __file__, xml_file_name)
-    ivc.add_output("mach", mach_low_speed)
-    ivc.add_output("reynolds", reynolds_low_speed)
+    ivc.add_output("mach", mach_low_speed, units="unitless")
+    ivc.add_output("reynolds", reynolds_low_speed, units="unitless")
 
     # Run problem
     nfoil_comp = NeuralfoilPolar(
