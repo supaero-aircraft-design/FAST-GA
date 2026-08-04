@@ -41,12 +41,13 @@ class ComputeLandingGearWeight(om.ExplicitComponent):
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="lb")
         self.add_input("data:geometry:landing_gear:height", val=np.nan, units="inch")
 
-        self.add_input("data:geometry:landing_gear:type", val=np.nan)
-        self.add_input("data:geometry:wing_configuration", val=np.nan)
+        self.add_input("data:geometry:landing_gear:type", val=np.nan, units="unitless")
+        self.add_input("data:geometry:wing_configuration", val=np.nan, units="unitless")
 
         self.add_output("data:weight:airframe:landing_gear:main:mass", units="lb")
         self.add_output("data:weight:airframe:landing_gear:front:mass", units="lb")
 
+    def setup_partials(self):
         self.declare_partials(
             "*",
             ["data:geometry:landing_gear:type", "data:geometry:wing_configuration"],

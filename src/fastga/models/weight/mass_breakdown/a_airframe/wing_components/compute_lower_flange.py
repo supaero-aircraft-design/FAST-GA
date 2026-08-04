@@ -30,33 +30,42 @@ class ComputeLowerFlange(om.ExplicitComponent):
         self.options.declare("min_fuel_in_wing", default=False, types=bool)
 
     def setup(self):  # noqa: PLR0915
-        self.add_input("data:geometry:flap:chord_ratio", val=np.nan)
-        self.add_input("data:geometry:wing:aileron:chord_ratio", val=np.nan)
+        self.add_input("data:geometry:flap:chord_ratio", val=np.nan, units="unitless")
+        self.add_input("data:geometry:wing:aileron:chord_ratio", val=np.nan, units="unitless")
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="m")
         self.add_input("data:geometry:landing_gear:y", val=np.nan, units="m")
-        self.add_input("data:geometry:landing_gear:type", val=np.nan)
-        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
-        self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
+        self.add_input("data:geometry:landing_gear:type", val=np.nan, units="unitless")
+        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan, units="unitless")
+        self.add_input("data:geometry:propulsion:engine:count", val=np.nan, units="unitless")
         self.add_input(
             "data:geometry:propulsion:engine:y_ratio",
             shape_by_conn=True,
+            units="unitless",
         )
-        self.add_input("data:geometry:propulsion:tank:y_ratio_tank_end", val=np.nan)
-        self.add_input("data:geometry:propulsion:tank:y_ratio_tank_beginning", val=np.nan)
-        self.add_input("data:geometry:propulsion:tank:LE_chord_percentage", val=np.nan)
-        self.add_input("data:geometry:propulsion:tank:TE_chord_percentage", val=np.nan)
+        self.add_input(
+            "data:geometry:propulsion:tank:y_ratio_tank_end", val=np.nan, units="unitless"
+        )
+        self.add_input(
+            "data:geometry:propulsion:tank:y_ratio_tank_beginning", val=np.nan, units="unitless"
+        )
+        self.add_input(
+            "data:geometry:propulsion:tank:LE_chord_percentage", val=np.nan, units="unitless"
+        )
+        self.add_input(
+            "data:geometry:propulsion:tank:TE_chord_percentage", val=np.nan, units="unitless"
+        )
         self.add_input("data:geometry:propulsion:nacelle:width", val=np.nan, units="m")
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
-        self.add_input("data:geometry:wing:thickness_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:thickness_ratio", val=np.nan, units="unitless")
         self.add_input("data:geometry:wing:root:chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:root:y", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:root:thickness_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:root:thickness_ratio", val=np.nan, units="unitless")
         self.add_input("data:geometry:wing:tip:chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:y", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:tip:thickness_ratio", val=np.nan)
-        self.add_input("data:geometry:wing:taper_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:tip:thickness_ratio", val=np.nan, units="unitless")
+        self.add_input("data:geometry:wing:taper_ratio", val=np.nan, units="unitless")
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="rad")
 
         self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="ft")
@@ -78,12 +87,14 @@ class ComputeLowerFlange(om.ExplicitComponent):
         self.add_input(
             "data:aerodynamics:wing:low_speed:CL_vector",
             val=np.nan,
+            units="unitless",
             shape_by_conn=True,
             copy_shape="data:aerodynamics:wing:low_speed:Y_vector",
         )
         self.add_input(
             "data:aerodynamics:slipstream:wing:cruise:only_prop:CL_vector",
             val=np.nan,
+            units="unitless",
             shape_by_conn=True,
             copy_shape="data:aerodynamics:slipstream:wing:cruise:prop_on:Y_vector",
         )
@@ -93,7 +104,7 @@ class ComputeLowerFlange(om.ExplicitComponent):
             shape_by_conn=True,
             units="m",
         )
-        self.add_input("data:aerodynamics:wing:low_speed:CL_ref", val=np.nan)
+        self.add_input("data:aerodynamics:wing:low_speed:CL_ref", val=np.nan, units="unitless")
         self.add_input(
             "data:aerodynamics:slipstream:wing:cruise:prop_on:velocity", val=np.nan, units="m/s"
         )
@@ -104,6 +115,7 @@ class ComputeLowerFlange(om.ExplicitComponent):
             "data:weight:airframe:wing:punctual_mass:y_ratio",
             shape_by_conn=True,
             val=0.0,
+            units="unitless",
         )
         self.add_input(
             "data:weight:airframe:wing:punctual_mass:mass",
@@ -113,12 +125,13 @@ class ComputeLowerFlange(om.ExplicitComponent):
             val=0.0,
         )
 
-        self.add_input("data:mission:sizing:cs23:safety_factor", val=np.nan)
+        self.add_input("data:mission:sizing:cs23:safety_factor", val=np.nan, units="unitless")
 
-        self.add_input("settings:geometry:fuel_tanks:depth", val=np.nan)
+        self.add_input("settings:geometry:fuel_tanks:depth", val=np.nan, units="unitless")
         self.add_input(
             "settings:wing:airfoil:flanges:height_ratio",
             val=0.93,
+            units="unitless",
             desc="ratio of the height between the two flanges and the the thickness of the "
             "airfoil, depends on the airfoil",
         )
@@ -148,10 +161,14 @@ class ComputeLowerFlange(om.ExplicitComponent):
         if not self.options["min_fuel_in_wing"]:
             self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="kg")
             self.add_input(
-                "data:mission:sizing:cs23:sizing_factor:ultimate_mtow:positive", val=np.nan
+                "data:mission:sizing:cs23:sizing_factor:ultimate_mtow:positive",
+                val=np.nan,
+                units="unitless",
             )
             self.add_input(
-                "data:mission:sizing:cs23:sizing_factor:ultimate_mtow:negative", val=np.nan
+                "data:mission:sizing:cs23:sizing_factor:ultimate_mtow:negative",
+                val=np.nan,
+                units="unitless",
             )
 
             self.add_output(
@@ -159,10 +176,14 @@ class ComputeLowerFlange(om.ExplicitComponent):
             )
         else:
             self.add_input(
-                "data:mission:sizing:cs23:sizing_factor:ultimate_mzfw:positive", val=np.nan
+                "data:mission:sizing:cs23:sizing_factor:ultimate_mzfw:positive",
+                val=np.nan,
+                units="unitless",
             )
             self.add_input(
-                "data:mission:sizing:cs23:sizing_factor:ultimate_mzfw:negative", val=np.nan
+                "data:mission:sizing:cs23:sizing_factor:ultimate_mzfw:negative",
+                val=np.nan,
+                units="unitless",
             )
 
             self.add_output(

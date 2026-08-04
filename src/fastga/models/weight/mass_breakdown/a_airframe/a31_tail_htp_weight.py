@@ -39,21 +39,26 @@ class ComputeHTPWeight(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
     def setup(self):
-        self.add_input("data:mission:sizing:cs23:sizing_factor:ultimate_aircraft", val=np.nan)
+        self.add_input(
+            "data:mission:sizing:cs23:sizing_factor:ultimate_aircraft", val=np.nan, units="unitless"
+        )
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="lb")
-        self.add_input("data:weight:airframe:horizontal_tail:k_factor", val=1.0)
-        self.add_input("data:weight:airframe:vertical_tail:k_factor", val=1.0)
+        self.add_input("data:weight:airframe:horizontal_tail:k_factor", val=1.0, units="unitless")
+        self.add_input("data:weight:airframe:vertical_tail:k_factor", val=1.0, units="unitless")
         self.add_input("data:TLAR:v_cruise", val=np.nan, units="m/s")
         self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="ft")
 
         self.add_input("data:geometry:horizontal_tail:area", val=np.nan, units="ft**2")
-        self.add_input("data:geometry:horizontal_tail:thickness_ratio", val=np.nan)
+        self.add_input(
+            "data:geometry:horizontal_tail:thickness_ratio", val=np.nan, units="unitless"
+        )
         self.add_input("data:geometry:horizontal_tail:sweep_25", val=np.nan, units="rad")
-        self.add_input("data:geometry:horizontal_tail:aspect_ratio", val=np.nan)
-        self.add_input("data:geometry:horizontal_tail:taper_ratio", val=np.nan)
+        self.add_input("data:geometry:horizontal_tail:aspect_ratio", val=np.nan, units="unitless")
+        self.add_input("data:geometry:horizontal_tail:taper_ratio", val=np.nan, units="unitless")
 
         self.add_output("data:weight:airframe:horizontal_tail:mass", units="lb")
 
+    def setup_partials(self):
         self.declare_partials(
             of="data:weight:airframe:horizontal_tail:mass",
             wrt=[
@@ -287,12 +292,16 @@ class ComputeHTPWeightGD(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
     def setup(self):
-        self.add_input("data:mission:sizing:cs23:sizing_factor:ultimate_aircraft", val=np.nan)
+        self.add_input(
+            "data:mission:sizing:cs23:sizing_factor:ultimate_aircraft", val=np.nan, units="unitless"
+        )
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="lb")
-        self.add_input("data:weight:airframe:horizontal_tail:k_factor", val=1.0)
+        self.add_input("data:weight:airframe:horizontal_tail:k_factor", val=1.0, units="unitless")
 
         self.add_input("data:geometry:horizontal_tail:area", val=np.nan, units="ft**2")
-        self.add_input("data:geometry:horizontal_tail:thickness_ratio", val=np.nan)
+        self.add_input(
+            "data:geometry:horizontal_tail:thickness_ratio", val=np.nan, units="unitless"
+        )
         self.add_input("data:geometry:horizontal_tail:root:chord", val=np.nan, units="ft")
         self.add_input("data:geometry:horizontal_tail:MAC:length", val=np.nan, units="ft")
         self.add_input("data:geometry:horizontal_tail:span", val=np.nan, units="ft")
@@ -302,6 +311,7 @@ class ComputeHTPWeightGD(om.ExplicitComponent):
 
         self.add_output("data:weight:airframe:horizontal_tail:mass", units="lb")
 
+    def setup_partials(self):
         self.declare_partials(
             of="data:weight:airframe:horizontal_tail:mass",
             wrt=[
@@ -507,13 +517,14 @@ class ComputeHTPWeightTorenbeek(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
     def setup(self):
-        self.add_input("data:weight:airframe:horizontal_tail:k_factor", val=1.0)
+        self.add_input("data:weight:airframe:horizontal_tail:k_factor", val=1.0, units="unitless")
         self.add_input("data:geometry:horizontal_tail:area", val=np.nan, units="ft**2")
         self.add_input("data:geometry:horizontal_tail:sweep_25", val=np.nan, units="rad")
         self.add_input("data:mission:sizing:cs23:characteristic_speed:vd", val=np.nan, units="kn")
 
         self.add_output("data:weight:airframe:horizontal_tail:mass", units="lb")
 
+    def setup_partials(self):
         self.declare_partials(
             of="data:weight:airframe:horizontal_tail:mass",
             wrt=[

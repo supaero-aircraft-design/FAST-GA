@@ -29,14 +29,14 @@ class ComputeSkinMass(om.ExplicitComponent):
         self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="m")
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
-        self.add_input("data:geometry:wing:thickness_ratio", val=np.nan)
-        self.add_input("data:geometry:wing:taper_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:thickness_ratio", val=np.nan, units="unitless")
+        self.add_input("data:geometry:wing:taper_ratio", val=np.nan, units="unitless")
         self.add_input("data:geometry:wing:root:chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="rad")
-        self.add_input("data:geometry:wing:aileron:chord_ratio", val=np.nan)
-        self.add_input("data:geometry:wing:aileron:span_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:aileron:chord_ratio", val=np.nan, units="unitless")
+        self.add_input("data:geometry:wing:aileron:span_ratio", val=np.nan, units="unitless")
         self.add_input("data:geometry:wing:aileron:max_deflection", val=np.nan, units="rad")
-        self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:count", val=np.nan, units="unitless")
 
         self.add_input("data:mission:sizing:cs23:characteristic_speed:va", val=np.nan, units="m/s")
         self.add_input("data:mission:sizing:cs23:characteristic_speed:vc", val=np.nan, units="m/s")
@@ -54,6 +54,7 @@ class ComputeSkinMass(om.ExplicitComponent):
         self.add_input(
             "data:aerodynamics:aircraft:mach_interpolation:mach_vector",
             val=np.nan,
+            units="unitless",
             shape_by_conn=True,
         )
 
@@ -72,12 +73,14 @@ class ComputeSkinMass(om.ExplicitComponent):
         self.add_input(
             "settings:wing:airfoil:skin:ka",
             val=0.92,
+            units="unitless",
             desc="Correction coefficient needed to account for the hypothesis of a rectangular "
             "wingbox",
         )
         self.add_input(
             "settings:wing:airfoil:skin:d_wingbox",
             val=0.4,
+            units="unitless",
             desc="ratio of the wingbox working depth/airfoil chord",
         )
 

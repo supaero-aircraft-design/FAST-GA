@@ -648,12 +648,8 @@ def cg_lateral_diagram(  # noqa: PLR0915
     mac_position = _unit_conversion(variables["data:geometry:wing:MAC:at25percent:x"], length_unit)
     stick_fixed_sm = variables["data:handling_qualities:stick_fixed_static_margin"].value[0]
     stick_free_sm = variables["data:handling_qualities:stick_free_static_margin"].value[0]
-    ac_ratio_fixed = _unit_conversion(
-        variables["data:aerodynamics:cruise:neutral_point:stick_fixed:x"], length_unit
-    )
-    ac_ratio_free = _unit_conversion(
-        variables["data:aerodynamics:cruise:neutral_point:stick_free:x"], length_unit
-    )
+    ac_ratio_fixed = variables["data:aerodynamics:cruise:neutral_point:stick_fixed:x"].value[0]
+    ac_ratio_free = variables["data:aerodynamics:cruise:neutral_point:stick_free:x"].value[0]
 
     ac_fixed_x = mac_position + (ac_ratio_fixed - 0.25) * l0
     ac_free_x = mac_position + (ac_ratio_free - 0.25) * l0

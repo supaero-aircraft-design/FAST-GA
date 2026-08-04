@@ -32,6 +32,7 @@ class UpdateMTOW(om.ExplicitComponent):
 
         self.add_output("data:weight:aircraft:MTOW", 1500.0, units="kg")
 
+    def setup_partials(self):
         self.declare_partials("data:weight:aircraft:MTOW", "data:weight:aircraft:ZFW", val=1.0)
         self.declare_partials("data:weight:aircraft:MTOW", "data:mission:sizing:fuel", val=1.0)
 

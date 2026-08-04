@@ -26,21 +26,23 @@ class ComputeRibsMass(om.ExplicitComponent):
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="m")
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:thickness_ratio", val=np.nan)
-        self.add_input("data:geometry:wing:taper_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:thickness_ratio", val=np.nan, units="unitless")
+        self.add_input("data:geometry:wing:taper_ratio", val=np.nan, units="unitless")
         self.add_input("data:geometry:wing:root:chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="rad")
-        self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:count", val=np.nan, units="unitless")
 
         self.add_input(
             "settings:wing:airfoil:skin:ka",
             val=0.92,
+            units="unitless",
             desc="Correction coefficient needed to account for the hypothesis of a rectangular "
             "wingbox",
         )
         self.add_input(
             "settings:wing:airfoil:skin:d_wingbox",
             val=0.4,
+            units="unitless",
             desc="ratio of the wingbox working depth/airfoil chord",
         )
         self.add_input(

@@ -49,6 +49,7 @@ class ComputeOilWeight(om.ExplicitComponent):
 
         self.add_output("data:weight:propulsion:engine_oil:mass", units="lb")
 
+    def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="fd")
 
     # pylint: disable=missing-function-docstring, unused-argument

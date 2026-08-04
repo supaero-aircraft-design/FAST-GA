@@ -27,6 +27,9 @@ class ComputeFloor(om.ExplicitComponent):
 
         self.add_output("data:weight:airframe:fuselage:floor:mass", units="kg")
 
+    def setup_partials(self):
+        self.declare_partials(of="*", wrt="*", method="exact")
+
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         # Floor width is not exactly equal to the fuselage max width
         floor_width = inputs["data:geometry:fuselage:maximum_width"] * 0.9
@@ -37,3 +40,19 @@ class ComputeFloor(om.ExplicitComponent):
         floor_weight = floor_density * floor_area**1.045
 
         outputs["data:weight:airframe:fuselage:floor:mass"] = floor_weight
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+        floor_width = inputs["data:geometry:fuselage:maximum_width"]
+        cabin_length = inputs["data:geometry:cabin:length"]
+        floor_density = inputs["settings:weight:airframe:fuselage:floor:area_density"]
+
+        partials[
+            "data:weight:airframe:fuselage:floor:mass", "data:geometry:fuselage:maximum_width"
+        ] = floor_density * 1.045 * (0.9 * cabin_length) ** 1.045 * floor_width**0.045
+        partials["data:weight:airframe:fuselage:floor:mass", "data:geometry:cabin:length"] = (
+            floor_density * 1.045 * (0.9 * floor_width) ** 1.045 * cabin_length**0.045
+        )
+        partials[
+            "data:weight:airframe:fuselage:floor:mass",
+            "settings:weight:airframe:fuselage:floor:area_density",
+        ] = (0.9 * floor_width * cabin_length) ** 1.045

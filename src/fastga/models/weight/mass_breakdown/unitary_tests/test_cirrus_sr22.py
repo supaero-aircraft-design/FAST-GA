@@ -253,6 +253,8 @@ def test_compute_insulation_mass():
     problem = run_system(ComputeInsulation(), ivc)
     assert problem["data:weight:airframe:fuselage:insulation:mass"] == pytest.approx(9.87, abs=1e-2)
 
+    problem.check_partials(compact_print=True)
+
 
 def test_compute_floor_mass():
     """Tests fuselage floor weight computation from sample XML data."""
@@ -267,6 +269,8 @@ def test_compute_floor_mass():
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeFloor(), ivc)
     assert problem["data:weight:airframe:fuselage:floor:mass"] == pytest.approx(15.966, abs=1e-2)
+
+    problem.check_partials(compact_print=True)
 
 
 def test_compute_nlg_hatch_mass():
@@ -950,6 +954,8 @@ def test_compute_secondary_mass():
     assert problem["data:weight:airframe:wing:secondary_structure:mass"] == pytest.approx(
         45.554, abs=1e-2
     )
+
+    problem.check_partials(compact_print=True)
 
 
 def test_update_wing_mass():

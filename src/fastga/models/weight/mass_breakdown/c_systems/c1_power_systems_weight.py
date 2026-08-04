@@ -40,6 +40,7 @@ class ComputePowerSystemsWeight(om.ExplicitComponent):
         self.add_output("data:weight:systems:power:electric_systems:mass", units="lb")
         self.add_output("data:weight:systems:power:hydraulic_systems:mass", units="lb")
 
+    def setup_partials(self):
         self.declare_partials(
             "data:weight:systems:power:electric_systems:mass",
             ["data:weight:propulsion:fuel_lines:mass", "data:weight:systems:avionics:mass"],

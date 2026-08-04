@@ -53,7 +53,7 @@ class ComputeLifeSupportSystemsWeight(om.ExplicitComponent):
     # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="lb")
-        self.add_input("data:geometry:cabin:seats:passenger:NPAX_max", val=np.nan)
+        self.add_input("data:geometry:cabin:seats:passenger:NPAX_max", val=np.nan, units="unitless")
         self.add_input("data:weight:systems:avionics:mass", val=np.nan, units="lb")
         self.add_input("data:mission:sizing:cs23:characteristic_speed:vd", val=np.nan, units="m/s")
         self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="ft")
@@ -66,6 +66,7 @@ class ComputeLifeSupportSystemsWeight(om.ExplicitComponent):
         self.add_output("data:weight:systems:life_support:fixed_oxygen:mass", units="lb")
         self.add_output("data:weight:systems:life_support:security_kits:mass", units="lb")
 
+    def setup_partials(self):
         self.declare_partials(
             "data:weight:systems:life_support:air_conditioning:mass",
             [
@@ -184,7 +185,7 @@ class ComputeLifeSupportSystemsWeightFLOPS(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
     def setup(self):
-        self.add_input("data:geometry:cabin:seats:passenger:NPAX_max", val=np.nan)
+        self.add_input("data:geometry:cabin:seats:passenger:NPAX_max", val=np.nan, units="unitless")
         self.add_input("data:weight:systems:avionics:mass", val=np.nan, units="lb")
         self.add_input("data:mission:sizing:cs23:characteristic_speed:vd", val=np.nan, units="m/s")
         self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="ft")
@@ -196,7 +197,7 @@ class ComputeLifeSupportSystemsWeightFLOPS(om.ExplicitComponent):
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="rad")
         self.add_input("data:geometry:propulsion:nacelle:height", val=np.nan, units="ft")
         self.add_input("data:geometry:propulsion:nacelle:width", val=np.nan, units="ft")
-        self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:count", val=np.nan, units="unitless")
 
         self.add_output("data:weight:systems:life_support:insulation:mass", units="lb")
         self.add_output("data:weight:systems:life_support:air_conditioning:mass", units="lb")
@@ -206,6 +207,7 @@ class ComputeLifeSupportSystemsWeightFLOPS(om.ExplicitComponent):
         self.add_output("data:weight:systems:life_support:fixed_oxygen:mass", units="lb")
         self.add_output("data:weight:systems:life_support:security_kits:mass", units="lb")
 
+    def setup_partials(self):
         self.declare_partials(
             "data:weight:systems:life_support:air_conditioning:mass",
             [

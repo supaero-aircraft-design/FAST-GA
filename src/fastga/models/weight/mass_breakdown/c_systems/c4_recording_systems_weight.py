@@ -45,6 +45,7 @@ class ComputeRecordingSystemsWeight(om.ExplicitComponent):
 
         self.add_output("data:weight:systems:recording:mass", units="kg")
 
+    def setup_partials(self):
         self.declare_partials(
             "data:weight:systems:recording:mass", "data:weight:aircraft:MTOW", method="fd"
         )

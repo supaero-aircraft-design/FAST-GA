@@ -34,20 +34,23 @@ class ComputeVTPWeight(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
     def setup(self):
-        self.add_input("data:mission:sizing:cs23:sizing_factor:ultimate_aircraft", val=np.nan)
+        self.add_input(
+            "data:mission:sizing:cs23:sizing_factor:ultimate_aircraft", val=np.nan, units="unitless"
+        )
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="lb")
-        self.add_input("data:weight:airframe:vertical_tail:k_factor", val=1.0)
+        self.add_input("data:weight:airframe:vertical_tail:k_factor", val=1.0, units="unitless")
         self.add_input("data:TLAR:v_cruise", val=np.nan, units="m/s")
         self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="ft")
-        self.add_input("data:geometry:has_T_tail", val=np.nan)
+        self.add_input("data:geometry:has_T_tail", val=np.nan, units="unitless")
         self.add_input("data:geometry:vertical_tail:area", val=np.nan, units="ft**2")
-        self.add_input("data:geometry:vertical_tail:thickness_ratio", val=np.nan)
+        self.add_input("data:geometry:vertical_tail:thickness_ratio", val=np.nan, units="unitless")
         self.add_input("data:geometry:vertical_tail:sweep_25", val=np.nan, units="rad")
-        self.add_input("data:geometry:vertical_tail:aspect_ratio", val=np.nan)
-        self.add_input("data:geometry:vertical_tail:taper_ratio", val=np.nan)
+        self.add_input("data:geometry:vertical_tail:aspect_ratio", val=np.nan, units="unitless")
+        self.add_input("data:geometry:vertical_tail:taper_ratio", val=np.nan, units="unitless")
 
         self.add_output("data:weight:airframe:vertical_tail:mass", units="lb")
 
+    def setup_partials(self):
         self.declare_partials(
             of="data:weight:airframe:vertical_tail:mass",
             wrt=[
@@ -314,23 +317,28 @@ class ComputeVTPWeightGD(om.ExplicitComponent):
     # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:TLAR:v_max_sl", val=np.nan, units="m/s")
-        self.add_input("data:mission:sizing:cs23:sizing_factor:ultimate_aircraft", val=np.nan)
+        self.add_input(
+            "data:mission:sizing:cs23:sizing_factor:ultimate_aircraft", val=np.nan, units="unitless"
+        )
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="lb")
-        self.add_input("data:weight:airframe:vertical_tail:k_factor", val=1.0)
+        self.add_input("data:weight:airframe:vertical_tail:k_factor", val=1.0, units="unitless")
 
-        self.add_input("data:geometry:has_T_tail", val=np.nan)
+        self.add_input("data:geometry:has_T_tail", val=np.nan, units="unitless")
         self.add_input("data:geometry:vertical_tail:area", val=np.nan, units="ft**2")
         self.add_input(
             "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="ft"
         )
         # Rudder is assumed to take full span so rudder ratio is equal to chord ratio
-        self.add_input("data:geometry:vertical_tail:rudder:chord_ratio", val=np.nan)
+        self.add_input(
+            "data:geometry:vertical_tail:rudder:chord_ratio", val=np.nan, units="unitless"
+        )
         self.add_input("data:geometry:vertical_tail:sweep_25", val=np.nan, units="rad")
-        self.add_input("data:geometry:vertical_tail:aspect_ratio", val=np.nan)
-        self.add_input("data:geometry:vertical_tail:taper_ratio", val=np.nan)
+        self.add_input("data:geometry:vertical_tail:aspect_ratio", val=np.nan, units="unitless")
+        self.add_input("data:geometry:vertical_tail:taper_ratio", val=np.nan, units="unitless")
 
         self.add_output("data:weight:airframe:vertical_tail:mass", units="lb")
 
+    def setup_partials(self):
         self.declare_partials(
             of="data:weight:airframe:vertical_tail:mass",
             wrt=[

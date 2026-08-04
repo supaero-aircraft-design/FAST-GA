@@ -41,6 +41,9 @@ class UpdateFuselageMass(om.ExplicitComponent):
 
         self.add_output("data:weight:airframe:fuselage:mass", val=100.0, units="kg")
 
+    def setup_partials(self):
+        self.declare_partials(of="*", wrt="*", method="exact", val=1.0)
+
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         shell_mass = inputs["data:weight:airframe:fuselage:shell:mass"]
         cone_mass = inputs["data:weight:airframe:fuselage:cone:mass"]

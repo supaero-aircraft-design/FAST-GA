@@ -23,6 +23,9 @@ class ComputeInsulation(om.ExplicitComponent):
 
         self.add_output("data:weight:airframe:fuselage:insulation:mass", units="kg")
 
+    def setup_partials(self):
+        self.declare_partials(of="*", wrt="*", method="exact")
+
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         # Default value of insulation comes from https://www.fire.tc.faa.gov/pdf/insulate.pdf
 
@@ -30,3 +33,12 @@ class ComputeInsulation(om.ExplicitComponent):
             inputs["data:geometry:fuselage:wet_area"]
             * inputs["settings:materials:insulation:area_density"]
         )
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+        partials[
+            "data:weight:airframe:fuselage:insulation:mass", "data:geometry:fuselage:wet_area"
+        ] = inputs["settings:materials:insulation:area_density"]
+        partials[
+            "data:weight:airframe:fuselage:insulation:mass",
+            "settings:materials:insulation:area_density",
+        ] = inputs["data:geometry:fuselage:wet_area"]

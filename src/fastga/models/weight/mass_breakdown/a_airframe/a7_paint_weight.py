@@ -68,6 +68,7 @@ class ComputePaintWeight(om.ExplicitComponent):
 
         self.add_output("data:weight:airframe:paint:mass", units="kg")
 
+    def setup_partials(self):
         self.declare_partials(of="data:weight:airframe:paint:mass", wrt="*", method="exact")
 
     # pylint: disable=missing-function-docstring, unused-argument

@@ -18,7 +18,7 @@ import openmdao.api as om
 
 class ComputeDoors(om.ExplicitComponent):
     def setup(self):
-        self.add_input("data:geometry:cabin:doors:number", val=2.0)
+        self.add_input("data:geometry:cabin:doors:number", val=2.0, units="unitless")
         self.add_input("data:geometry:cabin:doors:height", val=1.0, units="m")
         self.add_input("data:geometry:cabin:doors:width", val=0.61, units="m")
         self.add_input("data:geometry:cabin:max_differential_pressure", val=np.nan, units="hPa")
@@ -28,6 +28,7 @@ class ComputeDoors(om.ExplicitComponent):
         self.add_input(
             "data:geometry:cabin:pressurized",
             val=0.0,
+            units="unitless",
             desc="Cabin pressurization; 0.0 for no pressurization, 1.0 for pressurization",
         )
 

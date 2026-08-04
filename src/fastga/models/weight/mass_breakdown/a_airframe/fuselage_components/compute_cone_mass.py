@@ -21,19 +21,21 @@ class ComputeTailCone(om.ExplicitComponent):
     def setup(self):
         self.add_input("data:geometry:vertical_tail:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:vertical_tail:span", val=np.nan, units="m")
-        self.add_input("data:geometry:vertical_tail:taper_ratio", val=np.nan)
+        self.add_input("data:geometry:vertical_tail:taper_ratio", val=np.nan, units="unitless")
         self.add_input("data:geometry:vertical_tail:rudder:max_deflection", val=np.nan, units="rad")
         self.add_input("data:geometry:fuselage:rear_length", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="m")
         self.add_input("data:aerodynamics:rudder:cruise:Cy_delta_r", val=np.nan, units="rad**-1")
-        self.add_input("data:weight:airframe:fuselage:shell:added_weight_ratio", val=np.nan)
+        self.add_input(
+            "data:weight:airframe:fuselage:shell:added_weight_ratio", val=np.nan, units="unitless"
+        )
         self.add_input("data:weight:airframe:horizontal_tail:mass", val=np.nan, units="kg")
         self.add_input("data:weight:airframe:vertical_tail:mass", val=np.nan, units="kg")
         self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="m")
         self.add_input("data:mission:sizing:cs23:characteristic_speed:vd", val=np.nan, units="m/s")
 
-        self.add_input("settings:geometry:fuselage:cone:taper_ratio", val=0.2)
+        self.add_input("settings:geometry:fuselage:cone:taper_ratio", val=0.2, units="unitless")
         self.add_input("settings:materials:fuselage:skin:density", val=np.nan, units="kg/m**3")
         self.add_input("settings:materials:fuselage:skin:max_shear_stress", val=np.nan, units="Pa")
 

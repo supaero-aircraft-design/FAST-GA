@@ -58,6 +58,7 @@ class ComputeUnusableFuelWeight(om.ExplicitComponent):
 
         self.add_output("data:weight:propulsion:unusable_fuel:mass", units="lb")
 
+    def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="fd")
         # Overwrites the derivatives because we know the exact value
         self.declare_partials(

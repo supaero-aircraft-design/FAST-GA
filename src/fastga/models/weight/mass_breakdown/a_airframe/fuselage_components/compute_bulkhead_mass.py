@@ -24,6 +24,7 @@ class ComputeBulkhead(om.ExplicitComponent):
         self.add_input(
             "data:geometry:cabin:pressurized",
             val=0.0,
+            units="unitless",
             desc="Cabin pressurization; 0.0 for no pressurization, 1.0 for pressurization",
         )
 

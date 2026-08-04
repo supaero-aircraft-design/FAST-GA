@@ -32,7 +32,9 @@ class ComputeShell(om.ExplicitComponent):
             "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="m"
         )
         self.add_input("data:mission:sizing:cs23:characteristic_speed:vd", val=np.nan, units="m/s")
-        self.add_input("data:mission:sizing:cs23:sizing_factor:ultimate_aircraft", val=np.nan)
+        self.add_input(
+            "data:mission:sizing:cs23:sizing_factor:ultimate_aircraft", val=np.nan, units="unitless"
+        )
 
         self.add_input("settings:materials:fuselage:skin:density", val=np.nan, units="kg/m**3")
         self.add_input("settings:materials:fuselage:stringer:density", val=np.nan, units="kg/m**3")
@@ -42,13 +44,17 @@ class ComputeShell(om.ExplicitComponent):
         self.add_input("settings:materials:fuselage:skin:sigma_02", val=np.nan, units="Pa")
         self.add_input("settings:materials:fuselage:skin:sigma_max", val=np.nan, units="Pa")
         self.add_input("settings:geometry:fuselage:min_skin_thickness", val=np.nan, units="m")
-        self.add_input("settings:weight:airframe:fuselage:reinforcements:mass_fraction", val=np.nan)
+        self.add_input(
+            "settings:weight:airframe:fuselage:reinforcements:mass_fraction",
+            val=np.nan,
+            units="unitless",
+        )
 
         self.add_output("data:geometry:fuselage:skin_thickness", val=1e-3, units="m")
         self.add_output("data:loads:fuselage:inertia", units="m**4")
         self.add_output("data:loads:fuselage:sigmaMh", units="N/m**2")
         self.add_output("data:weight:airframe:fuselage:shell:mass", units="kg")
-        self.add_output("data:weight:airframe:fuselage:shell:added_weight_ratio")
+        self.add_output("data:weight:airframe:fuselage:shell:added_weight_ratio", units="unitless")
         self.add_output("data:weight:airframe:fuselage:shell:area_density", units="kg/m**2")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):

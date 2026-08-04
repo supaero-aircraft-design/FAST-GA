@@ -38,9 +38,11 @@ class ComputeAddBendingMassHorizontal(om.ExplicitComponent):
         self.add_input("data:geometry:cabin:length", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="m")
-        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan, units="unitless")
 
-        self.add_input("data:aerodynamics:horizontal_tail:low_speed:CL_max_clean", val=np.nan)
+        self.add_input(
+            "data:aerodynamics:horizontal_tail:low_speed:CL_max_clean", val=np.nan, units="unitless"
+        )
         self.add_input("data:aerodynamics:elevator:low_speed:CL_delta", units="rad**-1")
 
         self.add_input("data:weight:propulsion:engine:CG:x", val=np.nan, units="m")
@@ -78,9 +80,13 @@ class ComputeAddBendingMassHorizontal(om.ExplicitComponent):
 
         self.add_input("data:mission:sizing:landing:elevator_angle", val=np.nan, units="rad")
         self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="m")
-        self.add_input("data:mission:sizing:cs23:sizing_factor:ultimate_aircraft", val=np.nan)
+        self.add_input(
+            "data:mission:sizing:cs23:sizing_factor:ultimate_aircraft", val=np.nan, units="unitless"
+        )
         self.add_input("data:mission:sizing:cs23:characteristic_speed:vd", val=np.nan, units="m/s")
-        self.add_input("data:mission:landing:cs23:sizing_factor:ultimate_aircraft", val=6.0)
+        self.add_input(
+            "data:mission:landing:cs23:sizing_factor:ultimate_aircraft", val=6.0, units="unitless"
+        )
 
         self.add_input("settings:materials:fuselage:skin:density", val=np.nan, units="kg/m**3")
         self.add_input("settings:materials:fuselage:skin:young_modulus", val=np.nan, units="Pa")

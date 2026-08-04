@@ -180,6 +180,8 @@ def test_compute_secondary_mass():
         43.600, abs=1e-2
     )
 
+    problem.check_partials(compact_print=True)
+
 
 def test_update_wing_mass():
     # Research independent input value in .xml file

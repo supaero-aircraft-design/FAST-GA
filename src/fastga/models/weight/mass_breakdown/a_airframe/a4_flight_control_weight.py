@@ -43,12 +43,15 @@ class ComputeFlightControlsWeight(om.ExplicitComponent):
     # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="lb")
-        self.add_input("data:mission:sizing:cs23:sizing_factor:ultimate_aircraft", val=np.nan)
+        self.add_input(
+            "data:mission:sizing:cs23:sizing_factor:ultimate_aircraft", val=np.nan, units="unitless"
+        )
         self.add_input("data:geometry:wing:span", val=np.nan, units="ft")
         self.add_input("data:geometry:fuselage:length", val=np.nan, units="ft")
 
         self.add_output("data:weight:airframe:flight_controls:mass", units="lb")
 
+    def setup_partials(self):
         self.declare_partials("*", "*", method="exact")
 
     # pylint: disable=missing-function-docstring, unused-argument
@@ -99,12 +102,15 @@ class ComputeFlightControlsWeightFLOPS(om.ExplicitComponent):
     # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="lb")
-        self.add_input("data:mission:sizing:cs23:sizing_factor:ultimate_aircraft", val=np.nan)
+        self.add_input(
+            "data:mission:sizing:cs23:sizing_factor:ultimate_aircraft", val=np.nan, units="unitless"
+        )
         self.add_input("data:mission:sizing:cs23:characteristic_speed:vd", val=np.nan, units="m/s")
         self.add_input("data:geometry:wing:area", val=np.nan, units="ft**2")
 
         self.add_output("data:weight:airframe:flight_controls:mass", units="lb")
 
+    def setup_partials(self):
         self.declare_partials("*", "*", method="exact")
 
     # pylint: disable=missing-function-docstring, unused-argument

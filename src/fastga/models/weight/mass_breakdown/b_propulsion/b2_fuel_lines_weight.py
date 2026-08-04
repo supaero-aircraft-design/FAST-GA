@@ -43,12 +43,13 @@ class ComputeFuelLinesWeight(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
     def setup(self):
-        self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:count", val=np.nan, units="unitless")
         self.add_input("data:weight:aircraft:MFW", val=np.nan, units="lb")
-        self.add_input("data:propulsion:fuel_type", val=np.nan)
+        self.add_input("data:propulsion:fuel_type", val=np.nan, units="unitless")
 
         self.add_output("data:weight:propulsion:fuel_lines:mass", units="lb")
 
+    def setup_partials(self):
         self.declare_partials(
             "data:weight:propulsion:fuel_lines:mass", "data:propulsion:fuel_type", method="fd"
         )

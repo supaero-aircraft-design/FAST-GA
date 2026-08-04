@@ -22,13 +22,14 @@ import openmdao.api as om
 class ComputeWindows(om.ExplicitComponent):
     def setup(self):
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
-        self.add_input("data:geometry:cabin:windows:number", val=4.0)
+        self.add_input("data:geometry:cabin:windows:number", val=4.0, units="unitless")
         self.add_input("data:geometry:cabin:windows:height", val=0.5, units="m")
         self.add_input("data:geometry:cabin:windows:width", val=0.5, units="m")
         self.add_input("data:geometry:cabin:max_differential_pressure", val=np.nan, units="hPa")
         self.add_input(
             "data:geometry:cabin:pressurized",
             val=0.0,
+            units="unitless",
             desc="Cabin pressurization; 0.0 for no pressurization, 1.0 for pressurization",
         )
         self.add_input("data:geometry:cockpit:windows:height", val=np.nan, units="m")

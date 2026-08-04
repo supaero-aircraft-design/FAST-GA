@@ -21,7 +21,7 @@ from fastga.models.constants import PropulsionLayout
 class ComputeEngineSupport(om.ExplicitComponent):
     def setup(self):
         self.add_input("data:weight:propulsion:engine:mass", val=np.nan, units="kg")
-        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan, units="unitless")
 
         self.add_output("data:weight:airframe:fuselage:engine_support:mass", units="kg")
 

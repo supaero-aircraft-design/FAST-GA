@@ -20,15 +20,20 @@ from fastga.models.constants import PropulsionLayout
 
 class ComputeWingFuselageConnection(om.ExplicitComponent):
     def setup(self):
-        self.add_input("data:mission:sizing:cs23:sizing_factor:ultimate_aircraft", val=np.nan)
-        self.add_input("data:mission:landing:cs23:sizing_factor:ultimate_aircraft", val=6.0)
+        self.add_input(
+            "data:mission:sizing:cs23:sizing_factor:ultimate_aircraft", val=np.nan, units="unitless"
+        )
+        self.add_input(
+            "data:mission:landing:cs23:sizing_factor:ultimate_aircraft", val=6.0, units="unitless"
+        )
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="kg")
         self.add_input(
             "data:geometry:cabin:pressurized",
             val=0.0,
+            units="unitless",
             desc="Cabin pressurization; 0.0 for no pressurization, 1.0 for pressurization",
         )
-        self.add_input("data:geometry:wing_configuration", val=np.nan)
+        self.add_input("data:geometry:wing_configuration", val=np.nan, units="unitless")
 
         self.add_output("data:weight:airframe:fuselage:wing_fuselage_connection:mass", units="kg")
 

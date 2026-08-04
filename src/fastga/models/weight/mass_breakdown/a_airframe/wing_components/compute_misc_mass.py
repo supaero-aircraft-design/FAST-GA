@@ -26,11 +26,12 @@ class ComputeMiscMass(om.ExplicitComponent):
 
     def setup(self):
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
-        self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:count", val=np.nan, units="unitless")
 
         self.add_input(
             "settings:wing:structure:F_COMP",
             val=0.0,
+            units="unitless",
             desc="Composite utilisation factor; 1.0 for max composite utilisation, "
             "0.0 for min utilisation",
         )

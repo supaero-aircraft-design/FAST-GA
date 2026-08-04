@@ -49,9 +49,11 @@ class ComputeFuselageWeight(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
     def setup(self):
-        self.add_input("data:mission:sizing:cs23:sizing_factor:ultimate_aircraft", val=np.nan)
+        self.add_input(
+            "data:mission:sizing:cs23:sizing_factor:ultimate_aircraft", val=np.nan, units="unitless"
+        )
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="lb")
-        self.add_input("data:weight:airframe:fuselage:k_factor", val=1.0)
+        self.add_input("data:weight:airframe:fuselage:k_factor", val=1.0, units="unitless")
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:length", val=np.nan, units="m")
@@ -59,6 +61,7 @@ class ComputeFuselageWeight(om.ExplicitComponent):
 
         self.add_output("data:weight:airframe:fuselage:mass", units="lb")
 
+    def setup_partials(self):
         self.declare_partials("*", "*", method="exact")
 
     # pylint: disable=missing-function-docstring, unused-argument
@@ -218,9 +221,11 @@ class ComputeFuselageWeightRaymer(om.ExplicitComponent):
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="ft")
         self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="ft")
         self.add_input("data:geometry:fuselage:wet_area", val=np.nan, units="ft**2")
-        self.add_input("data:mission:sizing:cs23:sizing_factor:ultimate_aircraft", val=np.nan)
+        self.add_input(
+            "data:mission:sizing:cs23:sizing_factor:ultimate_aircraft", val=np.nan, units="unitless"
+        )
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="lb")
-        self.add_input("data:weight:airframe:fuselage:k_factor", val=1.0)
+        self.add_input("data:weight:airframe:fuselage:k_factor", val=1.0, units="unitless")
         self.add_input(
             "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="ft"
         )
@@ -229,11 +234,8 @@ class ComputeFuselageWeightRaymer(om.ExplicitComponent):
 
         self.add_output("data:weight:airframe:fuselage:mass", units="lb")
 
-        self.declare_partials(
-            of="*",
-            wrt="*",
-            method="exact",
-        )
+    def setup_partials(self):
+        self.declare_partials(of="*", wrt="*", method="exact")
 
     # pylint: disable=missing-function-docstring, unused-argument
     # Overriding OpenMDAO compute, not all arguments are used
@@ -525,13 +527,14 @@ class ComputeFuselageWeightRoskam(om.ExplicitComponent):
         self.add_input("data:geometry:fuselage:length", val=np.nan, units="ft")
         self.add_input("data:geometry:fuselage:front_length", val=np.nan, units="ft")
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="lb")
-        self.add_input("data:geometry:cabin:seats:passenger:NPAX_max", val=np.nan)
+        self.add_input("data:geometry:cabin:seats:passenger:NPAX_max", val=np.nan, units="unitless")
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="ft")
         self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="ft")
-        self.add_input("data:geometry:wing_configuration", val=np.nan)
+        self.add_input("data:geometry:wing_configuration", val=np.nan, units="unitless")
 
         self.add_output("data:weight:airframe:fuselage:mass", units="lb")
 
+    def setup_partials(self):
         self.declare_partials(
             of="*",
             wrt=[

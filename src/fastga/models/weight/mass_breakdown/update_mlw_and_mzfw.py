@@ -32,19 +32,21 @@ class UpdateMLWandMZFW(om.ExplicitComponent):
         self.add_input("data:weight:aircraft:max_payload", val=np.nan, units="kg")
         self.add_input("data:weight:aircraft:payload", val=np.nan, units="kg")
         self.add_input("data:TLAR:v_cruise", val=np.nan, units="kn")
-        self.add_input("settings:weight:aircraft:MLW_MZFW_ratio", val=1.06)
+        self.add_input("settings:weight:aircraft:MLW_MZFW_ratio", val=1.06, units="unitless")
 
         self.add_output("data:weight:aircraft:MZFW", units="kg")
+        self.add_output("data:weight:aircraft:ZFW", units="kg")
+        self.add_output("data:weight:aircraft:MLW", units="kg")
+
+    def setup_partials(self):
         self.declare_partials("data:weight:aircraft:MZFW", "data:weight:aircraft:OWE", val=1.0)
         self.declare_partials(
             "data:weight:aircraft:MZFW", "data:weight:aircraft:max_payload", val=1.0
         )
 
-        self.add_output("data:weight:aircraft:ZFW", units="kg")
         self.declare_partials("data:weight:aircraft:ZFW", "data:weight:aircraft:OWE", val=1.0)
         self.declare_partials("data:weight:aircraft:ZFW", "data:weight:aircraft:payload", val=1.0)
 
-        self.add_output("data:weight:aircraft:MLW", units="kg")
         self.declare_partials(
             "data:weight:aircraft:MLW",
             [

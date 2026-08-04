@@ -30,7 +30,8 @@ class ComputeTankCG(om.ExplicitComponent):
 
         self.add_input(
             "settings:weight:propulsion:tank:CG:from_wingMAC25",
-            val=0.25, units="unitless",
+            val=0.25,
+            units="unitless",
             desc="distance between the tank CG and 25 percent of wing MAC as a ratio of the wing "
             "MAC",
         )

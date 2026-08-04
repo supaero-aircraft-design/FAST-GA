@@ -48,11 +48,12 @@ class ComputeAvionicsSystemsWeight(om.ExplicitComponent):
     # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="lbm")
-        self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
-        self.add_input("data:geometry:cabin:seats:passenger:NPAX_max", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:count", val=np.nan, units="unitless")
+        self.add_input("data:geometry:cabin:seats:passenger:NPAX_max", val=np.nan, units="unitless")
 
         self.add_output("data:weight:systems:avionics:mass", units="lbm")
 
+    def setup_partials(self):
         self.declare_partials(
             of="data:weight:systems:avionics:mass",
             wrt=["data:weight:aircraft:MTOW", "data:geometry:cabin:seats:passenger:NPAX_max"],
@@ -117,6 +118,7 @@ class ComputeAvionicsSystemsWeightFromUninstalled(om.ExplicitComponent):
 
         self.add_output("data:weight:systems:avionics:mass", units="lbm")
 
+    def setup_partials(self):
         self.declare_partials("*", "*", method="exact")
 
     # pylint: disable=missing-function-docstring, unused-argument
