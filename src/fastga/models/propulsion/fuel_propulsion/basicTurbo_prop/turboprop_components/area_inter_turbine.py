@@ -25,13 +25,13 @@ class A45(om.ExplicitComponent):
 
         self.add_input("air_mass_flow", units="kg/s", val=np.nan, shape=n)
 
-        self.add_input("gamma_45", shape=n, val=np.nan)
+        self.add_input("gamma_45", shape=n, val=np.nan, units="unitless")
 
         self.add_input("total_pressure_45", units="Pa", shape=n, val=np.nan)
 
-        self.add_input("fuel_air_ratio", shape=n, val=np.nan)
-        self.add_input("compressor_bleed_ratio", shape=n, val=np.nan)
-        self.add_input("pressurization_bleed_ratio", shape=n, val=np.nan)
+        self.add_input("fuel_air_ratio", shape=n, val=np.nan, units="unitless")
+        self.add_input("compressor_bleed_ratio", shape=n, val=np.nan, units="unitless")
+        self.add_input("pressurization_bleed_ratio", shape=n, val=np.nan, units="unitless")
 
         self.add_input(
             "total_temperature_45",

@@ -14,9 +14,9 @@ class MassFlow(om.ExplicitComponent):
         self.add_input("compressor_bleed_mass_flow", units="kg/s", val=np.nan, shape=n)
         self.add_input("pressurization_mass_flow", units="kg/s", val=np.nan, shape=n)
 
-        self.add_output("fuel_air_ratio", shape=n)
-        self.add_output("compressor_bleed_ratio", shape=n)
-        self.add_output("pressurization_bleed_ratio", shape=n)
+        self.add_output("fuel_air_ratio", shape=n, units="unitless")
+        self.add_output("compressor_bleed_ratio", shape=n, units="unitless")
+        self.add_output("pressurization_bleed_ratio", shape=n, units="unitless")
 
     def setup_partials(self):
         n = self.options["number_of_points"]

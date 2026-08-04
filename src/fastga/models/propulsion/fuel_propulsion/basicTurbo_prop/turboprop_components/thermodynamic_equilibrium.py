@@ -14,10 +14,10 @@ class ThermodynamicEquilibrium(om.ImplicitComponent):
         self.add_input("fuel_mass_flow", units="kg/s", val=np.nan, shape=n)
         self.add_input("electric_power", units="W", shape=n, val=np.nan)
 
-        self.add_input("fuel_air_ratio", shape=n, val=np.nan)
-        self.add_input("compressor_bleed_ratio", shape=n, val=np.nan)
-        self.add_input("cooling_bleed_ratio", shape=n, val=np.nan)
-        self.add_input("pressurization_bleed_ratio", shape=n, val=np.nan)
+        self.add_input("fuel_air_ratio", shape=n, val=np.nan, units="unitless")
+        self.add_input("compressor_bleed_ratio", shape=n, val=np.nan, units="unitless")
+        self.add_input("cooling_bleed_ratio", shape=n, val=np.nan, units="unitless")
+        self.add_input("pressurization_bleed_ratio", shape=n, val=np.nan, units="unitless")
 
         self.add_input("total_temperature_2", units="K", shape=n, val=np.nan)
         self.add_input("total_temperature_3", units="K", shape=n, val=np.nan)
@@ -25,23 +25,24 @@ class ThermodynamicEquilibrium(om.ImplicitComponent):
         self.add_input("total_pressure_25", units="Pa", shape=n, val=np.nan)
         self.add_input("total_pressure_3", units="Pa", shape=n, val=np.nan)
         self.add_input("total_pressure_41", units="Pa", shape=n, val=np.nan)
-        self.add_input("cp_2", shape=n, val=np.nan)
-        self.add_input("cp_25", shape=n, val=np.nan)
-        self.add_input("cp_3", shape=n, val=np.nan)
-        self.add_input("cp_4", shape=n, val=np.nan)
-        self.add_input("cp_41", shape=n, val=np.nan)
-        self.add_input("cp_45", shape=n, val=np.nan)
-        self.add_input("gamma_41", shape=n, val=np.nan)
-        self.add_input("gamma_25", shape=n, val=np.nan)
+        self.add_input("cp_2", shape=n, val=np.nan, units="unitless")
+        self.add_input("cp_25", shape=n, val=np.nan, units="unitless")
+        self.add_input("cp_3", shape=n, val=np.nan, units="unitless")
+        self.add_input("cp_4", shape=n, val=np.nan, units="unitless")
+        self.add_input("cp_41", shape=n, val=np.nan, units="unitless")
+        self.add_input("cp_45", shape=n, val=np.nan, units="unitless")
+        self.add_input("gamma_41", shape=n, val=np.nan, units="unitless")
+        self.add_input("gamma_25", shape=n, val=np.nan, units="unitless")
 
-        self.add_input("opr_1", shape=n, val=np.nan)
-        self.add_input("opr_2", shape=n, val=np.nan)
+        self.add_input("opr_1", shape=n, val=np.nan, units="unitless")
+        self.add_input("opr_2", shape=n, val=np.nan, units="unitless")
 
-        self.add_input("eta_253", shape=1, val=1.0)
+        self.add_input("eta_253", shape=1, val=1.0, units="unitless")
         self.add_input(
             "settings:propulsion:turboprop:efficiency:high_pressure_axe",
             shape=1,
             val=0.98,
+            units="unitless",
         )
 
         self.add_input(
@@ -54,6 +55,7 @@ class ThermodynamicEquilibrium(om.ImplicitComponent):
             "data:propulsion:turboprop:design_point:alpha",
             shape=1,
             val=0.8,
+            units="unitless",
         )
 
         self.add_output(

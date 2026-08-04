@@ -22,21 +22,24 @@ class PropellerThrustRequired(om.ExplicitComponent):
     def setup_partials(self):
         n = self.options["number_of_points"]
         self.declare_partials(
-            of="*",
-            wrt="*",
+            of="propeller_thrust",
+            wrt="required_thrust",
             method="exact",
             rows=np.arange(n),
             cols=np.arange(n),
+            val=np.ones(n),
+        )
+        self.declare_partials(
+            of="propeller_thrust",
+            wrt="exhaust_thrust",
+            method="exact",
+            rows=np.arange(n),
+            cols=np.arange(n),
+            val=-np.ones(n),
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         outputs["propeller_thrust"] = inputs["required_thrust"] - inputs["exhaust_thrust"]
-
-    def compute_partials(self, inputs, partials, discrete_inputs=None):
-        n = self.options["number_of_points"]
-
-        partials["propeller_thrust", "required_thrust"] = np.ones(n)
-        partials["propeller_thrust", "exhaust_thrust"] = -np.ones(n)
 
 
 class ShaftPowerRequired(om.ExplicitComponent):
@@ -53,7 +56,7 @@ class ShaftPowerRequired(om.ExplicitComponent):
         n = self.options["number_of_points"]
 
         self.add_input("altitude", units="m", shape=n, val=np.nan)
-        self.add_input("mach_0", val=np.nan, shape=n)
+        self.add_input("mach_0", val=np.nan, shape=n, units="unitless")
         self.add_input("propeller_thrust", units="N", shape=n, val=np.nan)
         self.add_input("data:aerodynamics:propeller:cruise_level:altitude", np.nan, units="m")
         self.add_input(
@@ -74,6 +77,7 @@ class ShaftPowerRequired(om.ExplicitComponent):
         self.add_input(
             "data:aerodynamics:propeller:sea_level:efficiency",
             np.full((SPEED_PTS_NB, THRUST_PTS_NB), np.nan),
+            units="unitless",
         )
         self.add_input(
             "data:aerodynamics:propeller:cruise_level:speed",
@@ -93,18 +97,22 @@ class ShaftPowerRequired(om.ExplicitComponent):
         self.add_input(
             "data:aerodynamics:propeller:cruise_level:efficiency",
             np.full((SPEED_PTS_NB, THRUST_PTS_NB), np.nan),
+            units="unitless",
         )
         self.add_input(
             "data:aerodynamics:propeller:installation_effect:effective_efficiency:low_speed",
             val=1.0,
+            units="unitless",
         )
         self.add_input(
             "data:aerodynamics:propeller:installation_effect:effective_efficiency:cruise",
             val=1.0,
+            units="unitless",
         )
         self.add_input(
             "data:aerodynamics:propeller:installation_effect:effective_advance_ratio",
             val=1.0,
+            units="unitless",
         )
 
         self.add_output("required_shaft_power", units="W", shape=n, val=500e3)
@@ -218,7 +226,7 @@ class PropellerMaxThrust(om.ExplicitComponent):
         n = self.options["number_of_points"]
 
         self.add_input("altitude", units="m", shape=n, val=np.nan)
-        self.add_input("mach_0", val=np.nan, shape=n)
+        self.add_input("mach_0", val=np.nan, shape=n, units="unitless")
         self.add_input("data:aerodynamics:propeller:cruise_level:altitude", np.nan, units="m")
         self.add_input(
             "data:aerodynamics:propeller:sea_level:speed",
@@ -243,6 +251,7 @@ class PropellerMaxThrust(om.ExplicitComponent):
         self.add_input(
             "data:aerodynamics:propeller:installation_effect:effective_advance_ratio",
             val=1.0,
+            units="unitless",
         )
 
         self.add_output("propeller_max_thrust", units="N", shape=n, val=5000.0)

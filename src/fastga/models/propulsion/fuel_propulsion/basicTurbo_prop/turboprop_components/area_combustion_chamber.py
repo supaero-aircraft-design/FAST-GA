@@ -25,13 +25,13 @@ class A41(om.ExplicitComponent):
 
         self.add_input("air_mass_flow", units="kg/s", val=np.nan, shape=n)
 
-        self.add_input("gamma_41", shape=n, val=np.nan)
+        self.add_input("gamma_41", shape=n, val=np.nan, units="unitless")
 
         self.add_input("total_pressure_4", units="Pa", shape=n, val=np.nan)
 
-        self.add_input("fuel_air_ratio", shape=n, val=np.nan)
-        self.add_input("compressor_bleed_ratio", shape=n, val=np.nan)
-        self.add_input("pressurization_bleed_ratio", shape=n, val=np.nan)
+        self.add_input("fuel_air_ratio", shape=n, val=np.nan, units="unitless")
+        self.add_input("compressor_bleed_ratio", shape=n, val=np.nan, units="unitless")
+        self.add_input("pressurization_bleed_ratio", shape=n, val=np.nan, units="unitless")
 
         self.add_input(
             "data:propulsion:turboprop:design_point:turbine_entry_temperature",

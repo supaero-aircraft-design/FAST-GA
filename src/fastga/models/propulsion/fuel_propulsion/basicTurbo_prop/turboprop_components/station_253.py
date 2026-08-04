@@ -11,7 +11,9 @@ class Station253Pressure(om.ExplicitComponent):
 
         self.add_input("total_pressure_25", units="Pa", shape=n, val=np.nan)
         self.add_input("total_pressure_2", units="Pa", shape=n, val=np.nan)
-        self.add_input("data:propulsion:turboprop:design_point:opr_2_opr_1", val=np.nan)
+        self.add_input(
+            "data:propulsion:turboprop:design_point:opr_2_opr_1", val=np.nan, units="unitless"
+        )
 
         self.add_output("total_pressure_3", units="Pa", shape=n, val=1e6)
 
@@ -70,8 +72,8 @@ class Station253Temperature(om.ExplicitComponent):
         self.add_input("total_pressure_3", units="Pa", shape=n, val=np.nan)
         self.add_input("total_pressure_25", units="Pa", shape=n, val=np.nan)
         self.add_input("total_temperature_25", units="K", shape=n, val=np.nan)
-        self.add_input("gamma_25", shape=n, val=np.nan)
-        self.add_input("eta_253", shape=1, val=1.0)
+        self.add_input("gamma_25", shape=n, val=np.nan, units="unitless")
+        self.add_input("eta_253", shape=1, val=1.0, units="unitless")
 
         self.add_output("total_temperature_3", units="K", shape=n, val=0.5e3)
 
@@ -162,7 +164,7 @@ class Station253PressureDesignPoint(om.ExplicitComponent):
         n = self.options["number_of_points"]
 
         self.add_input("total_pressure_25", units="Pa", shape=n, val=np.nan)
-        self.add_input("opr_2", shape=n, val=np.nan)
+        self.add_input("opr_2", shape=n, val=np.nan, units="unitless")
 
         self.add_output("total_pressure_3", units="Pa", shape=n, val=1e6)
 

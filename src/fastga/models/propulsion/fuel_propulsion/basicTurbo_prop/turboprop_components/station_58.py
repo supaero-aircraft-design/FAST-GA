@@ -9,9 +9,9 @@ class Station58Pressure(om.ExplicitComponent):
     def setup(self):
         n = self.options["number_of_points"]
 
-        self.add_input("gamma_5", shape=n, val=np.nan)
+        self.add_input("gamma_5", shape=n, val=np.nan, units="unitless")
         self.add_input("static_pressure_0", units="Pa", shape=n, val=np.nan)
-        self.add_input("mach_8", shape=n, val=np.nan)
+        self.add_input("mach_8", shape=n, val=np.nan, units="unitless")
 
         self.add_output("total_pressure_5", units="Pa", shape=n, val=1e6)
 

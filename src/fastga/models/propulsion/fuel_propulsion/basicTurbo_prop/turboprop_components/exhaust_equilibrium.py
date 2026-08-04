@@ -12,8 +12,8 @@ class ExhaustEquilibrium(om.ImplicitComponent):
         self.add_input("total_pressure_45", units="Pa", shape=n, val=np.nan)
         self.add_input("total_pressure_5", units="Pa", shape=n, val=np.nan)
         self.add_input("total_temperature_45", units="K", shape=n, val=np.nan)
-        self.add_input("gamma_45", shape=n, val=np.nan)
-        self.add_input("eta_455", shape=1, val=1.0)
+        self.add_input("gamma_45", shape=n, val=np.nan, units="unitless")
+        self.add_input("eta_455", shape=1, val=1.0, units="unitless")
 
         self.add_output("total_temperature_5", units="K", shape=n, val=0.75e3)
 

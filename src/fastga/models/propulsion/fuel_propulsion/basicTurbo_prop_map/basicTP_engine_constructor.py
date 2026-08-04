@@ -58,16 +58,16 @@ class ComputeTurbopropMap(om.ExplicitComponent):
         self.add_input(
             "data:propulsion:turboprop:design_point:turbine_entry_temperature", np.nan, units="K"
         )
-        self.add_input("data:propulsion:turboprop:design_point:OPR", np.nan)
+        self.add_input("data:propulsion:turboprop:design_point:OPR", np.nan, units="unitless")
         self.add_input("data:propulsion:turboprop:design_point:altitude", np.nan, units="m")
-        self.add_input("data:propulsion:turboprop:design_point:mach", np.nan)
-        self.add_input("data:propulsion:turboprop:off_design:bleed_usage", np.nan)
+        self.add_input("data:propulsion:turboprop:design_point:mach", np.nan, units="unitless")
+        self.add_input("data:propulsion:turboprop:off_design:bleed_usage", np.nan, units="unitless")
         self.add_input("data:propulsion:turboprop:off_design:itt_limit", np.nan, units="K")
         self.add_input("data:propulsion:turboprop:off_design:power_limit", np.nan, units="kW")
-        self.add_input("data:propulsion:turboprop:off_design:opr_limit", np.nan)
+        self.add_input("data:propulsion:turboprop:off_design:opr_limit", np.nan, units="unitless")
         self.add_input("data:TLAR:v_cruise", np.nan, units="m/s")
         self.add_input("data:aerodynamics:propeller:cruise_level:altitude", np.nan, units="m")
-        self.add_input("data:geometry:propulsion:engine:layout", np.nan)
+        self.add_input("data:geometry:propulsion:engine:layout", np.nan, units="unitless")
         self.add_input(
             "data:aerodynamics:propeller:sea_level:speed",
             np.full(SPEED_PTS_NB, np.nan),
@@ -86,6 +86,7 @@ class ComputeTurbopropMap(om.ExplicitComponent):
         self.add_input(
             "data:aerodynamics:propeller:sea_level:efficiency",
             np.full((SPEED_PTS_NB, THRUST_PTS_NB), np.nan),
+            units="unitless",
         )
         self.add_input(
             "data:aerodynamics:propeller:cruise_level:speed",
@@ -105,43 +106,80 @@ class ComputeTurbopropMap(om.ExplicitComponent):
         self.add_input(
             "data:aerodynamics:propeller:cruise_level:efficiency",
             np.full((SPEED_PTS_NB, THRUST_PTS_NB), np.nan),
+            units="unitless",
         )
         self.add_input(
             "data:aerodynamics:propeller:installation_effect:effective_efficiency:low_speed",
             val=1.0,
+            units="unitless",
         )
         self.add_input(
             "data:aerodynamics:propeller:installation_effect:effective_efficiency:cruise",
             val=1.0,
+            units="unitless",
         )
         self.add_input(
             "data:aerodynamics:propeller:installation_effect:effective_advance_ratio",
             val=1.0,
+            units="unitless",
         )
-        self.add_input("settings:propulsion:turboprop:efficiency:first_compressor_stage", val=0.85)
-        self.add_input("settings:propulsion:turboprop:efficiency:second_compressor_stage", val=0.86)
-        self.add_input("settings:propulsion:turboprop:efficiency:high_pressure_turbine", val=0.86)
-        self.add_input("settings:propulsion:turboprop:efficiency:power_turbine", val=0.86)
+        self.add_input(
+            "settings:propulsion:turboprop:efficiency:first_compressor_stage",
+            val=0.85,
+            units="unitless",
+        )
+        self.add_input(
+            "settings:propulsion:turboprop:efficiency:second_compressor_stage",
+            val=0.86,
+            units="unitless",
+        )
+        self.add_input(
+            "settings:propulsion:turboprop:efficiency:high_pressure_turbine",
+            val=0.86,
+            units="unitless",
+        )
+        self.add_input(
+            "settings:propulsion:turboprop:efficiency:power_turbine", val=0.86, units="unitless"
+        )
         self.add_input(
             "settings:propulsion:turboprop:efficiency:combustion", val=43.260e6 * 0.95, units="J/kg"
         )
-        self.add_input("settings:propulsion:turboprop:efficiency:high_pressure_axe", val=0.98)
-        self.add_input("settings:propulsion:turboprop:pressure_loss:inlet", val=0.8)
-        self.add_input("settings:propulsion:turboprop:pressure_loss:combustion_chamber", val=0.95)
-        self.add_input("settings:propulsion:turboprop:bleed:turbine_cooling", val=0.05)
+        self.add_input(
+            "settings:propulsion:turboprop:efficiency:high_pressure_axe", val=0.98, units="unitless"
+        )
+        self.add_input(
+            "settings:propulsion:turboprop:pressure_loss:inlet", val=0.8, units="unitless"
+        )
+        self.add_input(
+            "settings:propulsion:turboprop:pressure_loss:combustion_chamber",
+            val=0.95,
+            units="unitless",
+        )
+        self.add_input(
+            "settings:propulsion:turboprop:bleed:turbine_cooling", val=0.05, units="unitless"
+        )
         self.add_input(
             "settings:propulsion:turboprop:electric_power_offtake", val=50 * 745.7, units="W"
         )
-        self.add_input("settings:propulsion:turboprop:efficiency:gearbox", val=0.98)
-        self.add_input("settings:propulsion:turboprop:bleed:inter_compressor", val=0.04)
-        self.add_input("settings:propulsion:turboprop:design_point:mach_exhaust", val=0.4)
         self.add_input(
-            "settings:propulsion:turboprop:design_point:first_stage_pressure_ratio", val=0.25
+            "settings:propulsion:turboprop:efficiency:gearbox", val=0.98, units="unitless"
+        )
+        self.add_input(
+            "settings:propulsion:turboprop:bleed:inter_compressor", val=0.04, units="kg/s"
+        )
+        self.add_input(
+            "settings:propulsion:turboprop:design_point:mach_exhaust", val=0.4, units="unitless"
+        )
+        self.add_input(
+            "settings:propulsion:turboprop:design_point:first_stage_pressure_ratio",
+            val=0.25,
+            units="unitless",
         )
 
         self.add_output(
             "data:propulsion:turboprop:sea_level:mach",
             shape=MACH_PTS_NB_TURBOPROP,
+            units="unitless",
         )
         self.add_output(
             "data:propulsion:turboprop:sea_level:thrust", shape=THRUST_PTS_NB_TURBOPROP, units="N"
@@ -160,6 +198,7 @@ class ComputeTurbopropMap(om.ExplicitComponent):
         self.add_output(
             "data:propulsion:turboprop:cruise_level:mach",
             shape=MACH_PTS_NB_TURBOPROP,
+            units="unitless",
         )
         self.add_output(
             "data:propulsion:turboprop:cruise_level:thrust",
@@ -181,6 +220,7 @@ class ComputeTurbopropMap(om.ExplicitComponent):
         self.add_output(
             "data:propulsion:turboprop:intermediate_level:mach",
             shape=MACH_PTS_NB_TURBOPROP,
+            units="unitless",
         )
         self.add_output(
             "data:propulsion:turboprop:intermediate_level:thrust",

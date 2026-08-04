@@ -13,9 +13,9 @@ class OverallPressureRatio(om.ExplicitComponent):
         self.add_input("total_pressure_25", units="Pa", shape=n, val=np.nan)
         self.add_input("total_pressure_3", units="Pa", shape=n, val=np.nan)
 
-        self.add_output("opr_1", shape=n)
-        self.add_output("opr_2", shape=n)
-        self.add_output("opr", shape=n, upper=12.0)
+        self.add_output("opr_1", shape=n, units="unitless")
+        self.add_output("opr_2", shape=n, units="unitless")
+        self.add_output("opr", shape=n, upper=12.0, units="unitless")
 
     def setup_partials(self):
         n = self.options["number_of_points"]
@@ -74,15 +74,17 @@ class OverallPressureRatioDesignPoint(om.ExplicitComponent):
         self.add_input(
             "settings:propulsion:turboprop:design_point:first_stage_pressure_ratio",
             val=0.25,
+            units="unitless",
         )
         self.add_input(
             "data:propulsion:turboprop:design_point:OPR",
             shape=n,
             val=np.full(n, np.nan),
+            units="unitless",
         )
 
-        self.add_output("opr_1", shape=n)
-        self.add_output("opr_2", shape=n)
+        self.add_output("opr_1", shape=n, units="unitless")
+        self.add_output("opr_2", shape=n, units="unitless")
 
     def setup_partials(self):
         n = self.options["number_of_points"]

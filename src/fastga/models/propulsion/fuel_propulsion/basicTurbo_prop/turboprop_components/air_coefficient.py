@@ -55,9 +55,9 @@ class AirCoefficientReader(om.ExplicitComponent):
 
         self.add_input(self.input_name, units="K", shape=n, val=np.nan)
 
-        self.add_output("cp", shape=n, val=1024)
-        self.add_output("cv", shape=n, val=731)
-        self.add_output("gamma", shape=n, val=1.4)
+        self.add_output("cp", shape=n, val=1024, units="unitless")
+        self.add_output("cv", shape=n, val=731, units="unitless")
+        self.add_output("gamma", shape=n, val=1.4, units="unitless")
 
         self.cv_t_coefficients = np.polyfit(
             self.options["temperature_list"], self.options["cv_list"], 15

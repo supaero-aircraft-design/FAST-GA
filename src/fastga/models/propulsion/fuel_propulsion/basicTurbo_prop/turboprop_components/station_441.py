@@ -11,10 +11,10 @@ class Station441Temperature(om.ExplicitComponent):
 
         self.add_input("total_temperature_41", units="K", shape=n, val=np.nan)
         self.add_input("total_temperature_3", units="K", shape=n, val=np.nan)
-        self.add_input("fuel_air_ratio", shape=n, val=np.nan)
-        self.add_input("compressor_bleed_ratio", shape=n, val=np.nan)
-        self.add_input("cooling_bleed_ratio", shape=n, val=np.nan)
-        self.add_input("pressurization_bleed_ratio", shape=n, val=np.nan)
+        self.add_input("fuel_air_ratio", shape=n, val=np.nan, units="unitless")
+        self.add_input("compressor_bleed_ratio", shape=n, val=np.nan, units="unitless")
+        self.add_input("cooling_bleed_ratio", shape=n, val=np.nan, units="unitless")
+        self.add_input("pressurization_bleed_ratio", shape=n, val=np.nan, units="unitless")
 
         self.add_output("total_temperature_4", units="K", shape=n, val=1e3)
 

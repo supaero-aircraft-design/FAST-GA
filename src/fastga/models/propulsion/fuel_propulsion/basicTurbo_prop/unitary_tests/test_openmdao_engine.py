@@ -806,57 +806,95 @@ def test_openmdao_component_wrapper():
     ivc.add_output(
         "data:propulsion:turboprop:design_point:turbine_entry_temperature", 1350, units="K"
     )
-    ivc.add_output("data:propulsion:turboprop:design_point:OPR", 9.5)
+    ivc.add_output("data:propulsion:turboprop:design_point:OPR", 9.5, units="unitless")
     ivc.add_output("data:propulsion:turboprop:design_point:altitude", 0.0, units="ft")
-    ivc.add_output("data:propulsion:turboprop:design_point:mach", 0.5)
-    ivc.add_output("data:propulsion:turboprop:off_design:bleed_usage", val=1.0)
+    ivc.add_output("data:propulsion:turboprop:design_point:mach", 0.5, units="unitless")
+    ivc.add_output("data:propulsion:turboprop:off_design:bleed_usage", val=1.0, units="unitless")
     ivc.add_output("data:propulsion:turboprop:off_design:itt_limit", val=1100.0, units="K")
     ivc.add_output("data:propulsion:turboprop:off_design:power_limit", val=700.0, units="hp")
-    ivc.add_output("data:propulsion:turboprop:off_design:opr_limit", val=12.0)
+    ivc.add_output("data:propulsion:turboprop:off_design:opr_limit", val=12.0, units="unitless")
     ivc.add_output("data:aerodynamics:propeller:cruise_level:altitude", 9000.0, units="m")
-    ivc.add_output("data:geometry:propulsion:engine:layout", 1.0)
-    ivc.add_output("data:geometry:propulsion:engine:count", 1.0)
+    ivc.add_output("data:geometry:propulsion:engine:layout", 1.0, units="unitless")
+    ivc.add_output("data:geometry:propulsion:engine:count", 1.0, units="unitless")
     ivc.add_output("data:aerodynamics:propeller:sea_level:speed", SPEED, units="m/s")
     ivc.add_output("data:aerodynamics:propeller:sea_level:thrust", THRUST_SL, units="N")
     ivc.add_output("data:aerodynamics:propeller:sea_level:thrust_limit", THRUST_SL_LIMIT, units="N")
-    ivc.add_output("data:aerodynamics:propeller:sea_level:efficiency", EFFICIENCY_SL)
+    ivc.add_output(
+        "data:aerodynamics:propeller:sea_level:efficiency", EFFICIENCY_SL, units="unitless"
+    )
     ivc.add_output("data:aerodynamics:propeller:cruise_level:speed", SPEED, units="m/s")
     ivc.add_output("data:aerodynamics:propeller:cruise_level:thrust", THRUST_CL, units="N")
     ivc.add_output(
         "data:aerodynamics:propeller:cruise_level:thrust_limit", THRUST_CL_LIMIT, units="N"
     )
-    ivc.add_output("data:aerodynamics:propeller:cruise_level:efficiency", EFFICIENCY_CL)
-    ivc.add_output("data:aerodynamics:propeller:installation_effect:effective_advance_ratio", 0.95)
     ivc.add_output(
-        "data:aerodynamics:propeller:installation_effect:effective_efficiency:low_speed", 0.97
+        "data:aerodynamics:propeller:cruise_level:efficiency", EFFICIENCY_CL, units="unitless"
     )
     ivc.add_output(
-        "data:aerodynamics:propeller:installation_effect:effective_efficiency:cruise", 0.98
+        "data:aerodynamics:propeller:installation_effect:effective_advance_ratio",
+        0.95,
+        units="unitless",
     )
-    ivc.add_output("settings:propulsion:turboprop:efficiency:first_compressor_stage", val=0.85)
-    ivc.add_output("settings:propulsion:turboprop:efficiency:second_compressor_stage", val=0.86)
-    ivc.add_output("settings:propulsion:turboprop:efficiency:high_pressure_turbine", val=0.86)
-    ivc.add_output("settings:propulsion:turboprop:efficiency:power_turbine", val=0.86)
+    ivc.add_output(
+        "data:aerodynamics:propeller:installation_effect:effective_efficiency:low_speed",
+        0.97,
+        units="unitless",
+    )
+    ivc.add_output(
+        "data:aerodynamics:propeller:installation_effect:effective_efficiency:cruise",
+        0.98,
+        units="unitless",
+    )
+    ivc.add_output(
+        "settings:propulsion:turboprop:efficiency:first_compressor_stage",
+        val=0.85,
+        units="unitless",
+    )
+    ivc.add_output(
+        "settings:propulsion:turboprop:efficiency:second_compressor_stage",
+        val=0.86,
+        units="unitless",
+    )
+    ivc.add_output(
+        "settings:propulsion:turboprop:efficiency:high_pressure_turbine", val=0.86, units="unitless"
+    )
+    ivc.add_output(
+        "settings:propulsion:turboprop:efficiency:power_turbine", val=0.86, units="unitless"
+    )
     ivc.add_output(
         "settings:propulsion:turboprop:efficiency:combustion", val=43.260e6 * 0.95, units="J/kg"
     )
-    ivc.add_output("settings:propulsion:turboprop:efficiency:high_pressure_axe", val=0.98)
-    ivc.add_output("settings:propulsion:turboprop:pressure_loss:inlet", val=0.8)
-    ivc.add_output("settings:propulsion:turboprop:pressure_loss:combustion_chamber", val=0.95)
-    ivc.add_output("settings:propulsion:turboprop:bleed:turbine_cooling", val=0.05)
-    ivc.add_output("settings:propulsion:turboprop:electric_power_offtake", val=50.0, units="hp")
-    ivc.add_output("settings:propulsion:turboprop:efficiency:gearbox", val=0.98)
-    ivc.add_output("settings:propulsion:turboprop:bleed:inter_compressor", val=0.04)
-    ivc.add_output("settings:propulsion:turboprop:design_point:mach_exhaust", val=0.4)
     ivc.add_output(
-        "settings:propulsion:turboprop:design_point:first_stage_pressure_ratio", val=0.25
+        "settings:propulsion:turboprop:efficiency:high_pressure_axe", val=0.98, units="unitless"
+    )
+    ivc.add_output("settings:propulsion:turboprop:pressure_loss:inlet", val=0.8, units="unitless")
+    ivc.add_output(
+        "settings:propulsion:turboprop:pressure_loss:combustion_chamber", val=0.95, units="unitless"
+    )
+    ivc.add_output(
+        "settings:propulsion:turboprop:bleed:turbine_cooling", val=0.05, units="unitless"
+    )
+    ivc.add_output("settings:propulsion:turboprop:electric_power_offtake", val=50.0, units="hp")
+    ivc.add_output("settings:propulsion:turboprop:efficiency:gearbox", val=0.98, units="unitless")
+    ivc.add_output("settings:propulsion:turboprop:bleed:inter_compressor", val=0.04, units="kg/s")
+    ivc.add_output(
+        "settings:propulsion:turboprop:design_point:mach_exhaust", val=0.4, units="unitless"
+    )
+    ivc.add_output(
+        "settings:propulsion:turboprop:design_point:first_stage_pressure_ratio",
+        val=0.25,
+        units="unitless",
     )
 
-    ivc.add_output("data:propulsion:mach", [machs, machs])
+    ivc.add_output("data:propulsion:mach", [machs, machs], units="unitless")
     ivc.add_output("data:propulsion:altitude", [altitudes, altitudes], units="m")
-    ivc.add_output("data:propulsion:engine_setting", [engine_settings, engine_settings])
-    ivc.add_output("data:propulsion:use_thrust_rate", [[True] * 5, [False] * 5])
-    ivc.add_output("data:propulsion:required_thrust_rate", [thrust_rates, [0] * 5])
+    ivc.add_output(
+        "data:propulsion:engine_setting", [engine_settings, engine_settings], units="unitless"
+    )
+    ivc.add_output("data:propulsion:use_thrust_rate", [[True] * 5, [False] * 5], units="unitless")
+    ivc.add_output(
+        "data:propulsion:required_thrust_rate", [thrust_rates, [0] * 5], units="unitless"
+    )
     ivc.add_output("data:propulsion:required_thrust", [[0] * 5, thrusts], units="N")
 
     problem = run_system(engine, ivc)

@@ -10,7 +10,9 @@ class Station4145Temperature(om.ExplicitComponent):
         n = self.options["number_of_points"]
 
         self.add_input("total_temperature_41", units="K", shape=n, val=np.nan)
-        self.add_input("data:propulsion:turboprop:design_point:alpha", shape=1, val=0.8)
+        self.add_input(
+            "data:propulsion:turboprop:design_point:alpha", shape=1, val=0.8, units="unitless"
+        )
 
         self.add_output("total_temperature_45", units="K", shape=n, val=1.2e3)
 
@@ -56,7 +58,9 @@ class Station4145Pressure(om.ExplicitComponent):
         n = self.options["number_of_points"]
 
         self.add_input("total_pressure_41", units="Pa", shape=n, val=np.nan)
-        self.add_input("data:propulsion:turboprop:design_point:alpha_p", shape=1, val=0.8)
+        self.add_input(
+            "data:propulsion:turboprop:design_point:alpha_p", shape=1, val=0.8, units="unitless"
+        )
 
         self.add_output("total_pressure_45", units="Pa", shape=n, val=1.2e3)
 

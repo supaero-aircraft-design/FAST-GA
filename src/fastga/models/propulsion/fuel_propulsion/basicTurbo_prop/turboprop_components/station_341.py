@@ -10,7 +10,7 @@ class Station341Pressure(om.ExplicitComponent):
         n = self.options["number_of_points"]
 
         self.add_input("total_pressure_3", units="Pa", shape=n, val=np.nan)
-        self.add_input("pressure_loss_34", shape=1, val=1.0)
+        self.add_input("pressure_loss_34", shape=1, val=1.0, units="unitless")
 
         self.add_output("total_pressure_41", units="Pa", shape=n, val=1e5)
 

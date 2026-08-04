@@ -9,7 +9,7 @@ class Station8Mach(om.ExplicitComponent):
     def setup(self):
         n = self.options["number_of_points"]
 
-        self.add_input("gamma_5", shape=n, val=np.nan)
+        self.add_input("gamma_5", shape=n, val=np.nan, units="unitless")
         self.add_input(
             "data:propulsion:turboprop:section:45",
             units="m**2",
@@ -25,7 +25,7 @@ class Station8Mach(om.ExplicitComponent):
         self.add_input("total_pressure_45", units="Pa", shape=n, val=np.nan)
         self.add_input("static_pressure_0", units="Pa", shape=n, val=np.nan)
 
-        self.add_output("mach_8", shape=n, val=0.5)
+        self.add_output("mach_8", shape=n, val=0.5, units="unitless")
 
     def setup_partials(self):
         n = self.options["number_of_points"]
@@ -114,8 +114,8 @@ class Station8Temperature(om.ExplicitComponent):
     def setup(self):
         n = self.options["number_of_points"]
 
-        self.add_input("gamma_5", shape=n, val=np.nan)
-        self.add_input("mach_8", shape=n, val=np.nan)
+        self.add_input("gamma_5", shape=n, val=np.nan, units="unitless")
+        self.add_input("mach_8", shape=n, val=np.nan, units="unitless")
         self.add_input("total_temperature_5", units="K", shape=n, val=np.nan)
 
         self.add_output("static_temperature_8", units="K", shape=n, val=3e2)
@@ -168,8 +168,8 @@ class Station8Velocity(om.ExplicitComponent):
     def setup(self):
         n = self.options["number_of_points"]
 
-        self.add_input("gamma_5", shape=n, val=np.nan)
-        self.add_input("mach_8", shape=n, val=np.nan)
+        self.add_input("gamma_5", shape=n, val=np.nan, units="unitless")
+        self.add_input("mach_8", shape=n, val=np.nan, units="unitless")
         self.add_input("static_temperature_8", units="K", shape=n, val=np.nan)
 
         self.add_output("velocity_8", units="m/s", shape=n, val=1e2)

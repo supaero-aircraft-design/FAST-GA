@@ -26,9 +26,9 @@ class A81(om.ExplicitComponent):
 
         self.add_input("total_pressure_5", units="Pa", shape=n, val=np.nan)
 
-        self.add_input("fuel_air_ratio", shape=n, val=np.nan)
-        self.add_input("compressor_bleed_ratio", shape=n, val=np.nan)
-        self.add_input("pressurization_bleed_ratio", shape=n, val=np.nan)
+        self.add_input("fuel_air_ratio", shape=n, val=np.nan, units="unitless")
+        self.add_input("compressor_bleed_ratio", shape=n, val=np.nan, units="unitless")
+        self.add_input("pressurization_bleed_ratio", shape=n, val=np.nan, units="unitless")
 
         self.add_input(
             "total_temperature_5",
@@ -125,8 +125,10 @@ class A82(om.ExplicitComponent):
     def setup(self):
         n = self.options["number_of_points"]
 
-        self.add_input("gamma_5", shape=n, val=np.nan)
-        self.add_input("settings:propulsion:turboprop:design_point:mach_exhaust", val=0.4)
+        self.add_input("gamma_5", shape=n, val=np.nan, units="unitless")
+        self.add_input(
+            "settings:propulsion:turboprop:design_point:mach_exhaust", val=0.4, units="unitless"
+        )
 
         self.add_output("data:propulsion:turboprop:section:82", val=0.00457, units="m**2")
 

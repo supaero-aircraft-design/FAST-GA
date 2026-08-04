@@ -12,8 +12,8 @@ class Station225Pressure(om.ExplicitComponent):
         self.add_input("total_temperature_2", units="K", shape=n, val=np.nan)
         self.add_input("total_temperature_25", units="K", shape=n, val=np.nan)
         self.add_input("total_pressure_2", units="Pa", shape=n, val=np.nan)
-        self.add_input("gamma_2", shape=n, val=np.nan)
-        self.add_input("eta_225", shape=1, val=1.0)
+        self.add_input("gamma_2", shape=n, val=np.nan, units="unitless")
+        self.add_input("eta_225", shape=1, val=1.0, units="unitless")
 
         self.add_output("total_pressure_25", units="Pa", shape=n, val=1e6)
 
@@ -100,9 +100,9 @@ class Station225DesignPoint(om.ExplicitComponent):
 
         self.add_input("total_temperature_2", units="K", shape=n, val=np.nan)
         self.add_input("total_pressure_2", units="Pa", shape=n, val=np.nan)
-        self.add_input("opr_1", shape=n, val=np.nan)
-        self.add_input("gamma_2", shape=n, val=np.nan)
-        self.add_input("eta_225", shape=1, val=1.0)
+        self.add_input("opr_1", shape=n, val=np.nan, units="unitless")
+        self.add_input("gamma_2", shape=n, val=np.nan, units="unitless")
+        self.add_input("eta_225", shape=1, val=1.0, units="unitless")
 
         self.add_output("total_temperature_25", units="K", shape=n, val=500.0)
         self.add_output("total_pressure_25", units="Pa", shape=n, val=1e6)

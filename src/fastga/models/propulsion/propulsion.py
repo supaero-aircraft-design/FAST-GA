@@ -80,17 +80,20 @@ class BaseOMPropulsionComponent(om.ExplicitComponent, ABC):
 
     def setup(self):
         shape = self.options["flight_point_count"]
-        self.add_input("data:propulsion:mach", np.nan, shape=shape)
+        self.add_input("data:propulsion:mach", np.nan, shape=shape, units="unitless")
         self.add_input("data:propulsion:altitude", np.nan, shape=shape, units="m")
-        self.add_input("data:propulsion:engine_setting", np.nan, shape=shape)
-        self.add_input("data:propulsion:use_thrust_rate", np.nan, shape=shape)
-        self.add_input("data:propulsion:required_thrust_rate", np.nan, shape=shape)
+        self.add_input("data:propulsion:engine_setting", np.nan, shape=shape, units="unitless")
+        self.add_input("data:propulsion:use_thrust_rate", np.nan, shape=shape, units="unitless")
+        self.add_input(
+            "data:propulsion:required_thrust_rate", np.nan, shape=shape, units="unitless"
+        )
         self.add_input("data:propulsion:required_thrust", np.nan, shape=shape, units="N")
 
         self.add_output("data:propulsion:SFC", shape=shape, units="kg/s/N")
-        self.add_output("data:propulsion:thrust_rate", shape=shape)
+        self.add_output("data:propulsion:thrust_rate", shape=shape, units="unitless")
         self.add_output("data:propulsion:thrust", shape=shape, units="N")
 
+    def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):

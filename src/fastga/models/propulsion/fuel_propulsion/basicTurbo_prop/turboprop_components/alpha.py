@@ -38,8 +38,12 @@ class AlphaRatio(om.ExplicitComponent):
             shape=n,
         )
 
-        self.add_output("data:propulsion:turboprop:design_point:alpha", val=np.full(n, 0.8))
-        self.add_output("data:propulsion:turboprop:design_point:alpha_p", val=np.full(n, 0.3))
+        self.add_output(
+            "data:propulsion:turboprop:design_point:alpha", val=np.full(n, 0.8), units="unitless"
+        )
+        self.add_output(
+            "data:propulsion:turboprop:design_point:alpha_p", val=np.full(n, 0.3), units="unitless"
+        )
 
     def setup_partials(self):
         n = self.options["number_of_points"]

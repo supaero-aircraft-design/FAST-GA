@@ -295,19 +295,19 @@ class BasicTPEngine(AbstractFuelPropulsion):
             ivc.add_output(
                 "compressor_bleed_mass_flow", val=self.inter_compressor_bleed, units="kg/s"
             )
-            ivc.add_output("cooling_bleed_ratio", val=self.cooling_ratio)
+            ivc.add_output("cooling_bleed_ratio", val=self.cooling_ratio, units="unitless")
             # Some parameters were hard-coded in previous version of the code, we'll leave them
             # like that for now
             ivc.add_output("cabin_air_renewal_time", val=2.0, units="min")
             ivc.add_output("data:geometry:cabin:volume", val=5.0, units="m**3")
-            ivc.add_output("bleed_control", val=1.0)  # Hard-coded at 1.0
+            ivc.add_output("bleed_control", val=1.0, units="unitless")  # Hard-coded at 1.0
 
-            ivc.add_output("eta_225", val=self.eta_225)
-            ivc.add_output("eta_253", val=self.eta_253)
-            ivc.add_output("eta_445", val=self.eta_445)
-            ivc.add_output("eta_455", val=self.eta_455)
-            ivc.add_output("total_pressure_loss_02", val=self.pi_02)
-            ivc.add_output("pressure_loss_34", val=self.pi_cc)
+            ivc.add_output("eta_225", val=self.eta_225, units="unitless")
+            ivc.add_output("eta_253", val=self.eta_253, units="unitless")
+            ivc.add_output("eta_445", val=self.eta_445, units="unitless")
+            ivc.add_output("eta_455", val=self.eta_455, units="unitless")
+            ivc.add_output("total_pressure_loss_02", val=self.pi_02, units="unitless")
+            ivc.add_output("pressure_loss_34", val=self.pi_cc, units="unitless")
             ivc.add_output("combustion_energy", val=self.eta_q, units="J/kg")
 
             ivc.add_output("electric_power", val=self.hp_shaft_power_out / 745.7, units="hp")
@@ -315,18 +315,22 @@ class BasicTPEngine(AbstractFuelPropulsion):
             ivc.add_output(
                 "settings:propulsion:turboprop:design_point:first_stage_pressure_ratio",
                 val=self.pr_1_ratio_design,
+                units="unitless",
             )
             ivc.add_output(
                 "settings:propulsion:turboprop:efficiency:high_pressure_axe",
                 val=self.eta_axe,
+                units="unitless",
             )
             ivc.add_output(
                 "settings:propulsion:turboprop:efficiency:gearbox",
                 val=self.gearbox_efficiency,
+                units="unitless",
             )
             ivc.add_output(
                 "settings:propulsion:turboprop:design_point:mach_exhaust",
                 val=self.exhaust_mach_design,
+                units="unitless",
             )
 
             ivc.add_output(
@@ -335,7 +339,9 @@ class BasicTPEngine(AbstractFuelPropulsion):
                 units="m",
             )
             ivc.add_output(
-                "data:propulsion:turboprop:design_point:mach", val=self.design_point_mach
+                "data:propulsion:turboprop:design_point:mach",
+                val=self.design_point_mach,
+                units="unitless",
             )
             ivc.add_output(
                 "data:propulsion:turboprop:design_point:power",
@@ -350,6 +356,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
             ivc.add_output(
                 "data:propulsion:turboprop:design_point:OPR",
                 val=self.opr_d,
+                units="unitless",
             )
 
             prob = om.Problem(reports=False)
@@ -417,60 +424,79 @@ class BasicTPEngine(AbstractFuelPropulsion):
             val=self.thrust_limit_cl,
             units="N",
         )
-        ivc.add_output("data:aerodynamics:propeller:sea_level:efficiency", val=self.efficiency_sl)
         ivc.add_output(
-            "data:aerodynamics:propeller:cruise_level:efficiency", val=self.efficiency_cl
+            "data:aerodynamics:propeller:sea_level:efficiency",
+            val=self.efficiency_sl,
+            units="unitless",
+        )
+        ivc.add_output(
+            "data:aerodynamics:propeller:cruise_level:efficiency",
+            val=self.efficiency_cl,
+            units="unitless",
         )
 
-        ivc.add_output("eta_225", val=self.eta_225)
-        ivc.add_output("eta_253", val=self.eta_253)
-        ivc.add_output("eta_455", val=self.eta_455)
-        ivc.add_output("total_pressure_loss_02", val=self.pi_02)
-        ivc.add_output("pressure_loss_34", val=self.pi_cc)
+        ivc.add_output("eta_225", val=self.eta_225, units="unitless")
+        ivc.add_output("eta_253", val=self.eta_253, units="unitless")
+        ivc.add_output("eta_455", val=self.eta_455, units="unitless")
+        ivc.add_output("total_pressure_loss_02", val=self.pi_02, units="unitless")
+        ivc.add_output("pressure_loss_34", val=self.pi_cc, units="unitless")
         ivc.add_output("combustion_energy", val=self.eta_q, units="J/kg")
 
         ivc.add_output("electric_power", val=self.hp_shaft_power_out / 745.7, units="hp")
 
-        ivc.add_output("cooling_bleed_ratio", val=self.cooling_ratio)
+        ivc.add_output("cooling_bleed_ratio", val=self.cooling_ratio, units="unitless")
         ivc.add_output("compressor_bleed_mass_flow", val=self.inter_compressor_bleed, units="kg/s")
         # Some parameters were hard-coded in previous version of the code, we'll leave them
         # like that for now
         ivc.add_output("cabin_air_renewal_time", val=2.0, units="min")
         ivc.add_output("data:geometry:cabin:volume", val=5.0, units="m**3")
-        ivc.add_output("bleed_control", val=self.bleed_control)
+        ivc.add_output("bleed_control", val=self.bleed_control, units="unitless")
 
         ivc.add_output(
             "settings:propulsion:turboprop:efficiency:high_pressure_axe",
             val=self.eta_axe,
+            units="unitless",
         )
         ivc.add_output(
             "settings:propulsion:turboprop:efficiency:gearbox",
             val=self.gearbox_efficiency,
+            units="unitless",
         )
 
         ivc.add_output("data:propulsion:turboprop:section:41", val=self.a_41, units="m**2")
         ivc.add_output("data:propulsion:turboprop:section:45", val=self.a_45, units="m**2")
         ivc.add_output("data:propulsion:turboprop:section:8", val=self.a_8, units="m**2")
-        ivc.add_output("data:propulsion:turboprop:design_point:alpha", val=self.alpha)
-        ivc.add_output("data:propulsion:turboprop:design_point:alpha_p", val=self.alpha_p)
-        ivc.add_output("data:propulsion:turboprop:design_point:opr_2_opr_1", val=self.opr_2_opr_1)
+        ivc.add_output(
+            "data:propulsion:turboprop:design_point:alpha", val=self.alpha, units="unitless"
+        )
+        ivc.add_output(
+            "data:propulsion:turboprop:design_point:alpha_p", val=self.alpha_p, units="unitless"
+        )
+        ivc.add_output(
+            "data:propulsion:turboprop:design_point:opr_2_opr_1",
+            val=self.opr_2_opr_1,
+            units="unitless",
+        )
 
         ivc.add_output(
             "data:aerodynamics:propeller:installation_effect:effective_efficiency:low_speed",
             val=self.effective_efficiency_ls,
+            units="unitless",
         )
         ivc.add_output(
             "data:aerodynamics:propeller:installation_effect:effective_efficiency:cruise",
             val=self.effective_efficiency_cruise,
+            units="unitless",
         )
         ivc.add_output(
             "data:aerodynamics:propeller:installation_effect:effective_advance_ratio",
             val=self.effective_j,
+            units="unitless",
         )
 
         ivc.add_output("itt_limit", val=self.itt_limit, units="degK")
         ivc.add_output("shaft_power_limit", val=self.max_power_avail, units="kW")
-        ivc.add_output("opr_limit", val=self.opr_limit)
+        ivc.add_output("opr_limit", val=self.opr_limit, units="unitless")
 
         return ivc
 
@@ -1075,7 +1101,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
         prob_max_thrust_power_limit = self.turboprop_max_thrust_power_limit_problem
 
         prob_max_thrust_power_limit.set_val("altitude", val=altitude, units="ft")
-        prob_max_thrust_power_limit.set_val("mach_0", val=mach)
+        prob_max_thrust_power_limit.set_val("mach_0", val=mach, units="unitless")
 
         prob_max_thrust_power_limit.run_model()
 
@@ -1088,7 +1114,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
         prob_max_thrust_opr_limit = self.turboprop_max_thrust_opr_limit_problem
 
         prob_max_thrust_opr_limit.set_val("altitude", val=altitude, units="ft")
-        prob_max_thrust_opr_limit.set_val("mach_0", val=mach)
+        prob_max_thrust_opr_limit.set_val("mach_0", val=mach, units="unitless")
 
         prob_max_thrust_opr_limit.run_model()
 
@@ -1102,7 +1128,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
         prob_max_thrust_itt_limit = self.turboprop_max_thrust_itt_limit_problem
 
         prob_max_thrust_itt_limit.set_val("altitude", val=altitude, units="ft")
-        prob_max_thrust_itt_limit.set_val("mach_0", val=mach)
+        prob_max_thrust_itt_limit.set_val("mach_0", val=mach, units="unitless")
 
         prob_max_thrust_itt_limit.run_model()
 
@@ -1118,7 +1144,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
         )
 
         prob_max_thrust_propeller_thrust_limit.set_val("altitude", val=altitude, units="ft")
-        prob_max_thrust_propeller_thrust_limit.set_val("mach_0", val=mach)
+        prob_max_thrust_propeller_thrust_limit.set_val("mach_0", val=mach, units="unitless")
 
         prob_max_thrust_propeller_thrust_limit.run_model()
 
@@ -1206,7 +1232,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
         prob_max_thrust_power_limit = self.turboprop_max_thrust_power_limit_problem
 
         prob_max_thrust_power_limit.set_val("altitude", val=altitude, units="ft")
-        prob_max_thrust_power_limit.set_val("mach_0", val=mach)
+        prob_max_thrust_power_limit.set_val("mach_0", val=mach, units="unitless")
 
         prob_max_thrust_power_limit.run_model()
 
@@ -1221,7 +1247,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
         prob_max_thrust_opr_limit = self.turboprop_max_thrust_opr_limit_problem
 
         prob_max_thrust_opr_limit.set_val("altitude", val=altitude, units="ft")
-        prob_max_thrust_opr_limit.set_val("mach_0", val=mach)
+        prob_max_thrust_opr_limit.set_val("mach_0", val=mach, units="unitless")
 
         prob_max_thrust_opr_limit.run_model()
 
@@ -1237,7 +1263,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
         prob_max_thrust_itt_limit = self.turboprop_max_thrust_itt_limit_problem
 
         prob_max_thrust_itt_limit.set_val("altitude", val=altitude, units="ft")
-        prob_max_thrust_itt_limit.set_val("mach_0", val=mach)
+        prob_max_thrust_itt_limit.set_val("mach_0", val=mach, units="unitless")
 
         prob_max_thrust_itt_limit.run_model()
 
@@ -1255,7 +1281,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
         )
 
         prob_max_thrust_propeller_thrust_limit.set_val("altitude", val=altitude, units="ft")
-        prob_max_thrust_propeller_thrust_limit.set_val("mach_0", val=mach)
+        prob_max_thrust_propeller_thrust_limit.set_val("mach_0", val=mach, units="unitless")
 
         prob_max_thrust_propeller_thrust_limit.run_model()
 
@@ -1307,7 +1333,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
         prob_fuel_consumed = self.turboprop_fuel_problem
 
         prob_fuel_consumed.set_val("altitude", val=altitude, units="ft")
-        prob_fuel_consumed.set_val("mach_0", val=mach)
+        prob_fuel_consumed.set_val("mach_0", val=mach, units="unitless")
         prob_fuel_consumed.set_val("required_thrust", val=thrust_required, units="N")
 
         prob_fuel_consumed.run_model()
@@ -1322,7 +1348,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
         prob_fuel_consumed_ls = self.turboprop_fuel_problem_ls
 
         prob_fuel_consumed_ls.set_val("altitude", val=altitude, units="ft")
-        prob_fuel_consumed_ls.set_val("mach_0", val=mach)
+        prob_fuel_consumed_ls.set_val("mach_0", val=mach, units="unitless")
         prob_fuel_consumed_ls.set_val("required_thrust", val=thrust_required, units="N")
 
         prob_fuel_consumed_ls.run_model()

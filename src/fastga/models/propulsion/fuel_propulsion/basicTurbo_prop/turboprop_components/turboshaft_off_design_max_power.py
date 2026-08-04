@@ -105,8 +105,8 @@ class DistanceToLimitOPRLimit(om.ImplicitComponent):
     def setup(self):
         n = self.options["number_of_points"]
 
-        self.add_input("opr", shape=n, val=np.nan)
-        self.add_input("opr_limit", shape=n, val=np.nan)
+        self.add_input("opr", shape=n, val=np.nan, units="unitless")
+        self.add_input("opr_limit", shape=n, val=np.nan, units="unitless")
 
         self.add_output("required_thrust", units="kN", val=np.full(n, 5.0))
 

@@ -38,7 +38,7 @@ class PressurizationAirFlow(om.ExplicitComponent):
 
         self.add_input(self.input_name, units="m", shape=n, val=np.nan)
         self.add_input("data:geometry:cabin:volume", units="m**3", shape=1, val=np.nan)
-        self.add_input("bleed_control", shape=n, val=1.0)
+        self.add_input("bleed_control", shape=n, val=1.0, units="unitless")
         self.add_input("cabin_air_renewal_time", units="s", shape=1, val=np.nan)
 
         self.add_output("pressurization_mass_flow", units="kg/s", val=0.045, shape=n)

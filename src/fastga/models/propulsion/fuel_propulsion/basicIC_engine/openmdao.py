@@ -62,14 +62,15 @@ class OMBasicICEngineWrapper(oad.IOMPropulsionWrapper):
 
     def setup(self, component: Component):
         component.add_input("data:propulsion:IC_engine:max_power", np.nan, units="W")
-        component.add_input("data:propulsion:fuel_type", np.nan)
-        component.add_input("data:propulsion:IC_engine:strokes_nb", np.nan)
-        component.add_input("data:geometry:propulsion:engine:layout", np.nan)
+        component.add_input("data:propulsion:fuel_type", np.nan, units="unitless")
+        component.add_input("data:propulsion:IC_engine:strokes_nb", np.nan, units="unitless")
+        component.add_input("data:geometry:propulsion:engine:layout", np.nan, units="unitless")
         component.add_input(
             "settings:propulsion:IC_engine:k_factor_sfc",
             1.0,
             desc="k_factor that can be used to adjust the consumption on engine level to the "
             "aircraft level",
+            units="unitless",
         )
         component.add_input(
             "data:aerodynamics:propeller:sea_level:speed",
@@ -89,6 +90,7 @@ class OMBasicICEngineWrapper(oad.IOMPropulsionWrapper):
         component.add_input(
             "data:aerodynamics:propeller:sea_level:efficiency",
             np.full((SPEED_PTS_NB, THRUST_PTS_NB), np.nan),
+            units="unitless",
         )
         component.add_input(
             "data:aerodynamics:propeller:cruise_level:speed",
@@ -108,22 +110,26 @@ class OMBasicICEngineWrapper(oad.IOMPropulsionWrapper):
         component.add_input(
             "data:aerodynamics:propeller:cruise_level:efficiency",
             np.full((SPEED_PTS_NB, THRUST_PTS_NB), np.nan),
+            units="unitless",
         )
         component.add_input(
             "data:aerodynamics:propeller:cruise_level:altitude", units="m", val=np.nan
         )
-        component.add_input("data:geometry:propulsion:engine:count", val=np.nan)
+        component.add_input("data:geometry:propulsion:engine:count", val=np.nan, units="unitless")
         component.add_input(
             "data:aerodynamics:propeller:installation_effect:effective_efficiency:low_speed",
             val=1.0,
+            units="unitless",
         )
         component.add_input(
             "data:aerodynamics:propeller:installation_effect:effective_efficiency:cruise",
             val=1.0,
+            units="unitless",
         )
         component.add_input(
             "data:aerodynamics:propeller:installation_effect:effective_advance_ratio",
             val=1.0,
+            units="unitless",
         )
 
     @staticmethod

@@ -10,18 +10,19 @@ class ShaftPower(om.ExplicitComponent):
         n = self.options["number_of_points"]
 
         self.add_input("air_mass_flow", units="kg/s", val=np.nan, shape=n)
-        self.add_input("fuel_air_ratio", shape=n, val=np.nan)
-        self.add_input("compressor_bleed_ratio", shape=n, val=np.nan)
-        self.add_input("pressurization_bleed_ratio", shape=n, val=np.nan)
+        self.add_input("fuel_air_ratio", shape=n, val=np.nan, units="unitless")
+        self.add_input("compressor_bleed_ratio", shape=n, val=np.nan, units="unitless")
+        self.add_input("pressurization_bleed_ratio", shape=n, val=np.nan, units="unitless")
 
-        self.add_input("cp_45", shape=n, val=np.nan)
+        self.add_input("cp_45", shape=n, val=np.nan, units="unitless")
         self.add_input("total_temperature_45", units="K", shape=n, val=np.nan)
-        self.add_input("cp_5", shape=n, val=np.nan)
+        self.add_input("cp_5", shape=n, val=np.nan, units="unitless")
         self.add_input("total_temperature_5", units="K", shape=n, val=np.nan)
 
         self.add_input(
             "settings:propulsion:turboprop:efficiency:gearbox",
             val=0.98,
+            units="unitless",
         )
 
         self.add_output("shaft_power", units="W", shape=n, val=300e3)

@@ -26,7 +26,7 @@ class Station0(om.ExplicitComponent):
         if self.options["design_point"]:
             self.input_mach_name = "data:propulsion:turboprop:design_point:mach"
 
-        self.add_input(self.input_mach_name, val=np.nan, shape=n)
+        self.add_input(self.input_mach_name, val=np.nan, shape=n, units="unitless")
         self.add_input("static_temperature_0", units="K", shape=n, val=np.nan)
         self.add_input("static_pressure_0", units="Pa", shape=n, val=np.nan)
 
