@@ -25,8 +25,8 @@ class ComputeEngineCG(om.ExplicitComponent):
     """Engine(s) center of gravity estimation"""
 
     def setup(self):
-        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
-        self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan, units="unitless")
+        self.add_input("data:geometry:propulsion:engine:count", val=np.nan, units="unitless")
         self.add_input("data:geometry:wing:root:y", val=np.nan, units="m")
         self.add_input("data:geometry:wing:root:chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:y", val=np.nan, units="m")
@@ -46,6 +46,7 @@ class ComputeEngineCG(om.ExplicitComponent):
 
         self.add_output("data:weight:propulsion:engine:CG:x", units="m")
 
+    def setup_partials(self):
         self.declare_partials(
             "data:weight:propulsion:engine:CG:x",
             [

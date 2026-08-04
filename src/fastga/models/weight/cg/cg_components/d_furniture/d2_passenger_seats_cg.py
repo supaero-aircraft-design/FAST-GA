@@ -25,14 +25,15 @@ class ComputePassengerSeatsCG(om.ExplicitComponent):
     """Passenger seats center of gravity estimation"""
 
     def setup(self):
-        self.add_input("data:geometry:cabin:seats:passenger:NPAX_max", val=np.nan)
+        self.add_input("data:geometry:cabin:seats:passenger:NPAX_max", val=np.nan, units="unitless")
         self.add_input("data:geometry:fuselage:front_length", val=np.nan, units="m")
-        self.add_input("data:geometry:cabin:seats:passenger:count_by_row", val=np.nan)
+        self.add_input("data:geometry:cabin:seats:passenger:count_by_row", val=np.nan, units="unitless")
         self.add_input("data:geometry:cabin:seats:pilot:length", val=np.nan, units="m")
         self.add_input("data:geometry:cabin:seats:passenger:length", val=np.nan, units="m")
 
         self.add_output("data:weight:furniture:passenger_seats:CG:x", units="m")
 
+    def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):

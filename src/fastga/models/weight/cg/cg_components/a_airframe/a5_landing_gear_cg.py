@@ -38,19 +38,22 @@ class ComputeLandingGearCG(om.ExplicitComponent):
         self.add_input("data:geometry:fuselage:front_length", val=np.nan, units="m")
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
         self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
-        self.add_input("data:weight:aircraft:CG:aft:MAC_position", val=np.nan)
+        self.add_input("data:weight:aircraft:CG:aft:MAC_position", val=np.nan, units="unitless")
         self.add_input(
             "settings:weight:airframe:landing_gear:front:weight_ratio",
             val=0.3,
+            units="unitless",
         )
         self.add_input(
             "settings:weight:airframe:landing_gear:front:front_fuselage_ratio",
             val=0.75,
+            units="unitless",
         )
 
         self.add_output("data:weight:airframe:landing_gear:front:CG:x", units="m")
         self.add_output("data:weight:airframe:landing_gear:main:CG:x", units="m")
 
+    def setup_partials(self):
         self.declare_partials(
             of="data:weight:airframe:landing_gear:front:CG:x",
             wrt="data:geometry:fuselage:front_length",

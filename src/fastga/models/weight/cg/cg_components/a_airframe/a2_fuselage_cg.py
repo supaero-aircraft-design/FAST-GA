@@ -36,12 +36,13 @@ class ComputeFuselageCG(om.ExplicitComponent):
     """
 
     def setup(self):
-        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan, units="unitless")
         self.add_input("data:geometry:fuselage:length", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:front_length", val=np.nan, units="m")
 
         self.add_output("data:weight:airframe:fuselage:CG:x", units="m")
 
+    def setup_partials(self):
         self.declare_partials(
             of="*",
             wrt=["data:geometry:fuselage:length", "data:geometry:fuselage:front_length"],

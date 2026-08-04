@@ -30,13 +30,14 @@ class ComputeTankCG(om.ExplicitComponent):
 
         self.add_input(
             "settings:weight:propulsion:tank:CG:from_wingMAC25",
-            val=0.25,
+            val=0.25, units="unitless",
             desc="distance between the tank CG and 25 percent of wing MAC as a ratio of the wing "
             "MAC",
         )
 
         self.add_output("data:weight:propulsion:tank:CG:x", units="m")
 
+    def setup_partials(self):
         self.declare_partials("*", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):

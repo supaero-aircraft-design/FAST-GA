@@ -51,8 +51,8 @@ class ComputeGroundCGCase(om.ExplicitComponent):
         self.add_input("data:weight:propulsion:unusable_fuel:mass", val=np.nan, units="kg")
         self.add_input("data:weight:propulsion:tank:CG:x", val=np.nan, units="m")
 
-        self.add_output("data:weight:aircraft:CG:ground_condition:max:MAC_position")
-        self.add_output("data:weight:aircraft:CG:ground_condition:min:MAC_position")
+        self.add_output("data:weight:aircraft:CG:ground_condition:max:MAC_position", units="unitless")
+        self.add_output("data:weight:aircraft:CG:ground_condition:min:MAC_position", units="unitless")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         luggage_mass_max = inputs["data:geometry:cabin:luggage:mass_max"].item()
@@ -121,15 +121,15 @@ class ComputeFlightCGCase(om.ExplicitComponent):
 
         self.add_input("data:geometry:cabin:luggage:mass_max", val=np.nan, units="kg")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
-        self.add_input("data:aerodynamics:aircraft:cruise:CD0", val=np.nan)
-        self.add_input("data:aerodynamics:wing:cruise:induced_drag_coefficient", val=np.nan)
-        self.add_input("data:geometry:cabin:seats:passenger:NPAX_max", val=np.nan)
+        self.add_input("data:aerodynamics:aircraft:cruise:CD0", val=np.nan, units="unitless")
+        self.add_input("data:aerodynamics:wing:cruise:induced_drag_coefficient", val=np.nan, units="unitless")
+        self.add_input("data:geometry:cabin:seats:passenger:NPAX_max", val=np.nan, units="unitless")
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
         self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:front_length", val=np.nan, units="m")
         self.add_input("data:geometry:cabin:seats:pilot:length", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:PAX_length", val=np.nan, units="m")
-        self.add_input("data:geometry:cabin:seats:passenger:count_by_row", val=np.nan)
+        self.add_input("data:geometry:cabin:seats:passenger:count_by_row", val=np.nan, units="unitless")
         self.add_input("data:geometry:cabin:seats:passenger:length", val=np.nan, units="m")
         self.add_input("data:weight:payload:rear_fret:CG:x", val=np.nan, units="m")
         self.add_input("data:weight:aircraft_empty:CG:x", val=np.nan, units="m")
@@ -139,8 +139,8 @@ class ComputeFlightCGCase(om.ExplicitComponent):
         self.add_input("data:weight:propulsion:tank:CG:x", val=np.nan, units="m")
         self.add_input("data:weight:aircraft:MFW", val=np.nan, units="kg")
 
-        self.add_output("data:weight:aircraft:CG:flight_condition:max:MAC_position")
-        self.add_output("data:weight:aircraft:CG:flight_condition:min:MAC_position")
+        self.add_output("data:weight:aircraft:CG:flight_condition:max:MAC_position", units="unitless")
+        self.add_output("data:weight:aircraft:CG:flight_condition:min:MAC_position", units="unitless")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         luggage_mass_max = inputs["data:geometry:cabin:luggage:mass_max"].item()

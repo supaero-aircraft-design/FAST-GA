@@ -42,7 +42,25 @@ class ComputeFlightControlCG(om.ExplicitComponent):
 
         self.add_output("data:weight:airframe:flight_controls:CG:x", units="m")
 
-        self.declare_partials("*", "*", method="exact")
+    def setup_partials(self):
+        self.declare_partials(
+            "data:weight:airframe:flight_controls:CG:x",
+            "data:geometry:wing:MAC:at25percent:x",
+            method="exact",
+            val=1.0,
+        )
+        self.declare_partials(
+            "data:weight:airframe:flight_controls:CG:x",
+            "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
+            method="exact",
+            val=0.25,
+        )
+        self.declare_partials(
+            "data:weight:airframe:flight_controls:CG:x",
+            "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25",
+            method="exact",
+            val=0.25,
+        )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
@@ -52,16 +70,3 @@ class ComputeFlightControlCG(om.ExplicitComponent):
         x_cg_a4 = 0.5 * fa_length + 0.25 * (fa_length + lp_ht) + 0.25 * (fa_length + lp_vt)
 
         outputs["data:weight:airframe:flight_controls:CG:x"] = x_cg_a4
-
-    def compute_partials(self, inputs, partials, discrete_inputs=None):
-        partials[
-            "data:weight:airframe:flight_controls:CG:x", "data:geometry:wing:MAC:at25percent:x"
-        ] = 1
-        partials[
-            "data:weight:airframe:flight_controls:CG:x",
-            "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
-        ] = 0.25
-        partials[
-            "data:weight:airframe:flight_controls:CG:x",
-            "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25",
-        ] = 0.25

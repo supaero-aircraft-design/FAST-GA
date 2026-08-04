@@ -35,7 +35,7 @@ class ComputeWingCG(om.ExplicitComponent):
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="deg")
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
-        self.add_input("data:geometry:flap:chord_ratio", val=0.2)
+        self.add_input("data:geometry:flap:chord_ratio", val=0.2, units="unitless")
         self.add_input("data:geometry:wing:root:virtual_chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:root:y", val=np.nan, units="m")
@@ -43,6 +43,7 @@ class ComputeWingCG(om.ExplicitComponent):
 
         self.add_output("data:weight:airframe:wing:CG:x", units="m")
 
+    def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
