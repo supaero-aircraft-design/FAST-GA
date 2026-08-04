@@ -67,9 +67,9 @@ def test_compute_mass_distribution():
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(StructuralLoads()), __file__, XML_FILE)
     load_factor_shear = 4.0
-    ivc.add_output("data:loads:max_shear:load_factor", load_factor_shear)
+    ivc.add_output("data:loads:max_shear:load_factor", load_factor_shear, units="unitless")
     load_factor_rbm = 4.0
-    ivc.add_output("data:loads:max_rbm:load_factor", load_factor_rbm)
+    ivc.add_output("data:loads:max_rbm:load_factor", load_factor_rbm, units="unitless")
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(StructuralLoads(), ivc)
@@ -330,8 +330,8 @@ def test_compute_mass_distribution():
 def test_compute_structure_shear():
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(StructuralLoads()), __file__, XML_FILE)
-    ivc.add_output("data:loads:max_shear:load_factor", 4.0)
-    ivc.add_output("data:loads:max_rbm:load_factor", 4.0)
+    ivc.add_output("data:loads:max_shear:load_factor", 4.0, units="unitless")
+    ivc.add_output("data:loads:max_rbm:load_factor", 4.0, units="unitless")
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(StructuralLoads(), ivc)
@@ -585,8 +585,8 @@ def test_compute_structure_shear():
 def test_compute_structure_bending():
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(StructuralLoads()), __file__, XML_FILE)
-    ivc.add_output("data:loads:max_shear:load_factor", 4.0)
-    ivc.add_output("data:loads:max_rbm:load_factor", 4.0)
+    ivc.add_output("data:loads:max_shear:load_factor", 4.0, units="unitless")
+    ivc.add_output("data:loads:max_rbm:load_factor", 4.0, units="unitless")
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(StructuralLoads(), ivc)
@@ -846,9 +846,9 @@ def test_compute_structure_bending():
 def test_compute_lift_distribution():
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(AerodynamicLoads()), __file__, XML_FILE)
-    ivc.add_output("data:loads:max_shear:load_factor", 4.0)
+    ivc.add_output("data:loads:max_shear:load_factor", 4.0, units="unitless")
     ivc.add_output("data:loads:max_shear:mass", 1747.0, units="kg")
-    ivc.add_output("data:loads:max_rbm:load_factor", 4.0)
+    ivc.add_output("data:loads:max_rbm:load_factor", 4.0, units="unitless")
     ivc.add_output("data:loads:max_rbm:mass", 1568.0, units="kg")
 
     # Run problem and check obtained value(s) is/(are) correct

@@ -47,16 +47,16 @@ DATA_FOLDER_PATH = pathlib.Path(__file__).parent / "data"
 def test_update_wing_area_group():
     # Driven by fuel
     ivc = om.IndepVarComp()
-    ivc.add_output("data:propulsion:fuel_type", 1.0)
+    ivc.add_output("data:propulsion:fuel_type", 1.0, units="unitless")
     ivc.add_output("data:geometry:wing:root:chord", 1.549, units="m")
     ivc.add_output("data:geometry:wing:tip:chord", 1.549, units="m")
-    ivc.add_output("data:geometry:wing:root:thickness_ratio", 0.149)
-    ivc.add_output("data:geometry:wing:tip:thickness_ratio", 0.103)
+    ivc.add_output("data:geometry:wing:root:thickness_ratio", 0.149, units="unitless")
+    ivc.add_output("data:geometry:wing:tip:thickness_ratio", 0.103, units="unitless")
     ivc.add_output("data:mission:sizing:fuel", val=600.0, units="kg")
     ivc.add_output("data:TLAR:v_approach", val=78.0, units="kn")
     ivc.add_output("data:weight:aircraft:MLW", val=1692.37, units="kg")
     ivc.add_output("data:weight:aircraft:MFW", val=573.00, units="kg")
-    ivc.add_output("data:aerodynamics:aircraft:landing:CL_max", val=2.0272)
+    ivc.add_output("data:aerodynamics:aircraft:landing:CL_max", val=2.0272, units="unitless")
 
     problem = run_system(UpdateWingAreaGroup(), ivc)
     assert_allclose(problem["data:geometry:wing:area"], 20.05, atol=1e-2)
@@ -70,16 +70,16 @@ def test_update_wing_area_group():
 
     # Driven by CL max
     ivc = om.IndepVarComp()
-    ivc.add_output("data:propulsion:fuel_type", 1.0)
+    ivc.add_output("data:propulsion:fuel_type", 1.0, units="unitless")
     ivc.add_output("data:geometry:wing:root:chord", 1.549, units="m")
     ivc.add_output("data:geometry:wing:tip:chord", 1.549, units="m")
-    ivc.add_output("data:geometry:wing:root:thickness_ratio", 0.149)
-    ivc.add_output("data:geometry:wing:tip:thickness_ratio", 0.103)
+    ivc.add_output("data:geometry:wing:root:thickness_ratio", 0.149, units="unitless")
+    ivc.add_output("data:geometry:wing:tip:thickness_ratio", 0.103, units="unitless")
     ivc.add_output("data:mission:sizing:fuel", val=300.0, units="kg")
     ivc.add_output("data:TLAR:v_approach", val=78.0, units="kn")
     ivc.add_output("data:weight:aircraft:MLW", val=1692.37, units="kg")
     ivc.add_output("data:weight:aircraft:MFW", val=573.00, units="kg")
-    ivc.add_output("data:aerodynamics:aircraft:landing:CL_max", val=2.0272)
+    ivc.add_output("data:aerodynamics:aircraft:landing:CL_max", val=2.0272, units="unitless")
 
     problem = run_system(UpdateWingAreaGroup(), ivc)
     assert_allclose(problem["data:geometry:wing:area"], 14.02, atol=1e-2)
@@ -93,11 +93,11 @@ def test_update_wing_area_group():
 
 def test_simple_geom():
     ivc_loop = om.IndepVarComp()
-    ivc_loop.add_output("data:propulsion:fuel_type", 1.0)
+    ivc_loop.add_output("data:propulsion:fuel_type", 1.0, units="unitless")
     ivc_loop.add_output("data:geometry:wing:root:chord", 1.549, units="m")
     ivc_loop.add_output("data:geometry:wing:tip:chord", 1.549, units="m")
-    ivc_loop.add_output("data:geometry:wing:root:thickness_ratio", 0.149)
-    ivc_loop.add_output("data:geometry:wing:tip:thickness_ratio", 0.103)
+    ivc_loop.add_output("data:geometry:wing:root:thickness_ratio", 0.149, units="unitless")
+    ivc_loop.add_output("data:geometry:wing:tip:thickness_ratio", 0.103, units="unitless")
     ivc_loop.add_output("data:mission:sizing:fuel", val=600.0, units="kg")
 
     problem_loop = run_system(UpdateWingAreaGeomSimple(), ivc_loop)
@@ -119,7 +119,7 @@ def test_simple_cl():
     ivc_loop = om.IndepVarComp()
     ivc_loop.add_output("data:TLAR:v_approach", val=78.0, units="kn")
     ivc_loop.add_output("data:weight:aircraft:MLW", val=1692.37, units="kg")
-    ivc_loop.add_output("data:aerodynamics:aircraft:landing:CL_max", val=2.0272)
+    ivc_loop.add_output("data:aerodynamics:aircraft:landing:CL_max", val=2.0272, units="unitless")
 
     problem_loop = run_system(UpdateWingAreaLiftSimple(), ivc_loop)
     assert_allclose(problem_loop["wing_area"], 14.02, atol=1e-2)
@@ -127,12 +127,12 @@ def test_simple_cl():
     ivc_cons = om.IndepVarComp()
     ivc_cons.add_output("data:TLAR:v_approach", val=78.0, units="kn")
     ivc_cons.add_output("data:weight:aircraft:MLW", val=1692.37, units="kg")
-    ivc_cons.add_output("data:aerodynamics:aircraft:landing:CL_max", val=2.0272)
+    ivc_cons.add_output("data:aerodynamics:aircraft:landing:CL_max", val=2.0272, units="unitless")
     ivc_cons.add_output("data:geometry:wing:area", val=14.02, units="m**2")
 
     problem_cons = run_system(ConstraintWingAreaLiftSimple(), ivc_cons)
     assert_allclose(
-        problem_cons.get_val("data:constraints:wing:additional_CL_capacity"),
+        problem_cons.get_val("data:constraints:wing:additional_CL_capacity", units="unitless"),
         0.0,
         atol=1e-2,
     )
@@ -140,30 +140,37 @@ def test_simple_cl():
 
 def test_advanced_geom():
     ivc_loop = om.IndepVarComp()
-    ivc_loop.add_output("data:propulsion:fuel_type", 1.0)
-    ivc_loop.add_output("data:geometry:wing:root:thickness_ratio", 0.149)
-    ivc_loop.add_output("data:geometry:wing:tip:thickness_ratio", 0.103)
-    ivc_loop.add_output("data:geometry:wing:kink:span_ratio", 0.0)
+    ivc_loop.add_output("data:propulsion:fuel_type", 1.0, units="unitless")
+    ivc_loop.add_output("data:geometry:wing:root:thickness_ratio", 0.149, units="unitless")
+    ivc_loop.add_output("data:geometry:wing:tip:thickness_ratio", 0.103, units="unitless")
+    ivc_loop.add_output("data:geometry:wing:kink:span_ratio", 0.0, units="unitless")
     ivc_loop.add_output("data:mission:sizing:fuel", val=600.0, units="kg")
-    ivc_loop.add_output("data:aerodynamics:aircraft:landing:CL_max", val=2.0272)
-    ivc_loop.add_output("data:geometry:wing:taper_ratio", val=0.8)
-    ivc_loop.add_output("data:geometry:wing:aspect_ratio", val=4)
-    ivc_loop.add_output("data:geometry:flap:chord_ratio", val=0.15)
-    ivc_loop.add_output("data:geometry:wing:aileron:chord_ratio", val=0.2)
+    ivc_loop.add_output("data:aerodynamics:aircraft:landing:CL_max", val=2.0272, units="unitless")
+    ivc_loop.add_output("data:geometry:wing:taper_ratio", val=0.8, units="unitless")
+    ivc_loop.add_output("data:geometry:wing:aspect_ratio", val=4, units="unitless")
+    ivc_loop.add_output("data:geometry:flap:chord_ratio", val=0.15, units="unitless")
+    ivc_loop.add_output("data:geometry:wing:aileron:chord_ratio", val=0.2, units="unitless")
     ivc_loop.add_output("data:geometry:fuselage:maximum_width", val=1.5, units="m")
-    ivc_loop.add_output("data:geometry:propulsion:tank:y_ratio_tank_beginning", val=0.2)
-    ivc_loop.add_output("data:geometry:propulsion:tank:y_ratio_tank_end", val=0.8)
-    ivc_loop.add_output("data:geometry:propulsion:engine:layout", val=1.0)
+    ivc_loop.add_output(
+        "data:geometry:propulsion:tank:y_ratio_tank_beginning", val=0.2, units="unitless"
+    )
+    ivc_loop.add_output("data:geometry:propulsion:tank:y_ratio_tank_end", val=0.8, units="unitless")
+    ivc_loop.add_output("data:geometry:propulsion:engine:layout", val=1.0, units="unitless")
     ivc_loop.add_output(
         "data:geometry:propulsion:engine:y_ratio",
         val=0.34,
+        units="unitless",
     )
-    ivc_loop.add_output("data:geometry:propulsion:tank:LE_chord_percentage", val=0.05)
-    ivc_loop.add_output("data:geometry:propulsion:tank:TE_chord_percentage", val=0.05)
-    ivc_loop.add_output("data:geometry:landing_gear:type", val=1.0)
+    ivc_loop.add_output(
+        "data:geometry:propulsion:tank:LE_chord_percentage", val=0.05, units="unitless"
+    )
+    ivc_loop.add_output(
+        "data:geometry:propulsion:tank:TE_chord_percentage", val=0.05, units="unitless"
+    )
+    ivc_loop.add_output("data:geometry:landing_gear:type", val=1.0, units="unitless")
     ivc_loop.add_output("data:geometry:landing_gear:y", val=1.5, units="m")
     ivc_loop.add_output("data:geometry:propulsion:nacelle:width", val=0.9291288709126333, units="m")
-    ivc_loop.add_output("settings:geometry:fuel_tanks:depth", val=0.6)
+    ivc_loop.add_output("settings:geometry:fuel_tanks:depth", val=0.6, units="unitless")
 
     problem_loop = run_system(UpdateWingAreaGeomAdvanced(), ivc_loop)
     assert_allclose(problem_loop["wing_area"], 21.73, atol=1e-2)
@@ -171,29 +178,36 @@ def test_advanced_geom():
     problem_loop.check_partials(compact_print=True)
 
     ivc_cons = om.IndepVarComp()
-    ivc_cons.add_output("data:propulsion:fuel_type", 1.0)
-    ivc_cons.add_output("data:geometry:wing:root:thickness_ratio", 0.149)
-    ivc_cons.add_output("data:geometry:wing:tip:thickness_ratio", 0.103)
-    ivc_cons.add_output("data:geometry:wing:kink:span_ratio", 0.0)
+    ivc_cons.add_output("data:propulsion:fuel_type", 1.0, units="unitless")
+    ivc_cons.add_output("data:geometry:wing:root:thickness_ratio", 0.149, units="unitless")
+    ivc_cons.add_output("data:geometry:wing:tip:thickness_ratio", 0.103, units="unitless")
+    ivc_cons.add_output("data:geometry:wing:kink:span_ratio", 0.0, units="unitless")
     ivc_cons.add_output("data:mission:sizing:fuel", val=600.0, units="kg")
-    ivc_cons.add_output("data:geometry:wing:taper_ratio", val=0.8)
-    ivc_cons.add_output("data:geometry:wing:aspect_ratio", val=4)
-    ivc_cons.add_output("data:geometry:flap:chord_ratio", val=0.15)
-    ivc_cons.add_output("data:geometry:wing:aileron:chord_ratio", val=0.2)
+    ivc_cons.add_output("data:geometry:wing:taper_ratio", val=0.8, units="unitless")
+    ivc_cons.add_output("data:geometry:wing:aspect_ratio", val=4, units="unitless")
+    ivc_cons.add_output("data:geometry:flap:chord_ratio", val=0.15, units="unitless")
+    ivc_cons.add_output("data:geometry:wing:aileron:chord_ratio", val=0.2, units="unitless")
     ivc_cons.add_output("data:geometry:fuselage:maximum_width", val=1.5, units="m")
-    ivc_cons.add_output("data:geometry:propulsion:tank:y_ratio_tank_beginning", val=0.2)
-    ivc_cons.add_output("data:geometry:propulsion:tank:y_ratio_tank_end", val=0.8)
-    ivc_cons.add_output("data:geometry:propulsion:engine:layout", val=1.0)
+    ivc_cons.add_output(
+        "data:geometry:propulsion:tank:y_ratio_tank_beginning", val=0.2, units="unitless"
+    )
+    ivc_cons.add_output("data:geometry:propulsion:tank:y_ratio_tank_end", val=0.8, units="unitless")
+    ivc_cons.add_output("data:geometry:propulsion:engine:layout", val=1.0, units="unitless")
     ivc_cons.add_output(
         "data:geometry:propulsion:engine:y_ratio",
         val=0.34,
+        units="unitless",
     )
-    ivc_cons.add_output("data:geometry:propulsion:tank:LE_chord_percentage", val=0.05)
-    ivc_cons.add_output("data:geometry:propulsion:tank:TE_chord_percentage", val=0.05)
-    ivc_cons.add_output("data:geometry:landing_gear:type", val=1.0)
+    ivc_cons.add_output(
+        "data:geometry:propulsion:tank:LE_chord_percentage", val=0.05, units="unitless"
+    )
+    ivc_cons.add_output(
+        "data:geometry:propulsion:tank:TE_chord_percentage", val=0.05, units="unitless"
+    )
+    ivc_cons.add_output("data:geometry:landing_gear:type", val=1.0, units="unitless")
     ivc_cons.add_output("data:geometry:landing_gear:y", val=1.5, units="m")
     ivc_cons.add_output("data:geometry:propulsion:nacelle:width", val=0.9291288709126333, units="m")
-    ivc_cons.add_output("settings:geometry:fuel_tanks:depth", val=0.6)
+    ivc_cons.add_output("settings:geometry:fuel_tanks:depth", val=0.6, units="unitless")
     ivc_cons.add_output("data:geometry:wing:area", val=21.73, units="m**2")
 
     problem_cons = run_system(ConstraintWingAreaGeomAdvanced(), ivc_cons)
@@ -242,7 +256,7 @@ def test_advanced_cl():
         ivc_cons,
     )
     assert_allclose(
-        problem_cons.get_val("data:constraints:wing:additional_CL_capacity"),
+        problem_cons.get_val("data:constraints:wing:additional_CL_capacity", units="unitless"),
         0.0,
         atol=1e-2,
     )

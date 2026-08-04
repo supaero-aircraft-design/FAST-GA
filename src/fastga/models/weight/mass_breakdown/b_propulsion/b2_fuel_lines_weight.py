@@ -146,7 +146,7 @@ class ComputeFuelLinesWeightFLOPS(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
     def setup(self):
-        self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:count", val=np.nan, units="unitless")
         self.add_input("data:weight:aircraft:MFW", val=np.nan, units="lb")
 
         self.add_output("data:weight:propulsion:fuel_lines:mass", units="lb")

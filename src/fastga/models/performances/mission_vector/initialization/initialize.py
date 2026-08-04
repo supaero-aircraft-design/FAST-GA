@@ -48,7 +48,7 @@ class Initialize(om.Group):
         )
         ivc_engine_setting = om.IndepVarComp()
         ivc_engine_setting.add_output(
-            "engine_setting", val=engine_setting, units=None, shape=number_of_points
+            "engine_setting", val=engine_setting, units="unitless", shape=number_of_points
         )
 
         self.add_subsystem("initialize_engine_setting", subsys=ivc_engine_setting, promotes=[])

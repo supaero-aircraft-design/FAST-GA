@@ -95,6 +95,7 @@ class FuelConsumed(om.ExplicitComponent):
         self.add_output(
             "thrust_rate_t_econ",
             val=np.full(number_of_points + 2, 0.5),
+            units="unitless",
             desc="thrust ratio at each time step",
         )
 

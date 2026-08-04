@@ -693,11 +693,9 @@ def test_complete_geometry_fd():
     """Run computation of all models for fixed distance hypothesis"""
 
     # Research independent input value in .xml file and add values calculated from other modules
-    problem = setup_and_run_system(
+    _ = setup_and_run_system(
         GeometryFixedTailDistance(propulsion_id=ENGINE_WRAPPER), __file__, XML_FILE
     )
-
-    problem.check_partials(compact_print=True)
 
 
 def test_complete_geometry_fl():
@@ -709,8 +707,6 @@ def test_complete_geometry_fl():
     )
     total_surface = problem.get_val("data:geometry:aircraft:wet_area", units="m**2")
     assert total_surface == pytest.approx(79.688, abs=1e-3)
-
-    problem.check_partials(compact_print=True)
 
 
 def test_wing_tank_spans():
@@ -1131,12 +1127,10 @@ def test_complete_geometry_fd_advance_wing_tank():
 
     # Research independent input value in .xml file and add values calculated from other modules
     oad.RegisterSubmodel.active_models[SERVICE_MFW] = SUBMODEL_MFW_ADVANCED
-    problem = setup_and_run_system(
+    _ = setup_and_run_system(
         GeometryFixedTailDistance(propulsion_id=ENGINE_WRAPPER), __file__, XML_FILE
     )
     assert oad.RegisterSubmodel.active_models[SERVICE_MFW] == SUBMODEL_MFW_ADVANCED
-
-    problem.check_partials(compact_print=True)
 
 
 def test_complete_geometry_fl_advance_wing_tank():
@@ -1149,5 +1143,3 @@ def test_complete_geometry_fl_advance_wing_tank():
     )
     total_surface = problem.get_val("data:geometry:aircraft:wet_area", units="m**2")
     assert total_surface == pytest.approx(79.688, abs=1e-3)
-
-    problem.check_partials(compact_print=True)

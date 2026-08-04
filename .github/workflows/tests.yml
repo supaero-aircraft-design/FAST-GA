@@ -99,6 +99,11 @@ jobs:
         run: poetry run pytest src/fastga/models/loops --no-cov
         shell: bash
 
+      - name: Propulsion unit tests (without coverage)
+        if: ${{ (runner.os != 'Linux' ) || matrix.python-version != '3.10' }}
+        run: poetry run pytest src/fastga/models/propulsion --no-cov
+        shell: bash
+
       - name: Performances unit tests (without coverage)
         if: ${{ (runner.os != 'Linux' ) || matrix.python-version != '3.10' }}
         run: poetry run pytest src/fastga/models/performances --no-cov

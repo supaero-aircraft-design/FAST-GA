@@ -218,12 +218,12 @@ def compute_wing_area(inputs, propulsion_id):
     ivc.add_output(name="mass", val=np.array([mlw, mlw]), units="kg")
     # x_cg should be evaluated at the worst case scenario so either max aft or max fwd
     ivc.add_output(name="x_cg", val=np.array([cg_max_fwd, cg_max_aft]), units="m")
-    ivc.add_output(name="gamma", val=np.array([0.0, 0.0]), units=None)
+    ivc.add_output(name="gamma", val=np.array([0.0, 0.0]), units="deg")
     ivc.add_output(name="altitude", val=np.array([0.0, 0.0]), units="m")
     # Time step is not important since we don't care about the fuel consumption
     ivc.add_output(name="time_step", val=np.array([0.0, 0.0]), units="s")
     ivc.add_output(name="true_airspeed", val=np.array([stall_speed, stall_speed]), units="m/s")
-    ivc.add_output(name="engine_setting", val=np.full(2, EngineSetting.TAKEOFF))
+    ivc.add_output(name="engine_setting", val=np.full(2, EngineSetting.TAKEOFF), units="unitless")
 
     problem = om.Problem(reports=False)
     model = problem.model
@@ -242,7 +242,7 @@ def compute_wing_area(inputs, propulsion_id):
     model.add_subsystem("thrust_rate_id", _IDThrustRate(), promotes=["*"])
 
     model.nonlinear_solver = om.NewtonSolver(solve_subsystems=True)
-    model.nonlinear_solver.options["iprint"] = 2
+    model.nonlinear_solver.options["iprint"] = 0
     model.nonlinear_solver.options["maxiter"] = 100
     model.nonlinear_solver.options["rtol"] = 1e-4
     model.linear_solver = om.DirectSolver()

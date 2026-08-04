@@ -87,22 +87,6 @@ class ComputeWingTankReducedWidthArray(om.ExplicitComponent):
             rows=np.arange(nb_point_wing),
             cols=np.arange(nb_point_wing),
         )
-        # It actually does depend on them as the formula says but for the sake of what we will do
-        # it should not be necessary
-        self.declare_partials(
-            of="data:geometry:propulsion:tank:reduced_width_array",
-            wrt=[
-                "data:geometry:propulsion:tank:y_array",
-                "data:geometry:propulsion:nacelle:width",
-                "data:geometry:landing_gear:type",
-                "data:geometry:landing_gear:y",
-                "data:geometry:propulsion:engine:layout",
-                "data:geometry:propulsion:engine:y_ratio",
-                "data:geometry:wing:span",
-            ],
-            method="exact",
-            val=0.0,
-        )
 
     # pylint: disable=missing-function-docstring, unused-argument
     # Overriding OpenMDAO compute, not all arguments are used

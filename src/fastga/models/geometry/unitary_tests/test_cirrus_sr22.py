@@ -678,11 +678,9 @@ def test_complete_geometry_fd():
     """Run computation of all models for fixed distance hypothesis"""
 
     # Research independent input value in .xml file and add values calculated from other modules
-    problem = setup_and_run_system(
+    _ = setup_and_run_system(
         GeometryFixedTailDistance(propulsion_id=ENGINE_WRAPPER), __file__, XML_FILE
     )
-
-    problem.check_partials(compact_print=True)
 
 
 def test_complete_geometry_fl():
@@ -694,5 +692,3 @@ def test_complete_geometry_fl():
     )
     total_surface = problem.get_val("data:geometry:aircraft:wet_area", units="m**2")
     assert total_surface == pytest.approx(63.95, abs=1e-3)
-
-    problem.check_partials(compact_print=True)
