@@ -58,10 +58,10 @@ jobs:
 
       - name: Install dependencies # Heavy dependencies (cached) - only runs on cache miss
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-        run: poetry install -E --no-interaction --no-root
+        run: poetry install --no-interaction --no-root
 
       - name: Install library # Light project install (always runs) - runs every time
-        run: poetry install -E --no-interaction
+        run: poetry install --no-interaction
 
       - name: Check with Ruff
         run: |
