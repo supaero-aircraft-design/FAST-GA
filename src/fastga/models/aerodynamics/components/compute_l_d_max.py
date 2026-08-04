@@ -39,6 +39,8 @@ class ComputeLDMax(om.ExplicitComponent):
         self.add_output("data:aerodynamics:aircraft:cruise:optimal_CD", units="unitless")
         self.add_output("data:aerodynamics:aircraft:cruise:optimal_alpha", units="deg")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(
             "data:aerodynamics:aircraft:cruise:optimal_CL",

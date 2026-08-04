@@ -98,6 +98,8 @@ class NeuralfoilPolar(om.ExplicitComponent):
             self.add_output("CDp", val=0.0, units="unitless")
             self.add_output("CM", units="unitless")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 

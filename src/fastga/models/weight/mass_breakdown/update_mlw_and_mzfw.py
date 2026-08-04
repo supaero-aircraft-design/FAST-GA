@@ -38,6 +38,8 @@ class UpdateMLWandMZFW(om.ExplicitComponent):
         self.add_output("data:weight:aircraft:ZFW", units="kg")
         self.add_output("data:weight:aircraft:MLW", units="kg")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials("data:weight:aircraft:MZFW", "data:weight:aircraft:OWE", val=1.0)
         self.declare_partials(

@@ -61,6 +61,8 @@ class ComputeTaxi(om.ExplicitComponent):
             self.add_input("data:mission:sizing:taxi_in:speed", np.nan, units="m/s")
             self.add_output("data:mission:sizing:taxi_in:fuel", units="kg")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 

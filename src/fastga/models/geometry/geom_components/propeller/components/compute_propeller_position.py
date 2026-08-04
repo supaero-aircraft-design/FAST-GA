@@ -60,6 +60,8 @@ class ComputePropellerPosition(om.ExplicitComponent):
             units="m",
         )
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials("*", "data:geometry:propulsion:engine:layout", method="fd")
 

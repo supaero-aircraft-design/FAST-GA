@@ -52,6 +52,8 @@ class _ComputeStaticMargin(om.ExplicitComponent):
         self.add_output("data:handling_qualities:stick_fixed_static_margin", units="unitless")
         self.add_output("data:handling_qualities:stick_free_static_margin", units="unitless")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(
             "*", "data:weight:aircraft:CG:aft:MAC_position", method="exact", val=-1.0

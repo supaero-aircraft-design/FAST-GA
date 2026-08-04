@@ -73,6 +73,8 @@ class AirCoefficientReader(om.ExplicitComponent):
         self.d_cp_t_coefficients = np.polyder(self.cp_t_coefficients)
         self.d_gamma_coefficients = np.polyder(self.gamma_coefficients)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         n = self.options["number_of_points"]
         self.declare_partials(

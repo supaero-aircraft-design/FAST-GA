@@ -41,6 +41,8 @@ class ComputeUnitReynolds(om.ExplicitComponent):
             self.add_output("data:aerodynamics:cruise:mach", units="unitless")
             self.add_output("data:aerodynamics:cruise:unit_reynolds", units="m**-1")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         if self.options["low_speed_aero"]:
             self.declare_partials(

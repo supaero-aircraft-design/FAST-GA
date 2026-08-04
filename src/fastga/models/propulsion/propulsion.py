@@ -93,6 +93,8 @@ class BaseOMPropulsionComponent(om.ExplicitComponent, ABC):
         self.add_output("data:propulsion:thrust_rate", shape=shape, units="unitless")
         self.add_output("data:propulsion:thrust", shape=shape, units="N")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 

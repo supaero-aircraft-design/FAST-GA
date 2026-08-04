@@ -261,6 +261,8 @@ class Compute3DHingeMomentAlpha(om.ExplicitComponent):
             "data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_alpha", units="rad**-1"
         )
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(
             of="data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_alpha",
@@ -339,6 +341,8 @@ class Compute3DHingeMomentDelta(om.ExplicitComponent):
             "data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_delta", units="rad**-1"
         )
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(
             of="data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_delta",

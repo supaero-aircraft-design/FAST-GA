@@ -17,6 +17,8 @@ class ExhaustEquilibrium(om.ImplicitComponent):
 
         self.add_output("total_temperature_5", units="K", shape=n, val=0.75e3)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         n = self.options["number_of_points"]
         self.declare_partials(

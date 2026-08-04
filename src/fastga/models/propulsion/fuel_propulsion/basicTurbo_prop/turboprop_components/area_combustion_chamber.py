@@ -41,6 +41,8 @@ class A41(om.ExplicitComponent):
 
         self.add_output("data:propulsion:turboprop:section:41", val=0.00457, units="m**2")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         n = self.options["number_of_points"]
 

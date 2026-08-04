@@ -32,6 +32,8 @@ class ComputeTimeStep(om.ExplicitComponent):
 
         self.add_output("time_step", shape=number_of_points, units="s")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         number_of_points = self.options["number_of_points"]
 

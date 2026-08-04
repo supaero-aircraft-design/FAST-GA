@@ -20,6 +20,8 @@ class ExhaustThrust(om.ExplicitComponent):
 
         self.add_output("exhaust_thrust", units="N", shape=n, val=2e2)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         n = self.options["number_of_points"]
         self.declare_partials(

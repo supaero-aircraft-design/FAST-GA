@@ -48,6 +48,8 @@ class ComputePayload(om.ExplicitComponent):
         self.add_output("data:weight:aircraft:payload", units="kg")
         self.add_output("data:weight:aircraft:max_payload", units="kg")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(
             "data:weight:aircraft:payload",

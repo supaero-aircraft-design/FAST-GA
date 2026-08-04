@@ -51,6 +51,8 @@ class ComputeCLPitchVelocityHorizontalTail(om.ExplicitComponent):
 
         self.add_output("data:aerodynamics:horizontal_tail:" + ls_tag + ":CL_q", units="rad**-1")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
 

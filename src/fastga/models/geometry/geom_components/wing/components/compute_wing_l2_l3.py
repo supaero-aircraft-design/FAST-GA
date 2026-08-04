@@ -36,6 +36,8 @@ class ComputeWingL2AndL3(om.ExplicitComponent):
         self.add_output("data:geometry:wing:root:chord", units="m")
         self.add_output("data:geometry:wing:kink:chord", units="m")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(of="data:geometry:wing:root:chord", wrt="*", method="exact")
         self.declare_partials(of="data:geometry:wing:kink:chord", wrt="*", method="exact")

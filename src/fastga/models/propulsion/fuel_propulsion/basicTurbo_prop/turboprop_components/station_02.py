@@ -16,6 +16,8 @@ class Station02(om.ExplicitComponent):
         self.add_output("total_temperature_2", units="K", shape=n, val=3e2)
         self.add_output("total_pressure_2", units="Pa", shape=n, val=0.5e6)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         n = self.options["number_of_points"]
 

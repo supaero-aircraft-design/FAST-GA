@@ -127,6 +127,8 @@ class ComputeTORotationLimit(om.ExplicitComponent):
         self.add_output("data:handling_qualities:to_rotation_limit:x", units="m")
         self.add_output("data:handling_qualities:to_rotation_limit:MAC_position", units="unitless")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
@@ -237,6 +239,8 @@ class _ComputeAeroCoeffTO(om.ExplicitComponent):
         self.add_output("cm_wing", units="unitless")
         self.add_output("cl_alpha_htp", units="unitless")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 

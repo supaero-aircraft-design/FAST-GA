@@ -37,6 +37,8 @@ class ComputeAircraftMaxCl(om.ExplicitComponent):
         self.add_output("data:aerodynamics:aircraft:takeoff:CL_max", units="unitless")
         self.add_output("data:aerodynamics:aircraft:landing:CL_max", units="unitless")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(
             "data:aerodynamics:aircraft:takeoff:CL_max",

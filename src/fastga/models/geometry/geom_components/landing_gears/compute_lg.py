@@ -38,6 +38,8 @@ class ComputeLGGeometry(om.ExplicitComponent):
         self.add_output("data:geometry:landing_gear:height", units="m")
         self.add_output("data:geometry:landing_gear:y", units="m")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(
             "data:geometry:landing_gear:height", "data:geometry:propeller:diameter", val=0.41

@@ -49,6 +49,8 @@ class ComputeWingWeight(om.ExplicitComponent):
 
         self.add_output("data:weight:airframe:wing:mass", units="lb")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials("*", "*", method="exact")
 

@@ -61,6 +61,8 @@ class ComputeFuselageWeight(om.ExplicitComponent):
 
         self.add_output("data:weight:airframe:fuselage:mass", units="lb")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials("*", "*", method="exact")
 
@@ -234,6 +236,8 @@ class ComputeFuselageWeightRaymer(om.ExplicitComponent):
 
         self.add_output("data:weight:airframe:fuselage:mass", units="lb")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="exact")
 
@@ -534,6 +538,8 @@ class ComputeFuselageWeightRoskam(om.ExplicitComponent):
 
         self.add_output("data:weight:airframe:fuselage:mass", units="lb")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(
             of="*",

@@ -52,6 +52,8 @@ class ComputeNacelleDimension(om.ExplicitComponent):
         self.add_output("data:geometry:propulsion:nacelle:wet_area", units="m**2")
         self.add_output("data:geometry:propulsion:nacelle:master_cross_section", units="m**2")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 

@@ -125,6 +125,8 @@ class ComputeLocalReynolds(om.ExplicitComponent):
         )
         self.add_output(name="mach", units="unitless")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(
             "data:aerodynamics:horizontal_tail:root:low_speed:reynolds",
@@ -263,6 +265,8 @@ class ComputeHtp3DExtremeCL(om.ExplicitComponent):
             "data:aerodynamics:horizontal_tail:low_speed:clean:alpha_aircraft_min", units="deg"
         )
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 

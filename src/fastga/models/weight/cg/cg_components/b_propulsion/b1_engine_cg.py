@@ -46,6 +46,8 @@ class ComputeEngineCG(om.ExplicitComponent):
 
         self.add_output("data:weight:propulsion:engine:CG:x", units="m")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(
             "data:weight:propulsion:engine:CG:x",

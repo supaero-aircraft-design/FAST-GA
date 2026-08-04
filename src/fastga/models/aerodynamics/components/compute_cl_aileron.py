@@ -108,6 +108,8 @@ class ComputeCLDeltaA(om.ExplicitComponent):
 
             self.add_output("data:aerodynamics:aileron:cruise:Cl_delta_a", units="rad**-1")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials("*", "*", method="exact")
 

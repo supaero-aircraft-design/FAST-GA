@@ -43,6 +43,8 @@ class ComputeMFWFromWingTanksCapacity(om.ExplicitComponent):
 
         self.add_output("data:weight:aircraft:MFW", units="kg", val=500.0)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(of="*", wrt="data:geometry:propulsion:tank:capacity", method="exact")
         self.declare_partials("*", "data:propulsion:fuel_type", method="fd")

@@ -82,6 +82,8 @@ class _LoadFactorIdentification(om.ExplicitComponent):
         self.add_output("data:mission:sizing:cs23:characteristic_speed:vc", units="m/s")
         self.add_output("data:mission:sizing:cs23:characteristic_speed:vd", units="m/s")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 

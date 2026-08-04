@@ -58,6 +58,8 @@ class ComputeAeroCenter(om.ExplicitComponent):
             "data:aerodynamics:cruise:neutral_point:free_elevator_factor", units="unitless"
         )
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 

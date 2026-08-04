@@ -45,6 +45,8 @@ class ComputeVTMACDistanceFL(om.ExplicitComponent):
         self.add_output("data:geometry:vertical_tail:tip:x", units="m")
         self.add_output("data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25", units="m")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(
             "*",

@@ -57,6 +57,8 @@ class _PrepareMissionBuilder(om.ExplicitComponent):
         self.add_output("data:mission:sizing:cs23:min_climb_speed", units="m/s")
         self.add_output("data:mission:sizing:holding:v_holding", units="m/s")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(
             of="data:mission:sizing:cs23:min_climb_speed",

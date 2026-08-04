@@ -503,6 +503,8 @@ class _UpdateVTArea(VTPConstraints):
 
         self.add_output("data:geometry:vertical_tail:area", val=2.5, units="m**2")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(
             "*",

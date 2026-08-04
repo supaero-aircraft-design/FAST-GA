@@ -39,6 +39,8 @@ class ComputeWingX(om.ExplicitComponent):
         self.add_output("data:geometry:wing:kink:leading_edge:x:local", units="m")
         self.add_output("data:geometry:wing:tip:leading_edge:x:local", units="m")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials("*", "data:geometry:wing:root:virtual_chord", val=0.25)
         self.declare_partials(

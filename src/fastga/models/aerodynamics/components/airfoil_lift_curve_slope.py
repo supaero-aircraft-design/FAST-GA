@@ -147,6 +147,8 @@ class ComputeLocalReynolds(om.ExplicitComponent):
 
         self.add_output(name="mach", units="unitless")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 

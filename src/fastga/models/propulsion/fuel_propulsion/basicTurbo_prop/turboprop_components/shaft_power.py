@@ -27,6 +27,8 @@ class ShaftPower(om.ExplicitComponent):
 
         self.add_output("shaft_power", units="W", shape=n, val=300e3)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         n = self.options["number_of_points"]
         self.declare_partials(

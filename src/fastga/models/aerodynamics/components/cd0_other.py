@@ -59,6 +59,8 @@ class Cd0Other(om.ExplicitComponent):
                 method="exact",
             )
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials("*", "*", method="exact")
 

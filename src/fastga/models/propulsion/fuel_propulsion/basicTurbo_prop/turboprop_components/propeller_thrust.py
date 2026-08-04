@@ -19,6 +19,8 @@ class PropellerThrustRequired(om.ExplicitComponent):
 
         self.add_output("propeller_thrust", units="N", shape=n, val=2e3)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         n = self.options["number_of_points"]
         self.declare_partials(
@@ -117,6 +119,8 @@ class ShaftPowerRequired(om.ExplicitComponent):
 
         self.add_output("required_shaft_power", units="W", shape=n, val=500e3)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         n = self.options["number_of_points"]
         self.declare_partials(
@@ -256,6 +260,8 @@ class PropellerMaxThrust(om.ExplicitComponent):
 
         self.add_output("propeller_max_thrust", units="N", shape=n, val=5000.0)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         n = self.options["number_of_points"]
         self.declare_partials(

@@ -38,6 +38,8 @@ class ComputeSingleSlottedLiftEffectiveness(om.ExplicitComponent):
 
         self.add_output("lift_effectiveness", val=0.1, units="unitless")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(of="lift_effectiveness", wrt="*", method="exact")
 

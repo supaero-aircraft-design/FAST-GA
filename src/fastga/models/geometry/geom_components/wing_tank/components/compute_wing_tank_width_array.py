@@ -62,6 +62,8 @@ class ComputeWingTankWidthArray(om.ExplicitComponent):
             val=np.full(nb_point_wing, 0.2),
         )
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         nb_point_wing = self.options["number_points_wing_mfw"]
 

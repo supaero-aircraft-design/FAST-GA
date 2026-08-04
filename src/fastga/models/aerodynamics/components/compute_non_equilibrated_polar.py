@@ -65,6 +65,8 @@ class ComputeNonEquilibratedPolar(om.ExplicitComponent):
                 "data:aerodynamics:aircraft:cruise:CL", shape=POLAR_POINT_COUNT, units="unitless"
             )
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 

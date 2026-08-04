@@ -47,6 +47,8 @@ class ComputeNacelleYPosition(om.ExplicitComponent):
             copy_shape="data:geometry:propulsion:engine:y_ratio",
         )
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(of="*", wrt="data:geometry:propulsion:engine:layout", method="fd")
 

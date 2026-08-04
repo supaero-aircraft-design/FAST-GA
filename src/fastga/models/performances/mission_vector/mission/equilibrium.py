@@ -83,6 +83,8 @@ class Equilibrium(om.ImplicitComponent):
         self.add_output("thrust", val=np.full(number_of_points, 1000.0), units="N")
         self.add_output("delta_m", val=np.full(number_of_points, -5.0), units="deg")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(
             of="alpha",

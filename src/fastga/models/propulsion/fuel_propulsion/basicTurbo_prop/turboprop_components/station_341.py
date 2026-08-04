@@ -14,6 +14,8 @@ class Station341Pressure(om.ExplicitComponent):
 
         self.add_output("total_pressure_41", units="Pa", shape=n, val=1e5)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         n = self.options["number_of_points"]
         self.declare_partials(

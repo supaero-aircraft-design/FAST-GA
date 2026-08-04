@@ -124,6 +124,8 @@ class ThermodynamicEquilibriumDesignPoint(om.ImplicitComponent):
             shape=n,
         )
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         n = self.options["number_of_points"]
 

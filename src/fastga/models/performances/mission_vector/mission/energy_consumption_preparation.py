@@ -74,6 +74,8 @@ class PrepareForEnergyConsumption(om.ExplicitComponent):
         self.add_output("true_airspeed_econ", shape=number_of_points + 2, units="m/s")
         self.add_output("engine_setting_econ", shape=number_of_points + 2, units="unitless")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(
             of="thrust_econ",

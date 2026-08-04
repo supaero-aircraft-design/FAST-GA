@@ -143,6 +143,8 @@ class DistanceToMFWForUpdate(om.ImplicitComponent):
 
         self.add_output("wing_area", val=15.0, units="m**2")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(
             of="wing_area", wrt="data:weight:aircraft:MFW", method="exact", val=0.1
@@ -212,6 +214,8 @@ class DistanceToMFWForConstraint(om.ExplicitComponent):
 
         self.add_output("data:constraints:wing:additional_fuel_capacity", val=0.0, units="kg")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(
             of="data:constraints:wing:additional_fuel_capacity",

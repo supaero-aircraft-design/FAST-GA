@@ -41,7 +41,9 @@ class Cd0VerticalTail(om.ExplicitComponent):
         self.add_input("data:geometry:vertical_tail:wet_area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:vertical_tail:thickness_ratio", val=np.nan, units="unitless")
-        self.add_input("data:geometry:vertical_tail:max_thickness:x_ratio", val=0.3, units="unitless")
+        self.add_input(
+            "data:geometry:vertical_tail:max_thickness:x_ratio", val=0.3, units="unitless"
+        )
 
         if self.options["low_speed_aero"]:
             self.add_input("data:aerodynamics:low_speed:mach", val=np.nan, units="unitless")
@@ -55,6 +57,8 @@ class Cd0VerticalTail(om.ExplicitComponent):
 
             self.add_output("data:aerodynamics:vertical_tail:cruise:CD0", units="unitless")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials("*", "*", method="exact")
 

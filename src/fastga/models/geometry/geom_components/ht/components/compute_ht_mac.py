@@ -38,6 +38,8 @@ class ComputeHTMAC(om.ExplicitComponent):
         self.add_output("data:geometry:horizontal_tail:MAC:at25percent:x:local", units="m")
         self.add_output("data:geometry:horizontal_tail:MAC:y", units="m")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(
             "data:geometry:horizontal_tail:MAC:length",

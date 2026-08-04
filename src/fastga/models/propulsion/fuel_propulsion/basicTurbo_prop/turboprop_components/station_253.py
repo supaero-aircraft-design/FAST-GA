@@ -17,6 +17,8 @@ class Station253Pressure(om.ExplicitComponent):
 
         self.add_output("total_pressure_3", units="Pa", shape=n, val=1e6)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         n = self.options["number_of_points"]
 
@@ -77,6 +79,8 @@ class Station253Temperature(om.ExplicitComponent):
 
         self.add_output("total_temperature_3", units="K", shape=n, val=0.5e3)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         n = self.options["number_of_points"]
 
@@ -168,6 +172,8 @@ class Station253PressureDesignPoint(om.ExplicitComponent):
 
         self.add_output("total_pressure_3", units="Pa", shape=n, val=1e6)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         n = self.options["number_of_points"]
         self.declare_partials(

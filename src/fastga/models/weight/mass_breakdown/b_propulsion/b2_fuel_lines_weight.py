@@ -49,6 +49,8 @@ class ComputeFuelLinesWeight(om.ExplicitComponent):
 
         self.add_output("data:weight:propulsion:fuel_lines:mass", units="lb")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(
             "data:weight:propulsion:fuel_lines:mass", "data:propulsion:fuel_type", method="fd"

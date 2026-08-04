@@ -18,6 +18,8 @@ class MassFlow(om.ExplicitComponent):
         self.add_output("compressor_bleed_ratio", shape=n, units="unitless")
         self.add_output("pressurization_bleed_ratio", shape=n, units="unitless")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         n = self.options["number_of_points"]
 

@@ -38,6 +38,8 @@ class ComputeWingTankSpans(om.ExplicitComponent):
         self.add_output("data:geometry:propulsion:tank:y_beginning", units="m", val=1.0)
         self.add_output("data:geometry:propulsion:tank:y_end", units="m", val=6.0)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(
             of="data:geometry:propulsion:tank:y_beginning",

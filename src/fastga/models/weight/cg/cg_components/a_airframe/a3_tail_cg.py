@@ -53,6 +53,8 @@ class ComputeHTcg(om.ExplicitComponent):
 
         self.add_output("data:weight:airframe:horizontal_tail:CG:x", units="m")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
@@ -92,6 +94,8 @@ class ComputeVTcg(om.ExplicitComponent):
 
         self.add_output("data:weight:airframe:vertical_tail:CG:x", units="m")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 

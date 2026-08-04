@@ -264,13 +264,21 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         if self.options["low_speed_aero"]:
             self.add_input("data:aerodynamics:wing:low_speed:CL", val=nans_array, units="unitless")
             self.add_input("data:aerodynamics:wing:low_speed:CDp", val=nans_array, units="unitless")
-            self.add_input("data:aerodynamics:horizontal_tail:low_speed:CL", val=nans_array, units="unitless")
-            self.add_input("data:aerodynamics:horizontal_tail:low_speed:CDp", val=nans_array, units="unitless")
+            self.add_input(
+                "data:aerodynamics:horizontal_tail:low_speed:CL", val=nans_array, units="unitless"
+            )
+            self.add_input(
+                "data:aerodynamics:horizontal_tail:low_speed:CDp", val=nans_array, units="unitless"
+            )
         else:
             self.add_input("data:aerodynamics:wing:cruise:CL", val=nans_array, units="unitless")
             self.add_input("data:aerodynamics:wing:cruise:CDp", val=nans_array, units="unitless")
-            self.add_input("data:aerodynamics:horizontal_tail:cruise:CL", val=nans_array, units="unitless")
-            self.add_input("data:aerodynamics:horizontal_tail:cruise:CDp", val=nans_array, units="unitless")
+            self.add_input(
+                "data:aerodynamics:horizontal_tail:cruise:CL", val=nans_array, units="unitless"
+            )
+            self.add_input(
+                "data:aerodynamics:horizontal_tail:cruise:CDp", val=nans_array, units="unitless"
+            )
 
     def compute_cl_alpha_aircraft(self, inputs, altitude, mach, aoa_angle):
         """

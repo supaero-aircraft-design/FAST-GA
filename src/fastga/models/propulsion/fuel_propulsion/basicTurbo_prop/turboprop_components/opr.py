@@ -17,6 +17,8 @@ class OverallPressureRatio(om.ExplicitComponent):
         self.add_output("opr_2", shape=n, units="unitless")
         self.add_output("opr", shape=n, upper=12.0, units="unitless")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         n = self.options["number_of_points"]
 
@@ -86,6 +88,8 @@ class OverallPressureRatioDesignPoint(om.ExplicitComponent):
         self.add_output("opr_1", shape=n, units="unitless")
         self.add_output("opr_2", shape=n, units="unitless")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         n = self.options["number_of_points"]
 

@@ -50,6 +50,8 @@ class DistanceToLimitPowerLimit(om.ImplicitComponent):
 
         self.add_output("required_thrust", units="kN", val=np.full(n, 5.0))
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         n = self.options["number_of_points"]
         self.declare_partials(
@@ -110,6 +112,8 @@ class DistanceToLimitOPRLimit(om.ImplicitComponent):
 
         self.add_output("required_thrust", units="kN", val=np.full(n, 5.0))
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         n = self.options["number_of_points"]
         self.declare_partials(
@@ -170,6 +174,8 @@ class DistanceToLimitITTLimit(om.ImplicitComponent):
 
         self.add_output("required_thrust", units="kN", val=np.full(n, 5.0))
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         n = self.options["number_of_points"]
         self.declare_partials(
@@ -230,6 +236,8 @@ class DistanceToLimitPropellerThrustLimit(om.ImplicitComponent):
 
         self.add_output("required_thrust", units="kN", val=np.full(n, 5.0))
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         n = self.options["number_of_points"]
 

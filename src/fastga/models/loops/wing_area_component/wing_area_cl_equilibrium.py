@@ -78,6 +78,8 @@ class UpdateWingAreaLiftEquilibrium(om.ExplicitComponent):
 
         self.add_output("wing_area", val=10.0, units="m**2")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(
             "wing_area",
@@ -152,6 +154,8 @@ class ConstraintWingAreaLiftEquilibrium(om.ExplicitComponent):
 
         self.add_output("data:constraints:wing:additional_CL_capacity", units="unitless")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 

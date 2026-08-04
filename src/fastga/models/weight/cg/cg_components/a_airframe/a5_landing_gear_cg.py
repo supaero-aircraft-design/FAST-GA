@@ -53,6 +53,8 @@ class ComputeLandingGearCG(om.ExplicitComponent):
         self.add_output("data:weight:airframe:landing_gear:front:CG:x", units="m")
         self.add_output("data:weight:airframe:landing_gear:main:CG:x", units="m")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(
             of="data:weight:airframe:landing_gear:front:CG:x",

@@ -39,6 +39,8 @@ class SizingEnergy(om.ExplicitComponent):
         self.add_output("data:mission:sizing:fuel", val=250, units="kg")
         self.add_output("data:mission:sizing:energy", val=200e3, units="W*h")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(of="data:mission:sizing:fuel", wrt="*:fuel", method="exact", val=1.0)
         self.declare_partials(

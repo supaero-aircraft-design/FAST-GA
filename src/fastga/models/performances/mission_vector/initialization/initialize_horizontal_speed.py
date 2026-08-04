@@ -38,6 +38,8 @@ class InitializeHorizontalSpeed(om.ExplicitComponent):
 
         self.add_output("horizontal_speed", val=np.full(number_of_points, 50.0), units="m/s")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="exact")
 

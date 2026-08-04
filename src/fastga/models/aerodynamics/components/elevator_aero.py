@@ -48,6 +48,8 @@ class ComputeDeltaElevator(FigureDigitization):
         self.add_output("data:aerodynamics:elevator:low_speed:CL_delta", units="rad**-1")
         self.add_output("data:aerodynamics:elevator:low_speed:CD_delta", units="rad**-2")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 

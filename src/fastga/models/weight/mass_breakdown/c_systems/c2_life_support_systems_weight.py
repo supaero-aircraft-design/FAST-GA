@@ -66,6 +66,8 @@ class ComputeLifeSupportSystemsWeight(om.ExplicitComponent):
         self.add_output("data:weight:systems:life_support:fixed_oxygen:mass", units="lb")
         self.add_output("data:weight:systems:life_support:security_kits:mass", units="lb")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(
             "data:weight:systems:life_support:air_conditioning:mass",
@@ -207,6 +209,8 @@ class ComputeLifeSupportSystemsWeightFLOPS(om.ExplicitComponent):
         self.add_output("data:weight:systems:life_support:fixed_oxygen:mass", units="lb")
         self.add_output("data:weight:systems:life_support:security_kits:mass", units="lb")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(
             "data:weight:systems:life_support:air_conditioning:mass",

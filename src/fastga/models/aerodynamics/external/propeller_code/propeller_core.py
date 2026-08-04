@@ -81,15 +81,26 @@ class PropellerCoreModule(om.ExplicitComponent):
             shape_by_conn=True,
             copy_shape="data:geometry:propeller:radius_ratio_vect",
         )
-        self.add_input("data:geometry:propeller:radius_ratio_vect", val=np.nan, shape_by_conn=True, units="unitless")
+        self.add_input(
+            "data:geometry:propeller:radius_ratio_vect",
+            val=np.nan,
+            shape_by_conn=True,
+            units="unitless",
+        )
 
         for profile in self.options["sections_profile_name_list"]:
             self.add_input(
                 profile + "_polar:alpha", val=np.nan, units="deg", shape=POLAR_POINT_COUNT
             )
-            self.add_input(profile + "_polar:CL", val=np.nan, shape=POLAR_POINT_COUNT, units="unitless")
-            self.add_input(profile + "_polar:CD", val=np.nan, shape=POLAR_POINT_COUNT, units="unitless")
+            self.add_input(
+                profile + "_polar:CL", val=np.nan, shape=POLAR_POINT_COUNT, units="unitless"
+            )
+            self.add_input(
+                profile + "_polar:CD", val=np.nan, shape=POLAR_POINT_COUNT, units="unitless"
+            )
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="fd")
 

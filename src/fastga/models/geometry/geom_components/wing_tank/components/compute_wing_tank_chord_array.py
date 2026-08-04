@@ -55,6 +55,8 @@ class ComputeWingTankChordArray(om.ExplicitComponent):
             val=np.linspace(1.4, 1.0, nb_point_wing),
         )
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         nb_point_wing = self.options["number_points_wing_mfw"]
 

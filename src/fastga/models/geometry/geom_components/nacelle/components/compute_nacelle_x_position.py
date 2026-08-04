@@ -54,6 +54,8 @@ class ComputeNacelleXPosition(om.ExplicitComponent):
             copy_shape="data:geometry:propulsion:nacelle:y",
         )
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(
             of="*",

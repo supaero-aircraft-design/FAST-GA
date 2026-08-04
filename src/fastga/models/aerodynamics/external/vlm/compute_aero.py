@@ -184,6 +184,8 @@ class ComputeLocalReynolds(om.ExplicitComponent):
             "data:aerodynamics:horizontal_tail:" + ls_tag + ":reynolds", units="unitless"
         )
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
         self.declare_partials(
@@ -322,6 +324,8 @@ class _ComputeAeroVLM(VLMSimpleGeometry):
                     units="rad**-1",
                 )
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 

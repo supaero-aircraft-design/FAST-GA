@@ -50,6 +50,8 @@ class ComputeVTPWeight(om.ExplicitComponent):
 
         self.add_output("data:weight:airframe:vertical_tail:mass", units="lb")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(
             of="data:weight:airframe:vertical_tail:mass",
@@ -338,6 +340,8 @@ class ComputeVTPWeightGD(om.ExplicitComponent):
 
         self.add_output("data:weight:airframe:vertical_tail:mass", units="lb")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(
             of="data:weight:airframe:vertical_tail:mass",

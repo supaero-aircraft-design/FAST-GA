@@ -37,6 +37,8 @@ class ComputePowerSystemsCG(om.ExplicitComponent):
         self.add_output("data:weight:systems:power:electric_systems:CG:x", units="m")
         self.add_output("data:weight:systems:power:hydraulic_systems:CG:x", units="m")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(
             of="*",

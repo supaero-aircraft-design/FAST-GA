@@ -84,6 +84,8 @@ class PerformancePerPhase(om.ExplicitComponent):
         self.add_output("non_consumable_energy_t", shape=number_of_points, units="W*h")
         self.add_output("thrust_rate_t", shape=number_of_points, units="unitless")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(
             of="data:mission:sizing:main_route:climb:fuel",

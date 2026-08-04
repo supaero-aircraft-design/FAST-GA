@@ -327,6 +327,8 @@ class _UpdateArea(HTPConstraints):
 
         self.add_output("data:geometry:horizontal_tail:area", val=4.0, units="m**2")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(
             "*", "*", method="fd"
@@ -474,6 +476,8 @@ class _ComputeAeroCoeff(om.ExplicitComponent):
         self.add_output("cl_htp", units="unitless")
         self.add_output("cl_alpha_htp_isolated", units="unitless")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 

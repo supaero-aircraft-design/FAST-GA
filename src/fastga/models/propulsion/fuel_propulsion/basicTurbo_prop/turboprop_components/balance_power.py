@@ -14,6 +14,8 @@ class BalancePower(om.ImplicitComponent):
 
         self.add_output("fuel_mass_flow", units="kg/h", shape=n, val=150.0)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         n = self.options["number_of_points"]
         self.declare_partials(

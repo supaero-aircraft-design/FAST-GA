@@ -38,6 +38,8 @@ class A81(om.ExplicitComponent):
 
         self.add_output("data:propulsion:turboprop:section:81", val=0.00457, units="m**2")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         n = self.options["number_of_points"]
 
@@ -132,6 +134,8 @@ class A82(om.ExplicitComponent):
 
         self.add_output("data:propulsion:turboprop:section:82", val=0.00457, units="m**2")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         n = self.options["number_of_points"]
         self.declare_partials(
@@ -184,6 +188,8 @@ class A8(om.ExplicitComponent):
 
         self.add_output("data:propulsion:turboprop:section:8", val=0.00457, units="m**2")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="exact")
 

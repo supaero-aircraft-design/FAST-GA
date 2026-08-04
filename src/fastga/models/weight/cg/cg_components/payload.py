@@ -37,6 +37,8 @@ class ComputePayloadCG(om.ExplicitComponent):
         self.add_output("data:weight:payload:rear_fret:CG:x", units="m")
         self.add_output("data:weight:payload:front_fret:CG:x", units="m")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 

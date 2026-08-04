@@ -75,6 +75,8 @@ class Cd0Total(om.ExplicitComponent):
             self.add_input("data:aerodynamics:other:cruise:CD0", val=np.nan, units="unitless")
             self.add_output("data:aerodynamics:aircraft:cruise:CD0", units="unitless")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials("*", "*", method="exact")
 

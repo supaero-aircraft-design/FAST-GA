@@ -67,6 +67,8 @@ class ComputeCLAlphaDotAircraft(om.ExplicitComponent):
 
             self.add_output("data:aerodynamics:aircraft:cruise:CL_alpha_dot", units="rad**-1")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="exact")
 

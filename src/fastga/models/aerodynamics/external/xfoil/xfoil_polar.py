@@ -128,6 +128,8 @@ class XfoilPolar(ExternalCodeComp):
             self.add_output("CDp", units="unitless")
             self.add_output("CM", units="unitless")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 

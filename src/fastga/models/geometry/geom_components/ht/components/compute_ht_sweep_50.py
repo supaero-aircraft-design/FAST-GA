@@ -32,6 +32,8 @@ class ComputeHTSweep50(om.ExplicitComponent):
 
         self.add_output("data:geometry:horizontal_tail:sweep_50", units="rad")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="exact")
 

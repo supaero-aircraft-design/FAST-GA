@@ -61,6 +61,8 @@ class ComputeWingZ(om.ExplicitComponent):
             "centerline, taken positive when wing is below the fuselage centerline",
         )
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(
             of="data:geometry:wing:root:z",

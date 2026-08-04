@@ -43,6 +43,8 @@ class PressurizationAirFlow(om.ExplicitComponent):
 
         self.add_output("pressurization_mass_flow", units="kg/s", val=0.045, shape=n)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         n = self.options["number_of_points"]
         self.declare_partials(

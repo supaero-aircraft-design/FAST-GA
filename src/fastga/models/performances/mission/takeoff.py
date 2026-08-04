@@ -151,6 +151,8 @@ class V2(om.ExplicitComponent):
         self.add_output("v2:angle", units="rad")
         self.add_output("v2:climb_gradient", units="unitless")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
@@ -251,6 +253,8 @@ class VLiftOffFromV2(om.ExplicitComponent):
         self.add_output("v_lift_off:speed", units="m/s")
         self.add_output("v_lift_off:angle", units="rad")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
@@ -425,6 +429,8 @@ class VRFromV2(om.ExplicitComponent):
 
         self.add_output("vr:speed", units="m/s")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
@@ -531,6 +537,8 @@ class SimulateTakeoff(om.ExplicitComponent):
         self.add_output("data:mission:sizing:takeoff:fuel", units="kg")
         self.add_output("data:mission:sizing:initial_climb:fuel", units="kg")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 

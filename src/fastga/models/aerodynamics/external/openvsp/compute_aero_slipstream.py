@@ -352,6 +352,8 @@ class FlightConditionsForDPComputation(om.ExplicitComponent):
         self.add_output("mach", units="unitless")
         self.add_output("altitude", units="m")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         if self.options["low_speed_aero"]:
             self.declare_partials("mach", "data:aerodynamics:low_speed:mach", val=1.0)

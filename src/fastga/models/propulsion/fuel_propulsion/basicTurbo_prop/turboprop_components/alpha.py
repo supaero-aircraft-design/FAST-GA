@@ -45,6 +45,8 @@ class AlphaRatio(om.ExplicitComponent):
             "data:propulsion:turboprop:design_point:alpha_p", val=np.full(n, 0.3), units="unitless"
         )
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         n = self.options["number_of_points"]
 

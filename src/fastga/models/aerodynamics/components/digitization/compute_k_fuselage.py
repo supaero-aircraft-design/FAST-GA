@@ -40,6 +40,8 @@ class ComputeFuselagePitchMomentFactor(om.ExplicitComponent):
 
         self.add_output("fuselage_pitch_moment_factor", val=0.02, units="deg**-1")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(of="fuselage_pitch_moment_factor", wrt="x0_ratio", method="exact")
 

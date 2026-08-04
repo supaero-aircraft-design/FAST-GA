@@ -118,6 +118,8 @@ class UpdateFW(om.ExplicitComponent):
 
         self.add_output("data:mission:sizing:fuel", val=0.0, units="kg")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials("*", "*", method="exact", val=1.0)
 

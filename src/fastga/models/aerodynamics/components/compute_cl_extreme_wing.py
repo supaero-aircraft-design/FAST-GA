@@ -121,6 +121,8 @@ class ComputeLocalReynolds(om.ExplicitComponent):
         self.add_output("data:aerodynamics:wing:tip:low_speed:reynolds", units="unitless")
         self.add_output(name="mach", units="unitless")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(
             "data:aerodynamics:wing:root:low_speed:reynolds",
@@ -208,6 +210,8 @@ class ComputeWing3DExtremeCL(om.ExplicitComponent):
         self.add_output("data:aerodynamics:wing:low_speed:CL_max_clean", units="unitless")
         self.add_output("data:aerodynamics:wing:low_speed:CL_min_clean", units="unitless")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 

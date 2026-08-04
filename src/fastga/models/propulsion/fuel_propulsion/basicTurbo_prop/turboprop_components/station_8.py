@@ -27,6 +27,8 @@ class Station8Mach(om.ExplicitComponent):
 
         self.add_output("mach_8", shape=n, val=0.5, units="unitless")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         n = self.options["number_of_points"]
         self.declare_partials(
@@ -120,6 +122,8 @@ class Station8Temperature(om.ExplicitComponent):
 
         self.add_output("static_temperature_8", units="K", shape=n, val=3e2)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         n = self.options["number_of_points"]
         self.declare_partials(
@@ -174,6 +178,8 @@ class Station8Velocity(om.ExplicitComponent):
 
         self.add_output("velocity_8", units="m/s", shape=n, val=1e2)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         n = self.options["number_of_points"]
         self.declare_partials(

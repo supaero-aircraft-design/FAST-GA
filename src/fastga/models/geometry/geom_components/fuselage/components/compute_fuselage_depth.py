@@ -46,6 +46,8 @@ class ComputeFuselageDepth(om.ExplicitComponent):
             desc="Average fuselage depth at the vertical tail location",
         )
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials("*", "*", method="exact")
 

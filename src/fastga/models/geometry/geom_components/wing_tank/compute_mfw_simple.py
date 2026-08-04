@@ -44,6 +44,8 @@ class ComputeMFWSimple(om.ExplicitComponent):
 
         self.add_output("data:weight:aircraft:MFW", units="kg")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(
             "*",

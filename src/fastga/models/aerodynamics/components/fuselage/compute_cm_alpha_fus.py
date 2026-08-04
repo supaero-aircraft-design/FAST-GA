@@ -71,6 +71,8 @@ class ComputeQuarterRootChordPositionRatio(om.ExplicitComponent):
 
         self.add_output("x0_ratio", val=0.2, units="unitless")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials("x0_ratio", "*", method="exact")
 
@@ -120,6 +122,8 @@ class ComputeCmAlphaFuselageNacelle(om.ExplicitComponent):
 
         self.add_output("data:aerodynamics:fuselage:cm_alpha", units="rad**-1")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials("data:aerodynamics:fuselage:cm_alpha", "*", method="exact")
 
