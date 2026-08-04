@@ -72,12 +72,13 @@ class UpdateWingAreaLiftEquilibrium(om.ExplicitComponent):
                         shape=var_shape,
                     )
 
-        self.add_input("data:aerodynamics:aircraft:landing:CL_max", val=np.nan)
+        self.add_input("data:aerodynamics:aircraft:landing:CL_max", val=np.nan, units="unitless")
         self.add_input("data:mission:sizing:landing:elevator_angle", val=np.nan, units="deg")
         self.add_input("data:mission:sizing:takeoff:elevator_angle", val=np.nan, units="deg")
 
         self.add_output("wing_area", val=10.0, units="m**2")
 
+    def setup_partials(self):
         self.declare_partials(
             "wing_area",
             "*",
@@ -143,14 +144,15 @@ class ConstraintWingAreaLiftEquilibrium(om.ExplicitComponent):
                         shape=var_shape,
                     )
 
-        self.add_input("data:aerodynamics:aircraft:landing:CL_max", val=np.nan)
+        self.add_input("data:aerodynamics:aircraft:landing:CL_max", val=np.nan, units="unitless")
         self.add_input("data:mission:sizing:landing:elevator_angle", val=np.nan, units="deg")
         self.add_input("data:mission:sizing:takeoff:elevator_angle", val=np.nan, units="deg")
 
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
 
-        self.add_output("data:constraints:wing:additional_CL_capacity")
+        self.add_output("data:constraints:wing:additional_CL_capacity", units="unitless")
 
+    def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):

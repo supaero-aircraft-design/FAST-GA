@@ -24,7 +24,9 @@ class ReserveEnergy(om.ExplicitComponent):
         self.add_input("data:mission:sizing:main_route:cruise:duration", np.nan, units="s")
         self.add_input("data:mission:sizing:main_route:reserve:duration", np.nan, units="s")
 
-        self.add_input("settings:mission:sizing:main_route:reserve:k_factor", val=1.0)
+        self.add_input(
+            "settings:mission:sizing:main_route:reserve:k_factor", val=1.0, units="unitless"
+        )
 
         self.add_output("data:mission:sizing:main_route:reserve:fuel", units="kg")
         self.add_output("data:mission:sizing:main_route:reserve:energy", units="W*h")

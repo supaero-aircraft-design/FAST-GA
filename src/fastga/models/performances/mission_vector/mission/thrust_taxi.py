@@ -38,11 +38,11 @@ class ThrustTaxi(om.ExplicitComponent):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
 
-        self.add_input("data:mission:sizing:taxi_out:thrust_rate", np.nan)
+        self.add_input("data:mission:sizing:taxi_out:thrust_rate", np.nan, units="unitless")
         self.add_input("data:mission:sizing:taxi_out:speed", np.nan, units="m/s")
         self.add_output("data:mission:sizing:taxi_out:thrust", 1500, units="N")
 
-        self.add_input("data:mission:sizing:taxi_in:thrust_rate", np.nan)
+        self.add_input("data:mission:sizing:taxi_in:thrust_rate", np.nan, units="unitless")
         self.add_input("data:mission:sizing:taxi_in:speed", np.nan, units="m/s")
         self.add_output("data:mission:sizing:taxi_in:thrust", 1500, units="N")
 

@@ -59,7 +59,10 @@ class PrepareForEnergyConsumption(om.ExplicitComponent):
             units="m/s",
         )
         self.add_input(
-            "engine_setting", shape=number_of_points, val=np.full(number_of_points, np.nan)
+            "engine_setting",
+            shape=number_of_points,
+            val=np.full(number_of_points, np.nan),
+            units="unitless",
         )
 
         # Econ stands for Energy Consumption, this way we separate the vectors used for the
@@ -69,7 +72,7 @@ class PrepareForEnergyConsumption(om.ExplicitComponent):
         self.add_output("altitude_econ", shape=number_of_points + 2, units="m")
         self.add_output("time_step_econ", shape=number_of_points + 2, units="s")
         self.add_output("true_airspeed_econ", shape=number_of_points + 2, units="m/s")
-        self.add_output("engine_setting_econ", shape=number_of_points + 2)
+        self.add_output("engine_setting_econ", shape=number_of_points + 2, units="unitless")
 
     def setup_partials(self):
         self.declare_partials(

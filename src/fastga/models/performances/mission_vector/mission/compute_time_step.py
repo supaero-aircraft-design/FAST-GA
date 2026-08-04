@@ -33,7 +33,15 @@ class ComputeTimeStep(om.ExplicitComponent):
         self.add_output("time_step", shape=number_of_points, units="s")
 
     def setup_partials(self):
-        self.declare_partials(of="time_step", wrt="time", method="exact")
+        number_of_points = self.options["number_of_points"]
+
+        middle_diagonal = -np.eye(number_of_points)
+        upper_diagonal = np.diagflat(np.full(number_of_points - 1, 1), 1)
+        d_ts_dt = middle_diagonal + upper_diagonal
+        d_ts_dt[-1, -1] = 1.0
+        d_ts_dt[-1, -2] = -1.0
+
+        self.declare_partials(of="time_step", wrt="time", method="exact", val=d_ts_dt)
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         time = inputs["time"]
@@ -42,13 +50,3 @@ class ComputeTimeStep(om.ExplicitComponent):
         time_step = np.append(time_step, time_step[-1])
 
         outputs["time_step"] = time_step
-
-    def compute_partials(self, inputs, partials, discrete_inputs=None):
-        number_of_points = self.options["number_of_points"]
-
-        middle_diagonal = -np.eye(number_of_points)
-        upper_diagonal = np.diagflat(np.full(number_of_points - 1, 1), 1)
-        d_ts_dt = middle_diagonal + upper_diagonal
-        d_ts_dt[-1, -1] = 1.0
-        d_ts_dt[-1, -2] = -1.0
-        partials["time_step", "time"] = d_ts_dt

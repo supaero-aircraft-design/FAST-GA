@@ -105,27 +105,36 @@ class ToCSV(om.ExplicitComponent):
         self.add_input(
             "delta_m", val=np.full(number_of_points, np.nan), shape=number_of_points, units="deg"
         )
-        self.add_input("data:aerodynamics:aircraft:cruise:CD0", np.nan)
+        self.add_input("data:aerodynamics:aircraft:cruise:CD0", np.nan, units="unitless")
         self.add_input("data:aerodynamics:wing:cruise:CL_alpha", val=np.nan, units="rad**-1")
-        self.add_input("data:aerodynamics:wing:cruise:CL0_clean", val=np.nan)
-        self.add_input("data:aerodynamics:wing:cruise:induced_drag_coefficient", np.nan)
-        self.add_input("data:aerodynamics:horizontal_tail:cruise:CL0", val=np.nan)
+        self.add_input("data:aerodynamics:wing:cruise:CL0_clean", val=np.nan, units="unitless")
+        self.add_input(
+            "data:aerodynamics:wing:cruise:induced_drag_coefficient", np.nan, units="unitless"
+        )
+        self.add_input("data:aerodynamics:horizontal_tail:cruise:CL0", val=np.nan, units="unitless")
         self.add_input(
             "data:aerodynamics:horizontal_tail:cruise:CL_alpha", val=np.nan, units="rad**-1"
         )
-        self.add_input("data:aerodynamics:horizontal_tail:cruise:induced_drag_coefficient", np.nan)
+        self.add_input(
+            "data:aerodynamics:horizontal_tail:cruise:induced_drag_coefficient",
+            np.nan,
+            units="unitless",
+        )
         self.add_input("data:aerodynamics:elevator:low_speed:CL_delta", val=np.nan, units="rad**-1")
         self.add_input("data:aerodynamics:elevator:low_speed:CD_delta", val=np.nan, units="rad**-2")
-        self.add_input("delta_Cl", val=np.full(number_of_points, np.nan))
-        self.add_input("delta_Cd", val=np.full(number_of_points, np.nan))
-        self.add_input("delta_Cm", val=np.full(number_of_points, np.nan))
+        self.add_input("delta_Cl", val=np.full(number_of_points, np.nan), units="unitless")
+        self.add_input("delta_Cd", val=np.full(number_of_points, np.nan), units="unitless")
+        self.add_input("delta_Cm", val=np.full(number_of_points, np.nan), units="unitless")
         self.add_input(
             "thrust", val=np.full(number_of_points, np.nan), shape=number_of_points, units="N"
         )
         self.add_input(
-            "thrust_rate_t", val=np.full(number_of_points, np.nan), shape=number_of_points
+            "thrust_rate_t",
+            val=np.full(number_of_points, np.nan),
+            shape=number_of_points,
+            units="unitless",
         )
-        self.add_input("engine_setting", val=np.full(number_of_points, np.nan))
+        self.add_input("engine_setting", val=np.full(number_of_points, np.nan), units="unitless")
         self.add_input(
             "fuel_consumed_t",
             shape=number_of_points,

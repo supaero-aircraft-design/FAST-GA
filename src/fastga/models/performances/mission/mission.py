@@ -118,7 +118,8 @@ class UpdateFW(om.ExplicitComponent):
 
         self.add_output("data:mission:sizing:fuel", val=0.0, units="kg")
 
-        self.declare_partials("*", "*", method="fd")
+    def setup_partials(self):
+        self.declare_partials("*", "*", method="exact", val=1.0)
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         m_taxi_out = inputs["data:mission:sizing:taxi_out:fuel"]

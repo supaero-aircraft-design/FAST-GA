@@ -37,10 +37,14 @@ class InitializeAirspeed(om.ExplicitComponent):
 
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
 
-        self.add_input("data:aerodynamics:wing:cruise:induced_drag_coefficient", np.nan)
-        self.add_input("data:aerodynamics:aircraft:cruise:CD0", np.nan)
-        self.add_input("data:aerodynamics:wing:low_speed:CL_max_clean", val=np.nan)
-        self.add_input("data:aerodynamics:aircraft:cruise:optimal_CL", np.nan)
+        self.add_input(
+            "data:aerodynamics:wing:cruise:induced_drag_coefficient", np.nan, units="unitless"
+        )
+        self.add_input("data:aerodynamics:aircraft:cruise:CD0", np.nan, units="unitless")
+        self.add_input(
+            "data:aerodynamics:wing:low_speed:CL_max_clean", val=np.nan, units="unitless"
+        )
+        self.add_input("data:aerodynamics:aircraft:cruise:optimal_CL", np.nan, units="unitless")
 
         self.add_input(
             "mass", val=np.full(number_of_points, np.nan), shape=number_of_points, units="kg"

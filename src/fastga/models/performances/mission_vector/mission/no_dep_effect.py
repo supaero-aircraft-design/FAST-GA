@@ -48,7 +48,7 @@ class NoDEPEffect(om.ExplicitComponent):
         self.add_input("data:geometry:propeller:diameter", val=np.nan, units="m")
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
-        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan, units="unitless")
         self.add_input(
             "data:aerodynamics:wing:low_speed:Y_vector",
             val=np.nan,
@@ -67,8 +67,14 @@ class NoDEPEffect(om.ExplicitComponent):
             val=np.nan,
             shape_by_conn=True,
             copy_shape="data:aerodynamics:wing:low_speed:Y_vector",
+            units="unitless",
         )
-        self.add_input("data:geometry:propulsion:engine:y_ratio", shape_by_conn=True, val=np.nan)
+        self.add_input(
+            "data:geometry:propulsion:engine:y_ratio",
+            shape_by_conn=True,
+            val=np.nan,
+            units="unitless",
+        )
         self.add_input(
             "data:geometry:propulsion:nacelle:from_LE",
             shape_by_conn=True,
@@ -76,13 +82,13 @@ class NoDEPEffect(om.ExplicitComponent):
             val=np.nan,
             units="m",
         )
-        self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
-        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:count", val=np.nan, units="unitless")
+        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan, units="unitless")
 
-        self.add_input("data:aerodynamics:wing:cruise:CL0_clean", val=np.nan)
+        self.add_input("data:aerodynamics:wing:cruise:CL0_clean", val=np.nan, units="unitless")
         self.add_input("data:aerodynamics:wing:cruise:CL_alpha", val=np.nan, units="rad**-1")
-        self.add_input("data:aerodynamics:wing:cruise:CM0_clean", val=np.nan)
-        self.add_input("data:aerodynamics:wing:cruise:CD0", val=np.nan)
+        self.add_input("data:aerodynamics:wing:cruise:CM0_clean", val=np.nan, units="unitless")
+        self.add_input("data:aerodynamics:wing:cruise:CD0", val=np.nan, units="unitless")
 
         self.add_input("altitude", val=np.full(number_of_points, np.nan), units="m")
         self.add_input("true_airspeed", val=np.full(number_of_points, np.nan), units="m/s")
@@ -90,9 +96,9 @@ class NoDEPEffect(om.ExplicitComponent):
         self.add_input("alpha", val=np.full(number_of_points, np.nan), units="deg")
         self.add_input("thrust", val=np.full(number_of_points, np.nan), units="N")
 
-        self.add_output("delta_Cl", val=np.full(number_of_points, 0.0))
-        self.add_output("delta_Cd", val=np.full(number_of_points, 0.0))
-        self.add_output("delta_Cm", val=np.full(number_of_points, 0.0))
+        self.add_output("delta_Cl", val=np.full(number_of_points, 0.0), units="unitless")
+        self.add_output("delta_Cd", val=np.full(number_of_points, 0.0), units="unitless")
+        self.add_output("delta_Cm", val=np.full(number_of_points, 0.0), units="unitless")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         outputs["delta_Cl"] = 0.0

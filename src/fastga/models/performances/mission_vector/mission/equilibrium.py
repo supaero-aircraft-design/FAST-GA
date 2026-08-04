@@ -47,36 +47,43 @@ class Equilibrium(om.ImplicitComponent):
             "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="m"
         )
 
-        self.add_input("data:aerodynamics:aircraft:cruise:CD0", np.nan)
+        self.add_input("data:aerodynamics:aircraft:cruise:CD0", np.nan, units="unitless")
         self.add_input("data:aerodynamics:wing:cruise:CL_alpha", val=np.nan, units="rad**-1")
-        self.add_input("data:aerodynamics:wing:cruise:CL0_clean", val=np.nan)
-        self.add_input("data:aerodynamics:wing:cruise:induced_drag_coefficient", np.nan)
-        self.add_input("data:aerodynamics:wing:cruise:CM0_clean", val=np.nan)
+        self.add_input("data:aerodynamics:wing:cruise:CL0_clean", val=np.nan, units="unitless")
+        self.add_input(
+            "data:aerodynamics:wing:cruise:induced_drag_coefficient", np.nan, units="unitless"
+        )
+        self.add_input("data:aerodynamics:wing:cruise:CM0_clean", val=np.nan, units="unitless")
         self.add_input("data:aerodynamics:fuselage:cm_alpha", val=np.nan, units="rad**-1")
-        self.add_input("data:aerodynamics:horizontal_tail:cruise:CL0", val=np.nan)
+        self.add_input("data:aerodynamics:horizontal_tail:cruise:CL0", val=np.nan, units="unitless")
         self.add_input(
             "data:aerodynamics:horizontal_tail:cruise:CL_alpha", val=np.nan, units="rad**-1"
         )
-        self.add_input("data:aerodynamics:horizontal_tail:cruise:induced_drag_coefficient", np.nan)
+        self.add_input(
+            "data:aerodynamics:horizontal_tail:cruise:induced_drag_coefficient",
+            np.nan,
+            units="unitless",
+        )
         self.add_input("data:aerodynamics:elevator:low_speed:CL_delta", val=np.nan, units="rad**-1")
         self.add_input("data:aerodynamics:elevator:low_speed:CD_delta", val=np.nan, units="rad**-2")
         if self.options["flaps_position"] == "takeoff":
-            self.add_input("data:aerodynamics:flaps:takeoff:CL", val=np.nan)
-            self.add_input("data:aerodynamics:flaps:takeoff:CD", val=np.nan)
-            self.add_input("data:aerodynamics:flaps:takeoff:CM", val=np.nan)
+            self.add_input("data:aerodynamics:flaps:takeoff:CL", val=np.nan, units="unitless")
+            self.add_input("data:aerodynamics:flaps:takeoff:CD", val=np.nan, units="unitless")
+            self.add_input("data:aerodynamics:flaps:takeoff:CM", val=np.nan, units="unitless")
         if self.options["flaps_position"] == "landing":
-            self.add_input("data:aerodynamics:flaps:landing:CL", val=np.nan)
-            self.add_input("data:aerodynamics:flaps:landing:CD", val=np.nan)
-            self.add_input("data:aerodynamics:flaps:landing:CM", val=np.nan)
+            self.add_input("data:aerodynamics:flaps:landing:CL", val=np.nan, units="unitless")
+            self.add_input("data:aerodynamics:flaps:landing:CD", val=np.nan, units="unitless")
+            self.add_input("data:aerodynamics:flaps:landing:CM", val=np.nan, units="unitless")
 
-        self.add_input("delta_Cl", val=np.full(number_of_points, 0.0))
-        self.add_input("delta_Cd", val=np.full(number_of_points, 0.0))
-        self.add_input("delta_Cm", val=np.full(number_of_points, 0.0))
+        self.add_input("delta_Cl", val=np.full(number_of_points, 0.0), units="unitless")
+        self.add_input("delta_Cd", val=np.full(number_of_points, 0.0), units="unitless")
+        self.add_input("delta_Cm", val=np.full(number_of_points, 0.0), units="unitless")
 
         self.add_output("alpha", val=np.full(number_of_points, 5.0), units="deg")
         self.add_output("thrust", val=np.full(number_of_points, 1000.0), units="N")
         self.add_output("delta_m", val=np.full(number_of_points, -5.0), units="deg")
 
+    def setup_partials(self):
         self.declare_partials(
             of="alpha",
             wrt=[

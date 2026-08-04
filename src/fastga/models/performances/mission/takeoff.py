@@ -135,20 +135,23 @@ class V2(om.ExplicitComponent):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
 
-        self.add_input("data:aerodynamics:wing:low_speed:CL_max_clean", np.nan)
-        self.add_input("data:aerodynamics:wing:low_speed:CL0_clean", np.nan)
-        self.add_input("data:aerodynamics:flaps:takeoff:CL", np.nan)
+        self.add_input("data:aerodynamics:wing:low_speed:CL_max_clean", np.nan, units="unitless")
+        self.add_input("data:aerodynamics:wing:low_speed:CL0_clean", np.nan, units="unitless")
+        self.add_input("data:aerodynamics:flaps:takeoff:CL", np.nan, units="unitless")
         self.add_input("data:aerodynamics:wing:low_speed:CL_alpha", np.nan, units="rad**-1")
-        self.add_input("data:aerodynamics:aircraft:low_speed:CD0", np.nan)
-        self.add_input("data:aerodynamics:flaps:takeoff:CD", np.nan)
-        self.add_input("data:aerodynamics:wing:low_speed:induced_drag_coefficient", np.nan)
+        self.add_input("data:aerodynamics:aircraft:low_speed:CD0", np.nan, units="unitless")
+        self.add_input("data:aerodynamics:flaps:takeoff:CD", np.nan, units="unitless")
+        self.add_input(
+            "data:aerodynamics:wing:low_speed:induced_drag_coefficient", np.nan, units="unitless"
+        )
         self.add_input("data:geometry:wing:area", np.nan, units="m**2")
         self.add_input("data:weight:aircraft:MTOW", np.nan, units="kg")
 
         self.add_output("v2:speed", units="m/s")
         self.add_output("v2:angle", units="rad")
-        self.add_output("v2:climb_gradient")
+        self.add_output("v2:climb_gradient", units="unitless")
 
+    def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
@@ -229,23 +232,26 @@ class VLiftOffFromV2(om.ExplicitComponent):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
 
-        self.add_input("data:aerodynamics:wing:low_speed:CL0_clean", np.nan)
-        self.add_input("data:aerodynamics:flaps:takeoff:CL", np.nan)
+        self.add_input("data:aerodynamics:wing:low_speed:CL0_clean", np.nan, units="unitless")
+        self.add_input("data:aerodynamics:flaps:takeoff:CL", np.nan, units="unitless")
         self.add_input("data:aerodynamics:wing:low_speed:CL_alpha", np.nan, units="rad**-1")
-        self.add_input("data:aerodynamics:aircraft:low_speed:CD0", np.nan)
-        self.add_input("data:aerodynamics:flaps:takeoff:CD", np.nan)
-        self.add_input("data:aerodynamics:wing:low_speed:induced_drag_coefficient", np.nan)
+        self.add_input("data:aerodynamics:aircraft:low_speed:CD0", np.nan, units="unitless")
+        self.add_input("data:aerodynamics:flaps:takeoff:CD", np.nan, units="unitless")
+        self.add_input(
+            "data:aerodynamics:wing:low_speed:induced_drag_coefficient", np.nan, units="unitless"
+        )
         self.add_input("data:geometry:wing:area", np.nan, units="m**2")
         self.add_input("data:geometry:wing:span", np.nan, units="m")
         self.add_input("data:geometry:landing_gear:height", np.nan, units="m")
         self.add_input("data:weight:aircraft:MTOW", np.nan, units="kg")
-        self.add_input("data:mission:sizing:takeoff:thrust_rate", np.nan)
+        self.add_input("data:mission:sizing:takeoff:thrust_rate", np.nan, units="unitless")
         self.add_input("v2:speed", np.nan, units="m/s")
         self.add_input("v2:angle", np.nan, units="rad")
 
         self.add_output("v_lift_off:speed", units="m/s")
         self.add_output("v_lift_off:angle", units="rad")
 
+    def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):  # noqa: PLR0915
@@ -398,23 +404,28 @@ class VRFromV2(om.ExplicitComponent):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
 
-        self.add_input("data:aerodynamics:wing:low_speed:CL0_clean", np.nan)
-        self.add_input("data:aerodynamics:flaps:takeoff:CL", np.nan)
+        self.add_input("data:aerodynamics:wing:low_speed:CL0_clean", np.nan, units="unitless")
+        self.add_input("data:aerodynamics:flaps:takeoff:CL", np.nan, units="unitless")
         self.add_input("data:aerodynamics:wing:low_speed:CL_alpha", np.nan, units="rad**-1")
-        self.add_input("data:aerodynamics:aircraft:low_speed:CD0", np.nan)
-        self.add_input("data:aerodynamics:flaps:takeoff:CD", np.nan)
-        self.add_input("data:aerodynamics:wing:low_speed:induced_drag_coefficient", np.nan)
+        self.add_input("data:aerodynamics:aircraft:low_speed:CD0", np.nan, units="unitless")
+        self.add_input("data:aerodynamics:flaps:takeoff:CD", np.nan, units="unitless")
+        self.add_input(
+            "data:aerodynamics:wing:low_speed:induced_drag_coefficient", np.nan, units="unitless"
+        )
         self.add_input("data:geometry:wing:area", np.nan, units="m**2")
         self.add_input("data:geometry:wing:span", np.nan, units="m")
         self.add_input("data:geometry:landing_gear:height", np.nan, units="m")
         self.add_input("data:weight:aircraft:MTOW", np.nan, units="kg")
-        self.add_input("data:mission:sizing:takeoff:thrust_rate", np.nan)
-        self.add_input("data:mission:sizing:takeoff:friction_coefficient_no_brake", np.nan)
+        self.add_input("data:mission:sizing:takeoff:thrust_rate", np.nan, units="unitless")
+        self.add_input(
+            "data:mission:sizing:takeoff:friction_coefficient_no_brake", np.nan, units="unitless"
+        )
         self.add_input("v_lift_off:speed", np.nan, units="m/s")
         self.add_input("v_lift_off:angle", np.nan, units="rad")
 
         self.add_output("vr:speed", units="m/s")
 
+    def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
@@ -490,19 +501,23 @@ class SimulateTakeoff(om.ExplicitComponent):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
 
-        self.add_input("data:aerodynamics:wing:low_speed:CL_max_clean", np.nan)
-        self.add_input("data:aerodynamics:wing:low_speed:CL0_clean", np.nan)
-        self.add_input("data:aerodynamics:flaps:takeoff:CL", np.nan)
+        self.add_input("data:aerodynamics:wing:low_speed:CL_max_clean", np.nan, units="unitless")
+        self.add_input("data:aerodynamics:wing:low_speed:CL0_clean", np.nan, units="unitless")
+        self.add_input("data:aerodynamics:flaps:takeoff:CL", np.nan, units="unitless")
         self.add_input("data:aerodynamics:wing:low_speed:CL_alpha", np.nan, units="rad**-1")
-        self.add_input("data:aerodynamics:aircraft:low_speed:CD0", np.nan)
-        self.add_input("data:aerodynamics:flaps:takeoff:CD", np.nan)
-        self.add_input("data:aerodynamics:wing:low_speed:induced_drag_coefficient", np.nan)
+        self.add_input("data:aerodynamics:aircraft:low_speed:CD0", np.nan, units="unitless")
+        self.add_input("data:aerodynamics:flaps:takeoff:CD", np.nan, units="unitless")
+        self.add_input(
+            "data:aerodynamics:wing:low_speed:induced_drag_coefficient", np.nan, units="unitless"
+        )
         self.add_input("data:geometry:wing:area", np.nan, units="m**2")
         self.add_input("data:geometry:wing:span", np.nan, units="m")
         self.add_input("data:geometry:landing_gear:height", np.nan, units="m")
         self.add_input("data:weight:aircraft:MTOW", np.nan, units="kg")
-        self.add_input("data:mission:sizing:takeoff:thrust_rate", np.nan)
-        self.add_input("data:mission:sizing:takeoff:friction_coefficient_no_brake", np.nan)
+        self.add_input("data:mission:sizing:takeoff:thrust_rate", np.nan, units="unitless")
+        self.add_input(
+            "data:mission:sizing:takeoff:friction_coefficient_no_brake", np.nan, units="unitless"
+        )
         self.add_input("vr:speed", np.nan, units="m/s")
         self.add_input("v2:angle", np.nan, units="rad")
 
@@ -516,6 +531,7 @@ class SimulateTakeoff(om.ExplicitComponent):
         self.add_output("data:mission:sizing:takeoff:fuel", units="kg")
         self.add_output("data:mission:sizing:initial_climb:fuel", units="kg")
 
+    def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):  # noqa: PLR0915

@@ -74,7 +74,10 @@ class FuelConsumed(om.ExplicitComponent):
             units="m/s",
         )
         self.add_input(
-            "engine_setting_econ", shape=number_of_points + 2, val=np.full(number_of_points + 2, 1)
+            "engine_setting_econ",
+            shape=number_of_points + 2,
+            val=np.full(number_of_points + 2, 1),
+            units="unitless",
         )
 
         self.add_output(
