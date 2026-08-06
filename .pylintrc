@@ -359,7 +359,7 @@ notes=FIXME,
 [SIMILARITIES]
 
 # Ignore comments when computing similarities.
-ignore-comments=yes
+ignore-comments=true
 
 # Ignore docstrings when computing similarities.
 ignore-docstrings=yes
