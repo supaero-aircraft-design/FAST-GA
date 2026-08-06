@@ -1,10 +1,13 @@
 ![](FAST_OAD_logo.jpg) 
 
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![PyPI version](https://img.shields.io/pypi/v/FAST-OAD-CS23)](https://pypi.org/project/FAST-OAD-CS23/)
+[![Python versions](https://img.shields.io/pypi/pyversions/FAST-OAD-CS23)](https://pypi.org/project/FAST-OAD-CS23/)
+
 ![Tests](https://github.com/supaero-aircraft-design/FAST-GA/workflows/Tests/badge.svg)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/ee153dd5e82d41e7b2f3a964ef5756f5)](https://app.codacy.com/gh/supaero-aircraft-design/FAST-GA/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 [![codecov](https://codecov.io/gh/supaero-aircraft-design/FAST-GA/branch/main/graph/badge.svg?token=VZEDUOFE8V)](https://codecov.io/gh/supaero-aircraft-design/FAST-GA)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
 [![Documentation Status](https://readthedocs.org/projects/fast-ga/badge/?version=latest)](https://fast-ga.readthedocs.io/en/latest/?badge=latest)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/supaero-aircraft-design/FAST-GA/HEAD?urlpath=lab%2Ftree%2Fsrc%2Ffastga%2Fnotebooks)
@@ -37,7 +40,7 @@ As these Binder-hosted notebooks are not setup to work in a Windows environment,
 Install
 -------
 
-**Prerequisite**:FAST-(OAD)-GA needs at least **Python 3.8.0**.
+**Prerequisite**:FAST-(OAD)-GA needs at least **Python 3.10**.
 
 It is recommended (but not required) to install FAST-(OAD)-GA in a virtual
 environment ([conda](https://docs.conda.io/en/latest/),
