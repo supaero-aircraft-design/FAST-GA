@@ -255,7 +255,9 @@ class BasicTPEngineMapped(AbstractFuelPropulsion):
         # ... so check that all EngineSetting values are in dict
         unknown_keys = [key for key in EngineSetting if key not in self.mixture_values]
         if unknown_keys:
-            raise FastUnknownEngineSettingError("Unknown flight phases: %s", unknown_keys)
+            raise FastUnknownEngineSettingError(
+                "Unknown flight phases: %s", ", ".join(unknown_keys)
+            )
 
     @property
     def sfc_interpolator_sl(self):

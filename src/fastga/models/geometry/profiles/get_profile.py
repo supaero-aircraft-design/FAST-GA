@@ -77,8 +77,8 @@ def genfromtxt(file_name: pathlib.Path | None = None) -> pd.DataFrame:
         # Extract data
         x_data = []
         z_data = []
-        for i in range(len(data)):
-            line = data[i].split()
+        for lines in data:
+            line = lines.split()
             if len(line) == 2:  # noqa: PLR2004, 2D coordinates come in 2 ...
                 # noinspection PyBroadException
                 try:

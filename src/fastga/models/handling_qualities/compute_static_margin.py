@@ -21,6 +21,8 @@ from fastoad.module_management.constants import ModelDomain
 from fastga.models.aerodynamics.aero_center import ComputeAeroCenter
 
 
+# pylint: disable=too-few-public-methods
+# Overriding only necessary OpenMDAO methods
 @oad.RegisterOpenMDAOSystem(
     "fastga.handling_qualities.static_margin", domain=ModelDomain.HANDLING_QUALITIES
 )

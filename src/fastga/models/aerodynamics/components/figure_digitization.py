@@ -1013,7 +1013,7 @@ class FigureDigitization(om.ExplicitComponent):
             _LOGGER.warning("Aspect ratio is outside of the range in Roskam's book, value clipped")
         if sweep_50 != np.clip(sweep_50, min(sweep_50_data), max(sweep_50_data)):
             _LOGGER.warning(
-                "Sweep at 50% chord is outside of the range in Roskam's book, value clipped"
+                "Sweep at 50%% chord is outside of the range in Roskam's book, value clipped"
             )
 
         # Linear interpolation is preferred, but we put the nearest one as protection

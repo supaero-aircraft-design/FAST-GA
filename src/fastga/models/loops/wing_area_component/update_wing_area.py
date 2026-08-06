@@ -49,9 +49,9 @@ class UpdateWingArea(om.ExplicitComponent):
         wing_area_mission = inputs["wing_area:geometric"].item()
         wing_area_approach = inputs["wing_area:aerodynamic"].item()
 
-        wing_area = round(max(wing_area_mission, wing_area_approach), 5)
+        wing_area = max(wing_area_mission, wing_area_approach)
 
-        _LOGGER.info(f"Looping on wing area with new value equal to {wing_area}")
+        _LOGGER.info("Looping on wing area with new value equal to %f", round(wing_area, 5))
 
         outputs["data:geometry:wing:area"] = wing_area
 

@@ -682,7 +682,7 @@ class AerostructuralLoad(om.ExplicitComponent):
 
         for i in range(NB_POINTS_POINT_MASS):
             y_current = y_point_mass + (i - nb_point_side) * interval_len
-            if (y_current >= 0.0) and (y_current <= semi_span):
+            if semi_span >= y_current >= 0.0:
                 y_added.append(y_current)
                 y_vector, idx = AerostructuralLoad.insert_in_sorted_array(y_vector, y_current)
                 chord_vector = np.insert(

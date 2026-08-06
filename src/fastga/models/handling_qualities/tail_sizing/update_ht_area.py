@@ -535,7 +535,7 @@ class _ComputeAeroCoeff(om.ExplicitComponent):
         """
         Extrapolate linearly out of range x-value
         """
-        if (x >= xp[0]) and (x <= xp[-1]):
+        if xp[-1] >= x >= xp[0]:
             result = float(np.interp(x, xp, yp))
         elif x < xp[0]:
             result = float(yp[0] + (x - xp[0]) * (yp[1] - yp[0]) / (xp[1] - xp[0]))

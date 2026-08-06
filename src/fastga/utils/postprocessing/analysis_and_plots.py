@@ -316,10 +316,8 @@ def evolution_diagram(  # noqa: PLR0915
     y_maneuver_line = []
     x_maneuver_pts = [velocity_array[0], velocity_array[2]]
     y_maneuver_pts = [load_factor_array[0], load_factor_array[2]]
-    for idx in range(len(x_maneuver_line)):
-        y_maneuver_line.append(
-            load_factor_array[0] * (x_maneuver_line[idx] / velocity_array[0]) ** 2.0
-        )
+    for value in x_maneuver_line:
+        y_maneuver_line.append(load_factor_array[0] * (value / velocity_array[0]) ** 2.0)
     x_maneuver_line.extend(
         [velocity_array[9], velocity_array[10], velocity_array[6], velocity_array[3]]
     )
@@ -346,8 +344,8 @@ def evolution_diagram(  # noqa: PLR0915
             load_factor_array[1],
         ]
     )
-    for idx in range(len(x_local)):
-        y_maneuver_line.append(load_factor_array[1] * (x_local[idx] / x_local[-1]) ** 2.0)
+    for value in x_local:
+        y_maneuver_line.append(load_factor_array[1] * (value / x_local[-1]) ** 2.0)
     x_maneuver_line.extend([x_local[-1], velocity_array[0], velocity_array[0]])
     y_maneuver_line.extend([0.0, 0.0, load_factor_array[0]])
 
@@ -1160,11 +1158,11 @@ def payload_range(
     )
     fig.add_trace(scatter)
 
-    for i in range(len(text_plot)):
+    for i, value in enumerate(text_plot):
         fig.add_annotation(
             x=range_array[i],
             y=payload_array[i],
-            text=text_plot[i],
+            text=value,
             font={"size": 14},
             align="center",
             bordercolor="Black",

@@ -103,7 +103,7 @@ class ComputeClimb(DynamicEquilibrium):
             try:
                 pathlib.Path(self.options["out_file"]).unlink()
             except FileNotFoundError:
-                _LOGGER.info(f"Failed to remove {self.options['out_file']} file!")
+                _LOGGER.info("Failed to remove %s file!", self.options["out_file"])
 
         propulsion_model = self._engine_wrapper.get_model(inputs)
         wing_area = inputs["data:geometry:wing:area"]
