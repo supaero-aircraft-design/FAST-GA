@@ -23,17 +23,26 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 
-import pathlib
 import sys
+from os import environ
+import pathlib
+
+from sphinx.ext import apidoc
+
+# -- Path setup --------------------------------------------------------------
+# If extensions (or modules to document with autodoc) are in another directory,
+# add these directories to sys.path here. If the directory is relative to the
+# documentation root, use os.path.abspath to make it absolute, like shown here.
+
+# For custom directives
+sys.path.insert(0, str(pathlib.Path("./directives").resolve()))
 
 # For autodoc... and custom directives
 sys.path.insert(0, str(pathlib.Path("../src").resolve()))
 
-# -- Run sphinx-apidoc ------------------------------------------------------
-try:  # for Sphinx >= 1.7
-    from sphinx.ext import apidoc
-except ImportError:
-    from sphinx import apidoc
+# Overload apidoc options, to add "inherited-members" (which was deactivated because of a bug
+# in earlier sphinx releases)
+environ["SPHINX_APIDOC_OPTIONS"] = "members,undoc-members,inherited-members,show-inheritance"
 
 
 def run_apidoc(_):
