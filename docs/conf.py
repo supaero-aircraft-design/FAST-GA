@@ -50,7 +50,7 @@ def run_apidoc(_):
     cur_dir = pathlib.Path(__file__).parent.resolve()
     output_dir = cur_dir / "api"
     module = cur_dir.parent / "src" / "fastga"
-    apidoc.main(["-d", "1", "-e", "-o", output_dir, module, "--force"])
+    apidoc.main(["-d", "1", "-e", "-o", output_dir.as_posix(), module.as_posix(), "--force"])
 
 
 def setup(app):
