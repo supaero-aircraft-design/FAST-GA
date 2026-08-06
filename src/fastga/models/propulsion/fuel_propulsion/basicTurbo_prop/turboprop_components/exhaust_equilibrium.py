@@ -42,6 +42,8 @@ class ExhaustEquilibrium(om.ImplicitComponent):
             method="exact",
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument, too-many-arguments, too-many-positional-arguments
+    # Overriding OpenMDAO apply_nonlinear, not all arguments are used
     def apply_nonlinear(
         self, inputs, outputs, residuals, discrete_inputs=None, discrete_outputs=None
     ):
@@ -57,6 +59,8 @@ class ExhaustEquilibrium(om.ImplicitComponent):
             total_pressure_5 / total_pressure_45
         ) ** ((gamma_45 - 1.0) / gamma_45 * eta_455)
 
+    # pylint: disable=missing-function-docstring, unused-argument, too-many-arguments, too-many-positional-arguments
+    # Overriding OpenMDAO linearize, not all arguments are used
     def linearize(self, inputs, outputs, jacobian, discrete_inputs=None, discrete_outputs=None):
         total_pressure_45 = inputs["total_pressure_45"]
         total_pressure_5 = inputs["total_pressure_5"]

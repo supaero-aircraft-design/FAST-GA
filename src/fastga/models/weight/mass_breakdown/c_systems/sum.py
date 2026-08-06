@@ -27,6 +27,8 @@ from .constants import (
 from ..constants import SERVICE_SYSTEMS_MASS, SUBMODEL_SYSTEMS_MASS_LEGACY
 
 
+# pylint: disable=too-few-public-methods
+# Overriding only necessary OpenMDAO methods
 @oad.RegisterSubmodel(SERVICE_SYSTEMS_MASS, SUBMODEL_SYSTEMS_MASS_LEGACY)
 class SystemsWeight(om.Group):
     """Computes mass of systems."""

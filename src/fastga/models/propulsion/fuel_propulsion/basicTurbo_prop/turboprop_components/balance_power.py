@@ -26,11 +26,15 @@ class BalancePower(om.ImplicitComponent):
             cols=np.arange(n),
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument, too-many-arguments, too-many-positional-arguments
+    # Overriding OpenMDAO apply_nonlinear, not all arguments are used
     def apply_nonlinear(
         self, inputs, outputs, residuals, discrete_inputs=None, discrete_outputs=None
     ):
         residuals["fuel_mass_flow"] = 1.0 - inputs["shaft_power"] / inputs["required_shaft_power"]
 
+    # pylint: disable=missing-function-docstring, unused-argument, too-many-arguments, too-many-positional-arguments
+    # Overriding OpenMDAO linearize, not all arguments are used
     def linearize(self, inputs, outputs, jacobian, discrete_inputs=None, discrete_outputs=None):
         jacobian["fuel_mass_flow", "required_shaft_power"] = (
             inputs["shaft_power"] / inputs["required_shaft_power"] ** 2.0

@@ -29,6 +29,8 @@ from .constants import (
 from ..constants import SERVICE_AIRFRAME_MASS, SUBMODEL_AIRFRAME_MASS_LEGACY
 
 
+# pylint: disable=too-few-public-methods
+# Overriding only necessary OpenMDAO methods
 @oad.RegisterSubmodel(SERVICE_AIRFRAME_MASS, SUBMODEL_AIRFRAME_MASS_LEGACY)
 class AirframeWeight(om.Group):
     """Computes mass of airframe."""

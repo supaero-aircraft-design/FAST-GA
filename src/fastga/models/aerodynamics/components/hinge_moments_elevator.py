@@ -26,6 +26,8 @@ from ..constants import (
 )
 
 
+# pylint: disable=too-few-public-methods
+# Overriding only necessary OpenMDAO methods
 @oad.RegisterSubmodel(
     SUBMODEL_HINGE_MOMENTS_TAIL, "fastga.submodel.aerodynamics.tail.hinge_moments.legacy"
 )

@@ -22,6 +22,8 @@ import openmdao.api as om
 from ..constants import SUBMODEL_TAIL_CG
 
 
+# pylint: disable=too-few-public-methods
+# Overriding only necessary OpenMDAO methods
 @oad.RegisterSubmodel(SUBMODEL_TAIL_CG, "fastga.submodel.weight.cg.airframe.tail.legacy")
 class ComputeTailCG(om.Group):
     def setup(self):

@@ -22,6 +22,8 @@ from .constants import SERVICE_SEATS_MASS
 from ..constants import SERVICE_FURNITURE_MASS, SUBMODEL_FURNITURE_MASS_LEGACY
 
 
+# pylint: disable=too-few-public-methods
+# Overriding only necessary OpenMDAO methods
 @oad.RegisterSubmodel(SERVICE_FURNITURE_MASS, SUBMODEL_FURNITURE_MASS_LEGACY)
 class FurnitureWeight(om.Group):
     """

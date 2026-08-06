@@ -21,6 +21,8 @@ from .b2_fuel_lines_cg import ComputeFuelLinesCG
 from ..constants import SUBMODEL_PROPULSION_CG
 
 
+# pylint: disable=too-few-public-methods
+# Overriding only necessary OpenMDAO methods
 @oad.RegisterSubmodel(SUBMODEL_PROPULSION_CG, "fastga.submodel.weight.cg.propulsion.legacy")
 class FuelPropulsionCG(om.Group):
     def setup(self):

@@ -38,6 +38,8 @@ from .fuselage_components.compute_wing_fuselage_connection_mass import ComputeWi
 from .fuselage_components.update_fuselage_mass import UpdateFuselageMass
 
 
+# pylint: disable=too-few-public-methods
+# Overriding only necessary OpenMDAO methods
 @oad.RegisterSubmodel(SERVICE_FUSELAGE_MASS, SUBMODEL_FUSELAGE_MASS_ANALYTICAL)
 class ComputeFuselageMassAnalytical(om.Group):
     """Computes analytically the mass of each fuselage component and add them to get total mass."""

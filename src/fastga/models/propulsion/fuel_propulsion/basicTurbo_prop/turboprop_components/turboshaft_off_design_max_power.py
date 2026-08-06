@@ -62,6 +62,8 @@ class DistanceToLimitPowerLimit(om.ImplicitComponent):
             cols=np.arange(n),
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument, too-many-arguments, too-many-positional-arguments
+    # Overriding OpenMDAO apply_nonlinear, not all arguments are used
     def apply_nonlinear(
         self, inputs, outputs, residuals, discrete_inputs=None, discrete_outputs=None
     ):
@@ -70,6 +72,8 @@ class DistanceToLimitPowerLimit(om.ImplicitComponent):
 
         residuals["required_thrust"] = shaft_power / shaft_power_limit - 1.0
 
+    # pylint: disable=missing-function-docstring, unused-argument, too-many-arguments, too-many-positional-arguments
+    # Overriding OpenMDAO linearize, not all arguments are used
     def linearize(self, inputs, outputs, jacobian, discrete_inputs=None, discrete_outputs=None):
         shaft_power = inputs["shaft_power"]
         shaft_power_limit = inputs["shaft_power_limit"]
@@ -124,6 +128,8 @@ class DistanceToLimitOPRLimit(om.ImplicitComponent):
             cols=np.arange(n),
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument, too-many-arguments, too-many-positional-arguments
+    # Overriding OpenMDAO apply_nonlinear, not all arguments are used
     def apply_nonlinear(
         self, inputs, outputs, residuals, discrete_inputs=None, discrete_outputs=None
     ):
@@ -132,6 +138,8 @@ class DistanceToLimitOPRLimit(om.ImplicitComponent):
 
         residuals["required_thrust"] = opr / opr_limit - 1.0
 
+    # pylint: disable=missing-function-docstring, unused-argument, too-many-arguments, too-many-positional-arguments
+    # Overriding OpenMDAO linearize, not all arguments are used
     def linearize(self, inputs, outputs, jacobian, discrete_inputs=None, discrete_outputs=None):
         opr = inputs["opr"]
         opr_limit = inputs["opr_limit"]
@@ -186,6 +194,8 @@ class DistanceToLimitITTLimit(om.ImplicitComponent):
             cols=np.arange(n),
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument, too-many-arguments, too-many-positional-arguments
+    # Overriding OpenMDAO apply_nonlinear, not all arguments are used
     def apply_nonlinear(
         self, inputs, outputs, residuals, discrete_inputs=None, discrete_outputs=None
     ):
@@ -194,6 +204,8 @@ class DistanceToLimitITTLimit(om.ImplicitComponent):
 
         residuals["required_thrust"] = total_temperature_45 / itt_limit - 1.0
 
+    # pylint: disable=missing-function-docstring, unused-argument, too-many-arguments, too-many-positional-arguments
+    # Overriding OpenMDAO linearize, not all arguments are used
     def linearize(self, inputs, outputs, jacobian, discrete_inputs=None, discrete_outputs=None):
         total_temperature_45 = inputs["total_temperature_45"]
         itt_limit = inputs["itt_limit"]
@@ -249,6 +261,8 @@ class DistanceToLimitPropellerThrustLimit(om.ImplicitComponent):
             cols=np.arange(n),
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument, too-many-arguments, too-many-positional-arguments
+    # Overriding OpenMDAO apply_nonlinear, not all arguments are used
     def apply_nonlinear(
         self, inputs, outputs, residuals, discrete_inputs=None, discrete_outputs=None
     ):
@@ -257,6 +271,8 @@ class DistanceToLimitPropellerThrustLimit(om.ImplicitComponent):
 
         residuals["required_thrust"] = propeller_thrust / propeller_max_thrust - 1.0
 
+    # pylint: disable=missing-function-docstring, unused-argument, too-many-arguments, too-many-positional-arguments
+    # Overriding OpenMDAO linearize, not all arguments are used
     def linearize(self, inputs, outputs, jacobian, discrete_inputs=None, discrete_outputs=None):
         propeller_thrust = inputs["propeller_thrust"]
         propeller_max_thrust = inputs["propeller_max_thrust"]
