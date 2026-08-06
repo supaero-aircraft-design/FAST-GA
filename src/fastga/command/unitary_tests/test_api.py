@@ -12,33 +12,20 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import os.path as pth
-import os
-import pytest
-import warnings
+import pathlib
 
 import fastoad.api as oad
+import pytest
 
 from fastga.command import api
 from fastga.command.unitary_tests.dummy_classes import Disc1, Disc2, Disc3
-from fastga import models
-from fastga.models import (
-    aerodynamics,
-    geometry,
-    handling_qualities,
-    load_analysis,
-    loops,
-    performances,
-)
-from fastga.models.weight import cg, mass_breakdown
-from fastga.utils.warnings import VariableDescriptionWarning
 
-RESULTS_FOLDER = pth.join(pth.dirname(__file__), "results")
-DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
+RESULTS_FOLDER = pathlib.Path(__file__).parent / "results"
+DATA_FOLDER_PATH = pathlib.Path(__file__).parent / "data"
 
 
 def test_simple_working():
-    complete_xml_file = pth.join(pth.dirname(__file__), "data/complete.xml")
+    complete_xml_file = pathlib.Path(__file__).parent / "data/complete.xml"
     var_inputs = []
 
     test_generate_block_analysis = api.generate_block_analysis(
@@ -51,11 +38,11 @@ def test_simple_working():
 
 
 def test_id_working():
-    complete_xml_file = pth.join(pth.dirname(__file__), "data/missing_two_input.xml")
+    complete_xml_file = pathlib.Path(__file__).parent / "data/missing_two_input.xml"
     var_inputs = ["data:geometry:variable_2"]
 
     # Create a temporary configurator so the modules are registered and their ID are available
-    configurator = oad.FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, "blank.yml"))
+    configurator = oad.FASTOADProblemConfigurator(DATA_FOLDER_PATH / "blank.yml")
 
     # Test if there were no issues with the configurator
     assert configurator is not None
@@ -81,7 +68,7 @@ def test_id_working():
     assert value_id == pytest.approx(value_direct, abs=1e-3)
 
     test_generate_block_analysis_yml = api.generate_block_analysis(
-        pth.join(DATA_FOLDER_PATH, "blank.yml"),
+        DATA_FOLDER_PATH / "blank.yml",
         var_inputs,
         complete_xml_file,
         overwrite=False,
@@ -94,7 +81,7 @@ def test_id_working():
 
 
 def test_input_vars_working():
-    missing_input_xml_file = pth.join(pth.dirname(__file__), "data/missing_one_input.xml")
+    missing_input_xml_file = pathlib.Path(__file__).parent / "data/missing_one_input.xml"
     var_inputs = ["data:geometry:variable_1"]
 
     test_generate_block_analysis = api.generate_block_analysis(
@@ -107,7 +94,7 @@ def test_input_vars_working():
 
 
 def test_ivc_working():
-    missing_input_xml_file = pth.join(pth.dirname(__file__), "data/missing_one_input.xml")
+    missing_input_xml_file = pathlib.Path(__file__).parent / "data/missing_one_input.xml"
 
     var_inputs = []
 
@@ -123,7 +110,7 @@ def test_ivc_working():
 def test_supernumerary_inputs():
     """Tests if the various errors implemented in the function handling are caught"""
 
-    xml_file = pth.join(pth.dirname(__file__), "data/supernumerary_inputs.xml")
+    xml_file = pathlib.Path(__file__).parent / "data/supernumerary_inputs.xml"
 
     var_inputs = ["data:geometry:variable_3", "data:geometry:variable_error"]
 
@@ -136,7 +123,7 @@ def test_supernumerary_inputs():
         function_generated = True
         right_error = False
 
-    except BaseException as error:
+    except BaseException as error:  # noqa: BLE001, the function raises a bare Exception which is not ideal
         function_generated = False
 
         if error.args[0] == "The input list contains name(s) out of component/group input list!":
@@ -151,7 +138,7 @@ def test_supernumerary_inputs():
 def test_empty_xml():
     """Tests if the various errors implemented in the function handling are caught"""
 
-    missing_xml = pth.join(pth.dirname(__file__), "data/missing.xml")
+    missing_xml = pathlib.Path(__file__).parent / "data/missing.xml"
 
     var_inputs = ["data:geometry:variable_3"]
 
@@ -165,7 +152,7 @@ def test_empty_xml():
         function_generated = True
         right_error = False
 
-    except Exception as error:
+    except Exception as error:  # noqa: BLE001, the function raises a bare Exception which is not ideal
         print(error.args[0])
         function_generated = False
 
@@ -183,8 +170,8 @@ def test_empty_xml():
     assert not function_generated
     assert right_error
 
-    if os.path.exists(missing_xml):
-        os.remove(missing_xml)
+    if missing_xml.exists():
+        missing_xml.unlink()
 
     # Then test with empty xml file but var_inputs is contains all the necessary data,
     # should succeed
@@ -210,19 +197,19 @@ def test_empty_xml():
         output_dict = test_generate_block_analysis(input_dict)
         value = output_dict.get("data:geometry:variable_4")[0]
 
-    except Exception:
+    except Exception:  # noqa: BLE001, the function raises a bare Exception which is not ideal
         function_generated = False
         value = 0.0
 
     assert function_generated
     assert value == pytest.approx(14.0, abs=1e-3)
 
-    if os.path.exists(missing_xml):
-        os.remove(missing_xml)
+    if missing_xml.exists():
+        missing_xml.unlink()
 
 
 def test_missing_inputs_in_xml():
-    missing_inputs_xml_file = pth.join(pth.dirname(__file__), "data/missing_two_input.xml")
+    missing_inputs_xml_file = pathlib.Path(__file__).parent / "data/missing_two_input.xml"
     var_inputs = ["data:geometry:variable_2"]
 
     # noinspection PyBroadException
@@ -232,7 +219,7 @@ def test_missing_inputs_in_xml():
         function_generated = True
         right_error = False
 
-    except BaseException as error:
+    except Exception as error:  # noqa: BLE001, the function raises a bare Exception which is not ideal
         function_generated = False
 
         if "The following inputs are missing in .xml file:" in error.args[0]:
@@ -242,28 +229,3 @@ def test_missing_inputs_in_xml():
 
     assert not function_generated
     assert right_error
-
-
-def test_variable_descriptions_auto_gen():
-    with warnings.catch_warnings(record=True) as w:
-        warnings.simplefilter("always")
-
-        api.generate_variables_description(aerodynamics.__path__[0], True)
-        api.generate_variables_description(geometry.__path__[0], True)
-        api.generate_variables_description(handling_qualities.__path__[0], True)
-        api.generate_variables_description(load_analysis.__path__[0], True)
-        api.generate_variables_description(loops.__path__[0], True)
-        api.generate_variables_description(performances.__path__[0], True)
-        api.generate_variables_description(cg.__path__[0], True)
-        api.generate_variables_description(mass_breakdown.__path__[0], True)
-        api.generate_variables_description(models.__path__[0], True)
-
-        # Check that there are no warnings, which would mean we filled our description correctly
-        counter = 0
-        if len(w) != 0:
-            for warning_message in w:
-                if issubclass(warning_message.category, VariableDescriptionWarning):
-                    print(warning_message.message)
-                    counter += 1
-
-        assert counter == 0

@@ -28,8 +28,8 @@ class ComputePayload(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
     def setup(self):
-        self.add_input("data:TLAR:NPAX_design", val=np.nan)
-        self.add_input("data:geometry:cabin:seats:passenger:NPAX_max", val=np.nan)
+        self.add_input("data:TLAR:NPAX_design", val=np.nan, units="unitless")
+        self.add_input("data:geometry:cabin:seats:passenger:NPAX_max", val=np.nan, units="unitless")
         self.add_input("data:geometry:cabin:luggage:mass_max", val=np.nan, units="kg")
         self.add_input("data:TLAR:luggage_mass_design", val=np.nan, units="kg")
         self.add_input(
@@ -48,6 +48,9 @@ class ComputePayload(om.ExplicitComponent):
         self.add_output("data:weight:aircraft:payload", units="kg")
         self.add_output("data:weight:aircraft:max_payload", units="kg")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials(
             "data:weight:aircraft:payload",
             [

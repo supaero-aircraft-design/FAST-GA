@@ -19,10 +19,10 @@ import openmdao.api as om
 from fastoad.module_management.constants import ModelDomain
 
 from .constants import (
-    SUBMODEL_WING_AREA_GEOM_CONS,
-    SUBMODEL_WING_AREA_GEOM_LOOP,
     SUBMODEL_WING_AREA_AERO_CONS,
     SUBMODEL_WING_AREA_AERO_LOOP,
+    SUBMODEL_WING_AREA_GEOM_CONS,
+    SUBMODEL_WING_AREA_GEOM_LOOP,
 )
 from .wing_area_component.update_wing_area import UpdateWingArea
 

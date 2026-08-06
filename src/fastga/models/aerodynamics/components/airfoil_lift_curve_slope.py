@@ -17,13 +17,13 @@ Estimation of the slope of the airfoil of the lifting surface using the results 
 
 import logging
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 
 from ..constants import POLAR_POINT_COUNT, SUBMODEL_AIRFOIL_LIFT_SLOPE
-from ..external.xfoil.xfoil_polar import XfoilPolar
 from ..external.neuralfoil.neuralfoil_polar import NeuralfoilPolar
+from ..external.xfoil.xfoil_polar import XfoilPolar
 
 ALPHA_START_LINEAR = np.deg2rad(-5.0)
 ALPHA_END_LINEAR = np.deg2rad(10.0)
@@ -132,19 +132,24 @@ class ComputeAirfoilLiftCurveSlope(om.Group):
 
 class ComputeLocalReynolds(om.ExplicitComponent):
     def setup(self):
-        self.add_input("data:aerodynamics:low_speed:mach", val=np.nan)
+        self.add_input("data:aerodynamics:low_speed:mach", val=np.nan, units="unitless")
         self.add_input("data:aerodynamics:low_speed:unit_reynolds", val=np.nan, units="m**-1")
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
         self.add_input("data:geometry:horizontal_tail:MAC:length", val=np.nan, units="m")
-        self.add_input("data:aerodynamics:horizontal_tail:efficiency", val=0.9)
+        self.add_input("data:aerodynamics:horizontal_tail:efficiency", val=0.9, units="unitless")
         self.add_input("data:geometry:vertical_tail:MAC:length", val=np.nan, units="m")
 
-        self.add_output("data:aerodynamics:wing:MAC:low_speed:reynolds")
-        self.add_output("data:aerodynamics:horizontal_tail:MAC:low_speed:reynolds")
-        self.add_output("data:aerodynamics:vertical_tail:MAC:low_speed:reynolds")
+        self.add_output("data:aerodynamics:wing:MAC:low_speed:reynolds", units="unitless")
+        self.add_output(
+            "data:aerodynamics:horizontal_tail:MAC:low_speed:reynolds", units="unitless"
+        )
+        self.add_output("data:aerodynamics:vertical_tail:MAC:low_speed:reynolds", units="unitless")
 
-        self.add_output(name="mach")
+        self.add_output(name="mach", units="unitless")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
@@ -172,21 +177,25 @@ class _ComputeAirfoilLiftCurveSlope(om.ExplicitComponent):
         nans_array = np.full(POLAR_POINT_COUNT, np.nan)
 
         self.add_input(name="wing:alpha", val=nans_array, shape=POLAR_POINT_COUNT, units="rad")
-        self.add_input(name="wing:CL", val=nans_array, shape=POLAR_POINT_COUNT)
+        self.add_input(name="wing:CL", val=nans_array, shape=POLAR_POINT_COUNT, units="unitless")
         self.add_input(
             name="horizontal_tail:alpha",
             val=nans_array,
             shape=POLAR_POINT_COUNT,
             units="rad",
         )
-        self.add_input(name="horizontal_tail:CL", val=nans_array, shape=POLAR_POINT_COUNT)
+        self.add_input(
+            name="horizontal_tail:CL", val=nans_array, shape=POLAR_POINT_COUNT, units="unitless"
+        )
         self.add_input(
             name="vertical_tail:alpha",
             val=nans_array,
             shape=POLAR_POINT_COUNT,
             units="rad",
         )
-        self.add_input(name="vertical_tail:CL", val=nans_array, shape=POLAR_POINT_COUNT)
+        self.add_input(
+            name="vertical_tail:CL", val=nans_array, shape=POLAR_POINT_COUNT, units="unitless"
+        )
 
         self.add_output("data:aerodynamics:horizontal_tail:airfoil:CL_alpha", units="rad**-1")
         self.add_output("data:aerodynamics:vertical_tail:airfoil:CL_alpha", units="rad**-1")

@@ -13,9 +13,9 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 
 from ...constants import SUBMODEL_CN_BETA_FUSELAGE
 
@@ -40,6 +40,9 @@ class ComputeCnBetaFuselage(om.ExplicitComponent):
 
         self.add_output("data:aerodynamics:fuselage:Cn_beta", units="rad**-1")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials("*", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):

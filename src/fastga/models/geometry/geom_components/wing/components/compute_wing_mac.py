@@ -14,9 +14,9 @@ Python module for wing mean aerodynamic chord calculation, part of the wing geom
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 
 from ..constants import SERVICE_WING_MAC, SUBMODEL_WING_MAC_LEGACY
 
@@ -39,6 +39,9 @@ class ComputeWingMAC(om.ExplicitComponent):
         self.add_output("data:geometry:wing:MAC:leading_edge:x:local", units="m")
         self.add_output("data:geometry:wing:MAC:y", units="m")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials(
             "data:geometry:wing:MAC:length",
             [

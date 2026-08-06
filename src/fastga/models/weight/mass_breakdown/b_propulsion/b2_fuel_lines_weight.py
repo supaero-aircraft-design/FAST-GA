@@ -16,14 +16,16 @@ Python module for fuel lines weight calculation, part of the propulsion system m
 
 import warnings
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
+
+from fastga.models.constants import FuelType
 
 from .constants import (
     SERVICE_FUEL_SYSTEM_MASS,
-    SUBMODEL_FUEL_SYSTEM_MASS_LEGACY,
     SUBMODEL_FUEL_SYSTEM_MASS_FLOPS,
+    SUBMODEL_FUEL_SYSTEM_MASS_LEGACY,
 )
 
 oad.RegisterSubmodel.active_models[SERVICE_FUEL_SYSTEM_MASS] = SUBMODEL_FUEL_SYSTEM_MASS_LEGACY
@@ -41,12 +43,15 @@ class ComputeFuelLinesWeight(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
     def setup(self):
-        self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:count", val=np.nan, units="unitless")
         self.add_input("data:weight:aircraft:MFW", val=np.nan, units="lb")
-        self.add_input("data:propulsion:fuel_type", val=np.nan)
+        self.add_input("data:propulsion:fuel_type", val=np.nan, units="unitless")
 
         self.add_output("data:weight:propulsion:fuel_lines:mass", units="lb")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials(
             "data:weight:propulsion:fuel_lines:mass", "data:propulsion:fuel_type", method="fd"
         )
@@ -69,15 +74,15 @@ class ComputeFuelLinesWeight(om.ExplicitComponent):
         # quantity plus the quantity in integral tanks. We will assume that we only have integral
         # tank hence the 0.5
 
-        if fuel_type == 1.0:
+        if fuel_type == FuelType.AVGAS:
             m_vol_fuel = 718.9  # gasoline volume-mass [kg/m**3], cold worst case, Avgas
-        elif fuel_type == 2.0:
+        elif fuel_type == FuelType.DIESEL:
             m_vol_fuel = 860.0  # Diesel volume-mass [kg/m**3], cold worst case
-        elif fuel_type == 3.0:
+        elif fuel_type == FuelType.JET_A1:
             m_vol_fuel = 804.0  # Jet-A1 volume mass [kg/m**3], cold worst case
         else:
             m_vol_fuel = 718.9
-            warnings.warn("Fuel type {} does not exist, replaced by type 1!".format(fuel_type))
+            warnings.warn(f"Fuel type {fuel_type} does not exist, replaced by type 1!")
 
         k_fsp = m_vol_fuel * 0.008345
         # In lbs/gal
@@ -96,15 +101,15 @@ class ComputeFuelLinesWeight(om.ExplicitComponent):
         fuel_mass = inputs["data:weight:aircraft:MFW"]
         fuel_type = inputs["data:propulsion:fuel_type"]
 
-        if fuel_type == 1.0:
+        if fuel_type == FuelType.AVGAS:
             m_vol_fuel = 718.9  # gasoline volume-mass [kg/m**3], cold worst case, Avgas
-        elif fuel_type == 2.0:
+        elif fuel_type == FuelType.DIESEL:
             m_vol_fuel = 860.0  # Diesel volume-mass [kg/m**3], cold worst case
-        elif fuel_type == 3.0:
+        elif fuel_type == FuelType.JET_A1:
             m_vol_fuel = 804.0  # Jet-A1 volume mass [kg/m**3], cold worst case
         else:
             m_vol_fuel = 718.9
-            warnings.warn("Fuel type {} does not exist, replaced by type 1!".format(fuel_type))
+            warnings.warn(f"Fuel type {fuel_type} does not exist, replaced by type 1!")
 
         k_fsp = m_vol_fuel * 0.008345
         # In lbs/gal
@@ -141,7 +146,7 @@ class ComputeFuelLinesWeightFLOPS(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
     def setup(self):
-        self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:count", val=np.nan, units="unitless")
         self.add_input("data:weight:aircraft:MFW", val=np.nan, units="lb")
 
         self.add_output("data:weight:propulsion:fuel_lines:mass", units="lb")

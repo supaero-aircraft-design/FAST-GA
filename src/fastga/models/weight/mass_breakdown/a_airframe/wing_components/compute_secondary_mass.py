@@ -26,11 +26,17 @@ class ComputeSecondaryMass(om.ExplicitComponent):
         self.add_input(
             "settings:wing:structure:secondary_mass_ratio",
             val=0.25,
+            units="unitless",
             desc="Ratio of the mass of the secondary structure and the primary structure (between "
             "0.25 and 0.30 according to literature",
         )
 
         self.add_output("data:weight:airframe:wing:secondary_structure:mass", units="kg")
+
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
+        self.declare_partials(of="*", wrt="*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         sec_mass_ratio = inputs["settings:wing:structure:secondary_mass_ratio"]
@@ -40,3 +46,16 @@ class ComputeSecondaryMass(om.ExplicitComponent):
         secondary_structure_mass = total_mass * sec_mass_ratio
 
         outputs["data:weight:airframe:wing:secondary_structure:mass"] = secondary_structure_mass
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+        sec_mass_ratio = inputs["settings:wing:structure:secondary_mass_ratio"]
+        primary_structure_mass = inputs["data:weight:airframe:wing:primary_structure:mass"]
+
+        partials[
+            "data:weight:airframe:wing:secondary_structure:mass",
+            "data:weight:airframe:wing:primary_structure:mass",
+        ] = sec_mass_ratio / (1.0 - sec_mass_ratio)
+        partials[
+            "data:weight:airframe:wing:secondary_structure:mass",
+            "settings:wing:structure:secondary_mass_ratio",
+        ] = primary_structure_mass / (1.0 - sec_mass_ratio) ** 2.0

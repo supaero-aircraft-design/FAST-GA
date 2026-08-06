@@ -12,16 +12,14 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-from scipy.constants import g
-from typing import Union, List, Optional, Tuple
+from fastoad.constants import EngineSetting
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
-import fastoad.api as oad
-from fastoad.constants import EngineSetting
-
+from scipy.constants import g
 from stdatm import Atmosphere
 
 from fastga.command.api import list_inputs, list_outputs
@@ -63,18 +61,17 @@ class ComputeTORotationLimitGroup(om.Group):
     @staticmethod
     def get_io_names(
         component: om.ExplicitComponent,
-        excludes: Optional[Union[str, List[str]]] = None,
-        iotypes: Optional[Union[str, Tuple[str, str]]] = ("inputs", "outputs"),
-    ) -> List[str]:
+        excludes: str | list[str] | None = None,
+        iotypes: str | tuple[str, str] | None = ("inputs", "outputs"),
+    ) -> list[str]:
         list_names = []
         if isinstance(iotypes, tuple):
             list_names.extend(list_inputs(component))
             list_names.extend(list_outputs(component))
+        elif iotypes == "inputs":
+            list_names.extend(list_inputs(component))
         else:
-            if iotypes == "inputs":
-                list_names.extend(list_inputs(component))
-            else:
-                list_names.extend(list_outputs(component))
+            list_names.extend(list_outputs(component))
         if excludes is not None:
             list_names = [x for x in list_names if x not in excludes]
 
@@ -109,25 +106,30 @@ class ComputeTORotationLimit(om.ExplicitComponent):
         self.add_input("data:weight:airframe:landing_gear:main:CG:x", val=np.nan, units="m")
         self.add_input("data:weight:aircraft_empty:CG:z", val=np.nan, units="m")
         self.add_input("data:weight:propulsion:engine:CG:z", val=np.nan, units="m")
-        self.add_input("data:aerodynamics:wing:low_speed:CL0_clean", val=np.nan)
-        self.add_input("data:aerodynamics:aircraft:takeoff:CL_max", val=np.nan)
-        self.add_input("data:aerodynamics:wing:low_speed:CL_max_clean", val=np.nan)
-        self.add_input("data:aerodynamics:flaps:takeoff:CL", val=np.nan)
-        self.add_input("data:aerodynamics:flaps:takeoff:CM", val=np.nan)
+        self.add_input("data:aerodynamics:wing:low_speed:CL0_clean", val=np.nan, units="unitless")
+        self.add_input("data:aerodynamics:aircraft:takeoff:CL_max", val=np.nan, units="unitless")
+        self.add_input(
+            "data:aerodynamics:wing:low_speed:CL_max_clean", val=np.nan, units="unitless"
+        )
+        self.add_input("data:aerodynamics:flaps:takeoff:CL", val=np.nan, units="unitless")
+        self.add_input("data:aerodynamics:flaps:takeoff:CM", val=np.nan, units="unitless")
         self.add_input(
             "data:aerodynamics:horizontal_tail:low_speed:CL_alpha_isolated",
             val=np.nan,
             units="rad**-1",
         )
-        self.add_input("data:aerodynamics:horizontal_tail:efficiency", val=np.nan)
+        self.add_input("data:aerodynamics:horizontal_tail:efficiency", val=np.nan, units="unitless")
 
-        self.add_input("takeoff:cl_htp", val=np.nan)
-        self.add_input("takeoff:cm_wing", val=np.nan)
-        self.add_input("low_speed:cl_alpha_htp", val=np.nan)
+        self.add_input("takeoff:cl_htp", val=np.nan, units="unitless")
+        self.add_input("takeoff:cm_wing", val=np.nan, units="unitless")
+        self.add_input("low_speed:cl_alpha_htp", val=np.nan, units="unitless")
 
         self.add_output("data:handling_qualities:to_rotation_limit:x", units="m")
-        self.add_output("data:handling_qualities:to_rotation_limit:MAC_position")
+        self.add_output("data:handling_qualities:to_rotation_limit:MAC_position", units="unitless")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
@@ -165,10 +167,7 @@ class ComputeTORotationLimit(om.ExplicitComponent):
         weight = mtow * g
         vs1 = np.sqrt(weight / (0.5 * rho * wing_area * cl_max_takeoff))
 
-        if n_engines == 1.0:
-            vr = 1.10 * vs1
-        else:
-            vr = 1.0 * vs1
+        vr = vs1 * 1.1 if n_engines == 1 else vs1 * 1.0
 
         mach_r = vr / sos
 
@@ -176,7 +175,7 @@ class ComputeTORotationLimit(om.ExplicitComponent):
             mach=mach_r, altitude=0.0, engine_setting=EngineSetting.TAKEOFF, thrust_rate=1.0
         )
         propulsion_model.compute_flight_points(flight_point)
-        thrust = float(flight_point.thrust)
+        thrust = flight_point.thrust
 
         x_ht = x_wing_aero_center + lp_ht
 
@@ -223,8 +222,10 @@ class _ComputeAeroCoeffTO(om.ExplicitComponent):
     def setup(self):
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:horizontal_tail:area", val=2.0, units="m**2")
-        self.add_input("data:aerodynamics:wing:low_speed:CM0_clean", val=np.nan)
-        self.add_input("data:aerodynamics:horizontal_tail:low_speed:CL0", val=np.nan)
+        self.add_input("data:aerodynamics:wing:low_speed:CM0_clean", val=np.nan, units="unitless")
+        self.add_input(
+            "data:aerodynamics:horizontal_tail:low_speed:CL0", val=np.nan, units="unitless"
+        )
         self.add_input(
             "data:aerodynamics:horizontal_tail:low_speed:CL_alpha", val=np.nan, units="rad**-1"
         )
@@ -234,10 +235,13 @@ class _ComputeAeroCoeffTO(om.ExplicitComponent):
         self.add_input("data:aerodynamics:elevator:low_speed:CL_delta", val=np.nan, units="rad**-1")
         self.add_input("data:mission:sizing:takeoff:elevator_angle", val=np.nan, units="rad")
 
-        self.add_output("cl_htp")
-        self.add_output("cm_wing")
-        self.add_output("cl_alpha_htp")
+        self.add_output("cl_htp", units="unitless")
+        self.add_output("cm_wing", units="unitless")
+        self.add_output("cl_alpha_htp", units="unitless")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):

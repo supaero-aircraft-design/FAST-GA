@@ -16,20 +16,19 @@ to aero-structural loads.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
 
-import fastoad.api as oad
-
-from .aerostructural_loads import AerostructuralLoad, SPAN_MESH_POINT_LOADS
+from .aerostructural_loads import SPAN_MESH_POINT_LOADS, AerostructuralLoad
 from .constants import SUBMODEL_STRUCTURAL_LOADS
 
 
 @oad.RegisterSubmodel(SUBMODEL_STRUCTURAL_LOADS, "fastga.submodel.loads.wings.structural.legacy")
 class StructuralLoads(om.ExplicitComponent):
     def setup(self):
-        self.add_input("data:loads:max_shear:load_factor", val=np.nan)
-        self.add_input("data:loads:max_rbm:load_factor", val=np.nan)
+        self.add_input("data:loads:max_shear:load_factor", val=np.nan, units="unitless")
+        self.add_input("data:loads:max_rbm:load_factor", val=np.nan, units="unitless")
         self.add_input(
             "data:aerodynamics:wing:low_speed:Y_vector",
             val=np.nan,
@@ -51,6 +50,7 @@ class StructuralLoads(om.ExplicitComponent):
             val=np.nan,
             shape_by_conn=True,
             copy_shape="data:aerodynamics:wing:low_speed:Y_vector",
+            units="unitless",
         )
 
         self.add_input("data:weight:propulsion:engine:mass", val=np.nan, units="kg")
@@ -60,32 +60,42 @@ class StructuralLoads(om.ExplicitComponent):
 
         self.add_input("data:geometry:landing_gear:height", val=np.nan, units="m")
         self.add_input("data:geometry:landing_gear:y", val=np.nan, units="m")
-        self.add_input("data:geometry:landing_gear:type", val=np.nan)
+        self.add_input("data:geometry:landing_gear:type", val=np.nan, units="unitless")
         self.add_input("data:geometry:wing:root:chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:root:y", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:y", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:root:thickness_ratio", val=np.nan)
-        self.add_input("data:geometry:wing:tip:thickness_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:root:thickness_ratio", val=np.nan, units="unitless")
+        self.add_input("data:geometry:wing:tip:thickness_ratio", val=np.nan, units="unitless")
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
         self.add_input(
             "data:geometry:propulsion:engine:y_ratio",
             shape_by_conn=True,
+            units="unitless",
         )
-        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
-        self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan, units="unitless")
+        self.add_input("data:geometry:propulsion:engine:count", val=np.nan, units="unitless")
         self.add_input("data:geometry:propulsion:nacelle:width", val=np.nan, units="m")
-        self.add_input("data:geometry:propulsion:tank:y_ratio_tank_end", val=np.nan)
-        self.add_input("data:geometry:propulsion:tank:y_ratio_tank_beginning", val=np.nan)
-        self.add_input("data:geometry:propulsion:tank:LE_chord_percentage", val=np.nan)
-        self.add_input("data:geometry:propulsion:tank:TE_chord_percentage", val=np.nan)
-        self.add_input("data:geometry:flap:chord_ratio", val=np.nan)
-        self.add_input("data:geometry:wing:aileron:chord_ratio", val=np.nan)
+        self.add_input(
+            "data:geometry:propulsion:tank:y_ratio_tank_end", val=np.nan, units="unitless"
+        )
+        self.add_input(
+            "data:geometry:propulsion:tank:y_ratio_tank_beginning", val=np.nan, units="unitless"
+        )
+        self.add_input(
+            "data:geometry:propulsion:tank:LE_chord_percentage", val=np.nan, units="unitless"
+        )
+        self.add_input(
+            "data:geometry:propulsion:tank:TE_chord_percentage", val=np.nan, units="unitless"
+        )
+        self.add_input("data:geometry:flap:chord_ratio", val=np.nan, units="unitless")
+        self.add_input("data:geometry:wing:aileron:chord_ratio", val=np.nan, units="unitless")
 
         self.add_input(
             "data:weight:airframe:wing:punctual_mass:y_ratio",
             shape_by_conn=True,
             val=0.0,
+            units="unitless",
         )
         self.add_input(
             "data:weight:airframe:wing:punctual_mass:mass",
@@ -97,7 +107,7 @@ class StructuralLoads(om.ExplicitComponent):
 
         self.add_input("data:mission:sizing:fuel", val=np.nan, units="kg")
 
-        self.add_input("settings:geometry:fuel_tanks:depth", val=np.nan)
+        self.add_input("settings:geometry:fuel_tanks:depth", val=np.nan, units="unitless")
 
         self.add_output(
             "data:loads:structure:ultimate:force_distribution:wing",
@@ -147,12 +157,12 @@ class StructuralLoads(om.ExplicitComponent):
         y_vector = inputs["data:aerodynamics:wing:low_speed:Y_vector"]
         chord_vector = inputs["data:aerodynamics:wing:low_speed:chord_vector"]
 
-        semi_span = float(inputs["data:geometry:wing:span"]) / 2.0
+        semi_span = inputs["data:geometry:wing:span"].item() / 2.0
         root_chord = inputs["data:geometry:wing:root:chord"]
         tip_chord = inputs["data:geometry:wing:tip:chord"]
 
-        load_factor_shear = float(inputs["data:loads:max_shear:load_factor"])
-        load_factor_rbm = float(inputs["data:loads:max_rbm:load_factor"])
+        load_factor_shear = inputs["data:loads:max_shear:load_factor"].item()
+        load_factor_rbm = inputs["data:loads:max_rbm:load_factor"].item()
         wing_mass = inputs["data:weight:airframe:wing:mass"]
         fuel_mass = inputs["data:mission:sizing:fuel"]
 
@@ -175,10 +185,10 @@ class StructuralLoads(om.ExplicitComponent):
             inputs, y_vector_orig, chord_vector_orig, 0.0, 0.0
         )
         _, wing_mass_array_orig = AerostructuralLoad.compute_relief_force(
-            inputs, y_vector_orig, chord_vector_orig, wing_mass, 0.0, False
+            inputs, y_vector_orig, chord_vector_orig, wing_mass, 0.0, point_mass=False
         )
         _, fuel_mass_array_orig = AerostructuralLoad.compute_relief_force(
-            inputs, y_vector_orig, chord_vector_orig, 0.0, fuel_mass, False
+            inputs, y_vector_orig, chord_vector_orig, 0.0, fuel_mass, point_mass=False
         )
 
         point_mass_array = max(load_factor_shear, load_factor_rbm) * point_mass_array_orig

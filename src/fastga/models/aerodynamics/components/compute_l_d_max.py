@@ -12,9 +12,9 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 
 from ..constants import SUBMODEL_MAX_L_D
 
@@ -27,16 +27,21 @@ class ComputeLDMax(om.ExplicitComponent):
     """
 
     def setup(self):
-        self.add_input("data:aerodynamics:wing:cruise:CL0_clean", val=np.nan)
+        self.add_input("data:aerodynamics:wing:cruise:CL0_clean", val=np.nan, units="unitless")
         self.add_input("data:aerodynamics:wing:cruise:CL_alpha", val=np.nan, units="rad**-1")
-        self.add_input("data:aerodynamics:aircraft:cruise:CD0", val=np.nan)
-        self.add_input("data:aerodynamics:wing:cruise:induced_drag_coefficient", val=np.nan)
+        self.add_input("data:aerodynamics:aircraft:cruise:CD0", val=np.nan, units="unitless")
+        self.add_input(
+            "data:aerodynamics:wing:cruise:induced_drag_coefficient", val=np.nan, units="unitless"
+        )
 
-        self.add_output("data:aerodynamics:aircraft:cruise:L_D_max")
-        self.add_output("data:aerodynamics:aircraft:cruise:optimal_CL")
-        self.add_output("data:aerodynamics:aircraft:cruise:optimal_CD")
+        self.add_output("data:aerodynamics:aircraft:cruise:L_D_max", units="unitless")
+        self.add_output("data:aerodynamics:aircraft:cruise:optimal_CL", units="unitless")
+        self.add_output("data:aerodynamics:aircraft:cruise:optimal_CD", units="unitless")
         self.add_output("data:aerodynamics:aircraft:cruise:optimal_alpha", units="deg")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials(
             "data:aerodynamics:aircraft:cruise:optimal_CL",
             [

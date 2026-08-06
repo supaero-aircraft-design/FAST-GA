@@ -16,9 +16,11 @@ Estimation of fuselage center of gravity.
 
 import logging
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
+
+from fastga.models.constants import PropulsionLayout
 
 from ..constants import SUBMODEL_FUSELAGE_CG
 
@@ -34,12 +36,15 @@ class ComputeFuselageCG(om.ExplicitComponent):
     """
 
     def setup(self):
-        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan, units="unitless")
         self.add_input("data:geometry:fuselage:length", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:front_length", val=np.nan, units="m")
 
         self.add_output("data:weight:airframe:fuselage:CG:x", units="m")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials(
             of="*",
             wrt=["data:geometry:fuselage:length", "data:geometry:fuselage:front_length"],
@@ -52,11 +57,11 @@ class ComputeFuselageCG(om.ExplicitComponent):
         lav = inputs["data:geometry:fuselage:front_length"]
 
         # Fuselage gravity center
-        if prop_layout == 1.0:  # Wing mounted
+        if prop_layout == PropulsionLayout.UNDER_THE_WING:  # Wing mounted
             x_cg_a2 = 0.39 * fus_length
-        elif prop_layout == 2.0:  # Rear fuselage mounted
+        elif prop_layout == PropulsionLayout.IN_THE_REAR:  # Rear fuselage mounted
             x_cg_a2 = lav + 0.485 * (fus_length - lav)
-        elif prop_layout == 3.0:  # nose mount
+        elif prop_layout == PropulsionLayout.IN_THE_NOSE:  # nose mount
             x_cg_a2 = lav + 0.35 * (fus_length - lav)
         else:
             _LOGGER.warning(
@@ -69,29 +74,19 @@ class ComputeFuselageCG(om.ExplicitComponent):
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         prop_layout = inputs["data:geometry:propulsion:engine:layout"]
 
-        # Fuselage gravity center
-        if prop_layout == 1.0:  # Wing mounted
-            partials["data:weight:airframe:fuselage:CG:x", "data:geometry:fuselage:length"] = 0.39
-            partials[
-                "data:weight:airframe:fuselage:CG:x", "data:geometry:fuselage:front_length"
-            ] = 0.0
-        elif prop_layout == 2.0:  # Rear fuselage mounted
+        if prop_layout == PropulsionLayout.IN_THE_REAR:  # Rear fuselage mounted
             partials["data:weight:airframe:fuselage:CG:x", "data:geometry:fuselage:length"] = 0.485
             partials[
                 "data:weight:airframe:fuselage:CG:x", "data:geometry:fuselage:front_length"
             ] = 0.515
 
-        elif prop_layout == 3.0:  # nose mount
+        elif prop_layout == PropulsionLayout.IN_THE_NOSE:  # nose mount
             partials["data:weight:airframe:fuselage:CG:x", "data:geometry:fuselage:length"] = 0.35
             partials[
                 "data:weight:airframe:fuselage:CG:x", "data:geometry:fuselage:front_length"
             ] = 0.65
 
         else:
-            _LOGGER.warning(
-                "Propulsion layout %f does not exist, replaced by layout 1!", prop_layout
-            )
-
             partials["data:weight:airframe:fuselage:CG:x", "data:geometry:fuselage:length"] = 0.39
             partials[
                 "data:weight:airframe:fuselage:CG:x", "data:geometry:fuselage:front_length"

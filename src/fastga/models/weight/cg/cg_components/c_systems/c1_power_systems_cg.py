@@ -13,9 +13,9 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 
 from ..constants import SUBMODEL_POWER_SYSTEMS_CG
 
@@ -37,6 +37,9 @@ class ComputePowerSystemsCG(om.ExplicitComponent):
         self.add_output("data:weight:systems:power:electric_systems:CG:x", units="m")
         self.add_output("data:weight:systems:power:hydraulic_systems:CG:x", units="m")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials(
             of="*",
             wrt=["data:geometry:fuselage:length", "data:geometry:fuselage:front_length"],

@@ -32,6 +32,9 @@ class ComputeFuselageCabinLength(om.ExplicitComponent):
 
         self.add_output("data:geometry:cabin:length", units="m")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials(of="*", wrt="*", val=1.0)
 
     # pylint: disable=missing-function-docstring, unused-argument

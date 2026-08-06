@@ -16,17 +16,23 @@ Test module for mass breakdown functions.
 
 import pytest
 
-from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
+from tests.testing_utilities import (
+    get_indep_var_comp,
+    list_inputs,
+    run_system,
+    setup_and_run_system,
+)
+
 from ..a_airframe import ComputeWingMassAnalytical
 from ..a_airframe.wing_components import (
-    ComputeWebMass,
     ComputeLowerFlange,
-    ComputeUpperFlange,
-    ComputeSkinMass,
     ComputeMiscMass,
-    ComputeRibsMass,
     ComputePrimaryMass,
+    ComputeRibsMass,
     ComputeSecondaryMass,
+    ComputeSkinMass,
+    ComputeUpperFlange,
+    ComputeWebMass,
     UpdateWingMass,
 )
 
@@ -113,10 +119,7 @@ def test_compute_skin_mass():
 
 def test_compute_ribs_mass():
     # Research independent input value in .xml file
-    ivc = get_indep_var_comp(list_inputs(ComputeRibsMass()), __file__, XML_FILE)
-
-    # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeRibsMass(), ivc)
+    problem = setup_and_run_system(ComputeRibsMass(), __file__, XML_FILE)
     assert problem["data:weight:airframe:wing:ribs:mass"] == pytest.approx(3.205, abs=1e-2)
 
 
@@ -176,6 +179,8 @@ def test_compute_secondary_mass():
     assert problem["data:weight:airframe:wing:secondary_structure:mass"] == pytest.approx(
         43.600, abs=1e-2
     )
+
+    problem.check_partials(compact_print=True)
 
 
 def test_update_wing_mass():

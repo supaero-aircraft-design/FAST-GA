@@ -11,7 +11,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import os
+import pathlib
 
 import numpy as np
 import openmdao.api as om
@@ -19,8 +19,8 @@ import pandas as pd
 from stdatm import Atmosphere
 
 from fastga.models.performances.mission.mission_components import (
-    POINTS_NB_CRUISE,
     POINTS_NB_CLIMB,
+    POINTS_NB_CRUISE,
     POINTS_NB_DESCENT,
 )
 
@@ -59,7 +59,7 @@ CSV_DATA_LABELS = [
 class ToCSV(om.ExplicitComponent):
     def initialize(self):
         self.options.declare(
-            "number_of_points", default=1, desc="number of equilibrium to be " "treated"
+            "number_of_points", default=1, desc="number of equilibrium to be treated"
         )
         self.options.declare("out_file", default="", types=str)
 
@@ -105,27 +105,36 @@ class ToCSV(om.ExplicitComponent):
         self.add_input(
             "delta_m", val=np.full(number_of_points, np.nan), shape=number_of_points, units="deg"
         )
-        self.add_input("data:aerodynamics:aircraft:cruise:CD0", np.nan)
+        self.add_input("data:aerodynamics:aircraft:cruise:CD0", np.nan, units="unitless")
         self.add_input("data:aerodynamics:wing:cruise:CL_alpha", val=np.nan, units="rad**-1")
-        self.add_input("data:aerodynamics:wing:cruise:CL0_clean", val=np.nan)
-        self.add_input("data:aerodynamics:wing:cruise:induced_drag_coefficient", np.nan)
-        self.add_input("data:aerodynamics:horizontal_tail:cruise:CL0", val=np.nan)
+        self.add_input("data:aerodynamics:wing:cruise:CL0_clean", val=np.nan, units="unitless")
+        self.add_input(
+            "data:aerodynamics:wing:cruise:induced_drag_coefficient", np.nan, units="unitless"
+        )
+        self.add_input("data:aerodynamics:horizontal_tail:cruise:CL0", val=np.nan, units="unitless")
         self.add_input(
             "data:aerodynamics:horizontal_tail:cruise:CL_alpha", val=np.nan, units="rad**-1"
         )
-        self.add_input("data:aerodynamics:horizontal_tail:cruise:induced_drag_coefficient", np.nan)
+        self.add_input(
+            "data:aerodynamics:horizontal_tail:cruise:induced_drag_coefficient",
+            np.nan,
+            units="unitless",
+        )
         self.add_input("data:aerodynamics:elevator:low_speed:CL_delta", val=np.nan, units="rad**-1")
         self.add_input("data:aerodynamics:elevator:low_speed:CD_delta", val=np.nan, units="rad**-2")
-        self.add_input("delta_Cl", val=np.full(number_of_points, np.nan))
-        self.add_input("delta_Cd", val=np.full(number_of_points, np.nan))
-        self.add_input("delta_Cm", val=np.full(number_of_points, np.nan))
+        self.add_input("delta_Cl", val=np.full(number_of_points, np.nan), units="unitless")
+        self.add_input("delta_Cd", val=np.full(number_of_points, np.nan), units="unitless")
+        self.add_input("delta_Cm", val=np.full(number_of_points, np.nan), units="unitless")
         self.add_input(
             "thrust", val=np.full(number_of_points, np.nan), shape=number_of_points, units="N"
         )
         self.add_input(
-            "thrust_rate_t", val=np.full(number_of_points, np.nan), shape=number_of_points
+            "thrust_rate_t",
+            val=np.full(number_of_points, np.nan),
+            shape=number_of_points,
+            units="unitless",
         )
-        self.add_input("engine_setting", val=np.full(number_of_points, np.nan))
+        self.add_input("engine_setting", val=np.full(number_of_points, np.nan), units="unitless")
         self.add_input(
             "fuel_consumed_t",
             shape=number_of_points,
@@ -146,7 +155,7 @@ class ToCSV(om.ExplicitComponent):
             "tsfc", shape=number_of_points, val=np.full(number_of_points, 7e-6), units="kg/s/N"
         )
 
-    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):  # noqa: PLR0915
         time = inputs["time"]
         altitude = inputs["altitude"]
         distance = inputs["position"]
@@ -207,11 +216,12 @@ class ToCSV(om.ExplicitComponent):
             outputs["tsfc"] = tsfc
 
         else:
-            if os.path.exists(self.options["out_file"]):
-                os.remove(self.options["out_file"])
+            outfile = pathlib.Path(self.options["out_file"])
+            if outfile.exists():
+                outfile.unlink()
 
-            if not os.path.exists(os.path.dirname(self.options["out_file"])):
-                os.mkdir(os.path.dirname(self.options["out_file"]))
+            if not outfile.parent.exists():
+                outfile.parent.mkdir()
 
             results_df = pd.DataFrame(columns=CSV_DATA_LABELS)
             results_df["time"] = time

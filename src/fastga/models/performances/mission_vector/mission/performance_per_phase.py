@@ -15,8 +15,8 @@ import numpy as np
 import openmdao.api as om
 
 from fastga.models.performances.mission.mission_components import (
-    POINTS_NB_CRUISE,
     POINTS_NB_CLIMB,
+    POINTS_NB_CRUISE,
     POINTS_NB_DESCENT,
 )
 
@@ -57,6 +57,7 @@ class PerformancePerPhase(om.ExplicitComponent):
             "thrust_rate_t_econ",
             shape=number_of_points + 2,
             val=np.full(number_of_points + 2, np.nan),
+            units="unitless",
         )
 
         self.add_output("data:mission:sizing:main_route:climb:fuel", units="kg")
@@ -81,8 +82,10 @@ class PerformancePerPhase(om.ExplicitComponent):
 
         self.add_output("fuel_consumed_t", shape=number_of_points, units="kg")
         self.add_output("non_consumable_energy_t", shape=number_of_points, units="W*h")
-        self.add_output("thrust_rate_t", shape=number_of_points)
+        self.add_output("thrust_rate_t", shape=number_of_points, units="unitless")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(
             of="data:mission:sizing:main_route:climb:fuel",

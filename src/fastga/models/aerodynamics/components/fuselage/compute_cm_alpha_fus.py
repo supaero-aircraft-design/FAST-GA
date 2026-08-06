@@ -12,14 +12,14 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 
-from fastga.models.aerodynamics.constants import SUBMODEL_CM_ALPHA_FUSELAGE
 from fastga.models.aerodynamics.components.digitization.compute_k_fuselage import (
     ComputeFuselagePitchMomentFactor,
 )
+from fastga.models.aerodynamics.constants import SUBMODEL_CM_ALPHA_FUSELAGE
 
 
 @oad.RegisterSubmodel(
@@ -69,8 +69,11 @@ class ComputeQuarterRootChordPositionRatio(om.ExplicitComponent):
         self.add_input("data:geometry:wing:root:virtual_chord", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:length", val=np.nan, units="m")
 
-        self.add_output("x0_ratio", val=0.2)
+        self.add_output("x0_ratio", val=0.2, units="unitless")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials("x0_ratio", "*", method="exact")
 
     # pylint: disable=missing-function-docstring, unused-argument
@@ -119,6 +122,9 @@ class ComputeCmAlphaFuselageNacelle(om.ExplicitComponent):
 
         self.add_output("data:aerodynamics:fuselage:cm_alpha", units="rad**-1")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials("data:aerodynamics:fuselage:cm_alpha", "*", method="exact")
 
     # pylint: disable=missing-function-docstring, unused-argument

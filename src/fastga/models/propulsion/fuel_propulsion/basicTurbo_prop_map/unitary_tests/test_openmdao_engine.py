@@ -16,37 +16,35 @@ Test module for OpenMDAO versions of basicICEngine
 
 import numpy as np
 import openmdao.api as om
-
 from fastoad.constants import EngineSetting
-
-from ..openmdao import OMBasicTPEngineMappedComponent
-
-from .data.dummy_maps import (
-    SPEED,
-    THRUST_SL,
-    THRUST_SL_LIMIT,
-    EFFICIENCY_SL,
-    THRUST_CL,
-    THRUST_CL_LIMIT,
-    EFFICIENCY_CL,
-    MACH_ARRAY_SL,
-    THRUST_ARRAY_SL,
-    THRUST_MAX_ARRAY_SL,
-    SFC_SL,
-    MACH_ARRAY_CL,
-    THRUST_ARRAY_CL,
-    THRUST_MAX_ARRAY_CL,
-    SFC_CL,
-    MACH_ARRAY_IL,
-    THRUST_ARRAY_IL,
-    THRUST_MAX_ARRAY_IL,
-    SFC_IL,
-)
 
 from tests.testing_utilities import run_system
 
+from .data.dummy_maps import (
+    EFFICIENCY_CL,
+    EFFICIENCY_SL,
+    MACH_ARRAY_CL,
+    MACH_ARRAY_IL,
+    MACH_ARRAY_SL,
+    SFC_CL,
+    SFC_IL,
+    SFC_SL,
+    SPEED,
+    THRUST_ARRAY_CL,
+    THRUST_ARRAY_IL,
+    THRUST_ARRAY_SL,
+    THRUST_CL,
+    THRUST_CL_LIMIT,
+    THRUST_MAX_ARRAY_CL,
+    THRUST_MAX_ARRAY_IL,
+    THRUST_MAX_ARRAY_SL,
+    THRUST_SL,
+    THRUST_SL_LIMIT,
+)
+from ..openmdao import OMBasicTPEngineMappedComponent
 
-def test_OMBasicTPEngineMappedComponent():
+
+def test_openmdao_component_wrapper():
     """Tests ManualBasicTPEngine component"""
     # Same test as in test_basicIC_engine.test_compute_flight_points
     engine = OMBasicTPEngineMappedComponent(flight_point_count=(2, 5))
@@ -69,30 +67,35 @@ def test_OMBasicTPEngineMappedComponent():
     ivc.add_output(
         "data:propulsion:turboprop:design_point:turbine_entry_temperature", 1400, units="K"
     )
-    ivc.add_output("data:propulsion:turboprop:design_point:OPR", 12.0)
+    ivc.add_output("data:propulsion:turboprop:design_point:OPR", 12.0, units="unitless")
     ivc.add_output("data:propulsion:turboprop:design_point:altitude", 0.0, units="ft")
-    ivc.add_output("data:propulsion:turboprop:design_point:mach", 0.0)
-    ivc.add_output("data:propulsion:turboprop:off_design:bleed_usage", val=1.0)
+    ivc.add_output("data:propulsion:turboprop:design_point:mach", 0.0, units="unitless")
+    ivc.add_output("data:propulsion:turboprop:off_design:bleed_usage", val=1.0, units="unitless")
     ivc.add_output("data:propulsion:turboprop:off_design:itt_limit", val=1125.0, units="K")
     ivc.add_output("data:propulsion:turboprop:off_design:power_limit", val=634.0, units="kW")
-    ivc.add_output("data:propulsion:turboprop:off_design:opr_limit", val=12.0)
+    ivc.add_output("data:propulsion:turboprop:off_design:opr_limit", val=12.0, units="unitless")
     ivc.add_output("data:TLAR:v_cruise", 164.622, units="m/s")
     ivc.add_output("data:aerodynamics:propeller:cruise_level:altitude", 6096.0, units="m")
-    ivc.add_output("data:geometry:propulsion:engine:layout", val=1.0)
-    ivc.add_output("data:geometry:propulsion:engine:count", 1.0)
+    ivc.add_output("data:geometry:propulsion:engine:layout", val=1.0, units="unitless")
+    ivc.add_output("data:geometry:propulsion:engine:count", 1.0, units="unitless")
     ivc.add_output("data:aerodynamics:propeller:sea_level:speed", SPEED, units="m/s")
     ivc.add_output("data:aerodynamics:propeller:sea_level:thrust", THRUST_SL, units="N")
     ivc.add_output("data:aerodynamics:propeller:sea_level:thrust_limit", THRUST_SL_LIMIT, units="N")
-    ivc.add_output("data:aerodynamics:propeller:sea_level:efficiency", EFFICIENCY_SL)
+    ivc.add_output(
+        "data:aerodynamics:propeller:sea_level:efficiency", EFFICIENCY_SL, units="unitless"
+    )
     ivc.add_output("data:aerodynamics:propeller:cruise_level:speed", SPEED, units="m/s")
     ivc.add_output("data:aerodynamics:propeller:cruise_level:thrust", THRUST_CL, units="N")
     ivc.add_output(
         "data:aerodynamics:propeller:cruise_level:thrust_limit", THRUST_CL_LIMIT, units="N"
     )
-    ivc.add_output("data:aerodynamics:propeller:cruise_level:efficiency", EFFICIENCY_CL)
+    ivc.add_output(
+        "data:aerodynamics:propeller:cruise_level:efficiency", EFFICIENCY_CL, units="unitless"
+    )
     ivc.add_output(
         "data:propulsion:turboprop:sea_level:mach",
         val=MACH_ARRAY_SL,
+        units="unitless",
     )
     ivc.add_output("data:propulsion:turboprop:sea_level:thrust", units="N", val=THRUST_ARRAY_SL)
     ivc.add_output(
@@ -109,6 +112,7 @@ def test_OMBasicTPEngineMappedComponent():
     ivc.add_output(
         "data:propulsion:turboprop:cruise_level:mach",
         val=MACH_ARRAY_CL,
+        units="unitless",
     )
     ivc.add_output(
         "data:propulsion:turboprop:cruise_level:thrust",
@@ -130,6 +134,7 @@ def test_OMBasicTPEngineMappedComponent():
     ivc.add_output(
         "data:propulsion:turboprop:intermediate_level:mach",
         val=MACH_ARRAY_IL,
+        units="unitless",
     )
     ivc.add_output(
         "data:propulsion:turboprop:intermediate_level:thrust",
@@ -147,11 +152,15 @@ def test_OMBasicTPEngineMappedComponent():
         units="kg/s/N",
     )
 
-    ivc.add_output("data:propulsion:mach", [machs, machs])
+    ivc.add_output("data:propulsion:mach", [machs, machs], units="unitless")
     ivc.add_output("data:propulsion:altitude", [altitudes, altitudes], units="m")
-    ivc.add_output("data:propulsion:engine_setting", [engine_settings, engine_settings])
-    ivc.add_output("data:propulsion:use_thrust_rate", [[True] * 5, [False] * 5])
-    ivc.add_output("data:propulsion:required_thrust_rate", [thrust_rates, [0] * 5])
+    ivc.add_output(
+        "data:propulsion:engine_setting", [engine_settings, engine_settings], units="unitless"
+    )
+    ivc.add_output("data:propulsion:use_thrust_rate", [[True] * 5, [False] * 5], units="unitless")
+    ivc.add_output(
+        "data:propulsion:required_thrust_rate", [thrust_rates, [0] * 5], units="unitless"
+    )
     ivc.add_output("data:propulsion:required_thrust", [[0] * 5, thrusts], units="N")
 
     problem = run_system(engine, ivc)

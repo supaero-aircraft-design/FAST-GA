@@ -12,9 +12,11 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
+
+from fastga.models.constants import PropulsionLayout
 
 from ..constants import SUBMODEL_CD0_OTHER
 
@@ -32,13 +34,15 @@ class Cd0Other(om.ExplicitComponent):
         self.options.declare("low_speed_aero", default=False, types=bool)
 
     def setup(self):
-        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan, units="unitless")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
 
         if self.options["low_speed_aero"]:
             # Gudmundsson p715. Assuming cx_cooling*wing area/MTOW value of the book is typical
-            self.add_input("data:aerodynamics:cooling:low_speed:CD0", val=0.0005525)
-            self.add_output("data:aerodynamics:other:low_speed:CD0")
+            self.add_input(
+                "data:aerodynamics:cooling:low_speed:CD0", val=0.0005525, units="unitless"
+            )
+            self.add_output("data:aerodynamics:other:low_speed:CD0", units="unitless")
             self.declare_partials(
                 of="data:aerodynamics:other:low_speed:CD0",
                 wrt=["data:geometry:wing:area", "data:aerodynamics:cooling:low_speed:CD0"],
@@ -47,14 +51,17 @@ class Cd0Other(om.ExplicitComponent):
 
         else:
             # Gudmundsson p715. Assuming cx_cooling*wing area/MTOW value of the book is typical
-            self.add_input("data:aerodynamics:cooling:cruise:CD0", val=0.0005525)
-            self.add_output("data:aerodynamics:other:cruise:CD0")
+            self.add_input("data:aerodynamics:cooling:cruise:CD0", val=0.0005525, units="unitless")
+            self.add_output("data:aerodynamics:other:cruise:CD0", units="unitless")
             self.declare_partials(
                 of="data:aerodynamics:other:cruise:CD0",
                 wrt=["data:geometry:wing:area", "data:aerodynamics:cooling:cruise:CD0"],
                 method="exact",
             )
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials("*", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
@@ -62,10 +69,7 @@ class Cd0Other(om.ExplicitComponent):
         wing_area = inputs["data:geometry:wing:area"]
 
         # COWLING (only if engine in fuselage): cx_cowl*wing_area assumed typical (Gudmundsson p739)
-        if prop_layout == 3.0:
-            cd0_cowling = 0.0267 / wing_area
-        else:
-            cd0_cowling = 0.0
+        cd0_cowling = 0.0267 / wing_area if prop_layout == PropulsionLayout.IN_THE_NOSE else 0.0
         # Cooling (piston engine only)
         # Gudmundsson p739. Sum of other components (not calculated here), cx_other*wing_area
         # assumed typical
@@ -87,10 +91,9 @@ class Cd0Other(om.ExplicitComponent):
         prop_layout = inputs["data:geometry:propulsion:engine:layout"]
         wing_area = inputs["data:geometry:wing:area"]
 
-        if prop_layout == 3.0:
-            d_cd0_cowl_d_wing_area = -0.0267 / wing_area**2.0
-        else:
-            d_cd0_cowl_d_wing_area = 0.0
+        d_cd0_cowl_d_wing_area = (
+            -0.0267 / wing_area**2.0 if prop_layout == PropulsionLayout.IN_THE_NOSE else 0.0
+        )
 
         if self.options["low_speed_aero"]:
             partials[

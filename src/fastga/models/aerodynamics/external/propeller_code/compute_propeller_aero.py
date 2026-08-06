@@ -14,15 +14,13 @@
 
 import logging
 
-import numpy as np
-
-import openmdao.api as om
-
 import fastoad.api as oad
+import numpy as np
+import openmdao.api as om
 from fastoad.module_management.constants import ModelDomain
 
-from fastga.models.aerodynamics.external.xfoil.xfoil_polar import XfoilPolar
 from fastga.models.aerodynamics.external.neuralfoil.neuralfoil_polar import NeuralfoilPolar
+from fastga.models.aerodynamics.external.xfoil.xfoil_polar import XfoilPolar
 
 from .propeller_core import PropellerCoreModule
 
@@ -60,8 +58,8 @@ class ComputePropellerPerformance(om.Group):
 
     def setup(self):
         ivc = om.IndepVarComp()
-        ivc.add_output("data:aerodynamics:propeller:mach", val=0.0)
-        ivc.add_output("data:aerodynamics:propeller:reynolds", val=1e6)
+        ivc.add_output("data:aerodynamics:propeller:mach", val=0.0, units="unitless")
+        ivc.add_output("data:aerodynamics:propeller:reynolds", val=1e6, units="unitless")
         self.add_subsystem("propeller_efficiency_aero_conditions", ivc, promotes=["*"])
         for profile in self.options["sections_profile_name_list"]:
             # Selects the tool for airfoil analysis: uses NeuralFoil if 'use_neuralfoil' is True;
@@ -134,7 +132,9 @@ class _ComputePropellerPerformance(PropellerCoreModule):
         self.add_input("data:TLAR:v_cruise", val=np.nan, units="m/s")
 
         self.add_output(
-            "data:aerodynamics:propeller:sea_level:efficiency", shape=(SPEED_PTS_NB, THRUST_PTS_NB)
+            "data:aerodynamics:propeller:sea_level:efficiency",
+            shape=(SPEED_PTS_NB, THRUST_PTS_NB),
+            units="unitless",
         )
         self.add_output(
             "data:aerodynamics:propeller:sea_level:thrust", shape=THRUST_PTS_NB, units="N"
@@ -148,6 +148,7 @@ class _ComputePropellerPerformance(PropellerCoreModule):
         self.add_output(
             "data:aerodynamics:propeller:cruise_level:efficiency",
             shape=(SPEED_PTS_NB, THRUST_PTS_NB),
+            units="unitless",
         )
         self.add_output(
             "data:aerodynamics:propeller:cruise_level:thrust", shape=THRUST_PTS_NB, units="N"
@@ -203,7 +204,7 @@ class _ComputePropellerPerformance(PropellerCoreModule):
             "data:mission:sizing:main_route:cruise:altitude"
         ]
 
-    def construct_table(self, inputs, speed_interp, altitude, omega):
+    def construct_table(self, inputs, speed_interp, altitude, omega):  # noqa: PLR0915
         """
         Computes the propeller characteristics in the given flight conditions for various
         pitches. These tables will then be reformatted to fit the OpenMDAO formalism.
@@ -317,27 +318,6 @@ class _ComputePropellerPerformance(PropellerCoreModule):
             thrust_vect.append(local_thrust_vect)
             theta_vect.append(local_theta_vect)
             eta_vect.append(local_eta_vect)
-
-            # # Plot graphs
-            # thrust_vect.append(local_thrust_vect)
-            # theta_vect.append(local_theta_vect)
-            # eta_vect.append(local_eta_vect)
-            # plt.figure(1)
-            # plt.subplot(311)
-            # plt.xlabel("0.75R pitch angle [°]")
-            # plt.ylabel("Thrust [N]")
-            # plt.plot(local_theta_vect, local_thrust_vect)
-            # plt.subplot(312)
-            # plt.xlabel("0.75R pitch angle [°]")
-            # plt.ylabel("Efficiency [-]")
-            # plt.plot(local_theta_vect, local_eta_vect)
-            # plt.subplot(313)
-            # plt.xlabel("0.75R pitch angle [°]")
-            # plt.ylabel("Torque [-]")
-            # plt.plot(local_theta_vect,
-            #          v_inf * np.array(local_thrust_vect)
-            #          /
-            #          (np.array(local_eta_vect) * omega * np.pi / 30.0))
 
         return thrust_vect, theta_vect, eta_vect
 

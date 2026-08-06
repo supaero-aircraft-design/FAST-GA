@@ -19,91 +19,91 @@ import pytest
 
 from .dummy_engines import ENGINE_WRAPPER_TBM900 as ENGINE_WRAPPER
 from .test_functions import (
-    xfoil_path,
-    compute_reynolds,
+    airfoil_slope_neuralfoil,
+    airfoil_slope_wt_neuralfoil,
+    airfoil_slope_wt_xfoil,
+    airfoil_slope_xfoil,
     cd0_high_speed,
     cd0_low_speed,
-    polar_xfoil,
-    polar_neuralfoil,
-    polar_single_aoa_xfoil,
-    polar_single_aoa_neuralfoil,
-    polar_single_aoa_inv,
-    airfoil_slope_wt_xfoil,
-    airfoil_slope_wt_neuralfoil,
-    airfoil_slope_xfoil,
-    airfoil_slope_neuralfoil,
-    comp_high_speed_xfoil,
+    cl_alpha_vt,
+    cm_alpha_fus,
+    cnbeta,
     comp_high_speed_neuralfoil,
-    comp_low_speed_xfoil,
+    comp_high_speed_xfoil,
     comp_low_speed_neuralfoil,
+    comp_low_speed_xfoil,
+    compute_mach_interpolation_roskam_neuralfoil,
+    compute_mach_interpolation_roskam_xfoil,
+    compute_reynolds,
+    cy_beta_fus,
+    cy_delta_r,
+    downwash_gradient,
+    effective_efficiency,
+    elevator,
+    equilibrated_cl_cd_polar,
+    extreme_cl,
+    high_lift,
+    high_speed_connection,
     hinge_moment_2d,
     hinge_moment_3d,
     hinge_moments,
-    high_lift,
-    extreme_cl,
-    wing_extreme_cl_clean_xfoil,
-    wing_extreme_cl_clean_neuralfoil,
-    htp_extreme_cl_clean_xfoil,
     htp_extreme_cl_clean_neuralfoil,
+    htp_extreme_cl_clean_xfoil,
     l_d_max,
-    cnbeta,
-    slipstream_openvsp_cruise,
-    slipstream_openvsp_low_speed,
-    compute_mach_interpolation_roskam_xfoil,
-    compute_mach_interpolation_roskam_neuralfoil,
-    cl_alpha_vt,
-    cy_delta_r,
-    effective_efficiency,
-    cm_alpha_fus,
-    high_speed_connection,
-    low_speed_connection,
-    v_n_diagram,
-    load_factor,
-    propeller_xfoil,
-    propeller_neuralfoil,
-    non_equilibrated_cl_cd_polar,
-    equilibrated_cl_cd_polar,
-    elevator,
-    cy_beta_fus,
-    downwash_gradient,
     lift_aoa_rate_derivative,
+    lift_pitch_velocity_derivative_aircraft,
     lift_pitch_velocity_derivative_ht,
     lift_pitch_velocity_derivative_wing,
-    lift_pitch_velocity_derivative_aircraft,
-    side_force_sideslip_derivative_wing,
-    side_force_sideslip_derivative_vt,
-    side_force_sideslip_aircraft,
-    side_force_yaw_rate_aircraft,
-    side_force_roll_rate_aircraft,
-    roll_moment_side_slip_wing,
-    roll_moment_side_slip_ht,
-    roll_moment_side_slip_vt,
-    roll_moment_side_slip_aircraft,
-    roll_moment_roll_rate_wing,
-    roll_moment_roll_rate_ht,
-    roll_moment_roll_rate_vt,
-    roll_moment_roll_rate_aircraft,
-    roll_moment_yaw_rate_wing,
-    roll_moment_yaw_rate_vt,
-    roll_moment_yaw_rate_aircraft,
-    roll_authority_aileron,
-    roll_moment_rudder,
-    pitch_moment_pitch_rate_wing,
-    pitch_moment_pitch_rate_ht,
-    pitch_moment_pitch_rate_aircraft,
+    load_factor,
+    low_speed_connection,
+    non_equilibrated_cl_cd_polar,
     pitch_moment_aoa_rate_derivative,
-    yaw_moment_sideslip_derivative_vt,
-    yaw_moment_sideslip_aircraft,
-    yaw_moment_aileron,
-    yaw_moment_rudder,
-    yaw_moment_roll_rate_wing,
-    yaw_moment_roll_rate_vt,
-    yaw_moment_roll_rate_aircraft,
-    yaw_moment_yaw_rate_wing,
-    yaw_moment_yaw_rate_vt,
-    yaw_moment_yaw_rate_aircraft,
+    pitch_moment_pitch_rate_aircraft,
+    pitch_moment_pitch_rate_ht,
+    pitch_moment_pitch_rate_wing,
     polar_ext_folder,
     polar_ext_folder_neuralfoil,
+    polar_neuralfoil,
+    polar_single_aoa_inv,
+    polar_single_aoa_neuralfoil,
+    polar_single_aoa_xfoil,
+    polar_xfoil,
+    propeller_neuralfoil,
+    propeller_xfoil,
+    roll_authority_aileron,
+    roll_moment_roll_rate_aircraft,
+    roll_moment_roll_rate_ht,
+    roll_moment_roll_rate_vt,
+    roll_moment_roll_rate_wing,
+    roll_moment_rudder,
+    roll_moment_side_slip_aircraft,
+    roll_moment_side_slip_ht,
+    roll_moment_side_slip_vt,
+    roll_moment_side_slip_wing,
+    roll_moment_yaw_rate_aircraft,
+    roll_moment_yaw_rate_vt,
+    roll_moment_yaw_rate_wing,
+    side_force_roll_rate_aircraft,
+    side_force_sideslip_aircraft,
+    side_force_sideslip_derivative_vt,
+    side_force_sideslip_derivative_wing,
+    side_force_yaw_rate_aircraft,
+    slipstream_openvsp_cruise,
+    slipstream_openvsp_low_speed,
+    v_n_diagram,
+    wing_extreme_cl_clean_neuralfoil,
+    wing_extreme_cl_clean_xfoil,
+    xfoil_path,
+    yaw_moment_aileron,
+    yaw_moment_roll_rate_aircraft,
+    yaw_moment_roll_rate_vt,
+    yaw_moment_roll_rate_wing,
+    yaw_moment_rudder,
+    yaw_moment_sideslip_aircraft,
+    yaw_moment_sideslip_derivative_vt,
+    yaw_moment_yaw_rate_aircraft,
+    yaw_moment_yaw_rate_vt,
+    yaw_moment_yaw_rate_wing,
 )
 
 XML_FILE = "daher_tbm900.xml"
@@ -154,7 +154,7 @@ def test_cd0_low_speed():
 
 
 @pytest.mark.skipif(
-    system() != "Windows" and xfoil_path is None or SKIP_STEPS,
+    (system() != "Windows" and xfoil_path is None) or SKIP_STEPS,
     reason="No XFOIL executable available",
 )
 def test_polar():
@@ -186,7 +186,7 @@ def test_polar_neuralfoil():
 
 
 @pytest.mark.skipif(
-    system() != "Windows" and xfoil_path is None or SKIP_STEPS,
+    (system() != "Windows" and xfoil_path is None) or SKIP_STEPS,
     reason="No XFOIL executable available (or skipped)",
 )
 def test_polar_single_aoa():
@@ -210,7 +210,7 @@ def test_polar_single_aoa_neuralfoil():
 
 
 @pytest.mark.skipif(
-    system() != "Windows" and xfoil_path is None or SKIP_STEPS,
+    (system() != "Windows" and xfoil_path is None) or SKIP_STEPS,
     reason="No XFOIL executable available (or skipped)",
 )
 def test_polar_single_aoa_inv():
@@ -223,7 +223,7 @@ def test_polar_single_aoa_inv():
 
 
 @pytest.mark.skipif(
-    system() != "Windows" and xfoil_path is None or SKIP_STEPS,
+    (system() != "Windows" and xfoil_path is None) or SKIP_STEPS,
     reason="No XFOIL executable available",
 )
 def test_polar_with_ext_folder():
@@ -255,7 +255,7 @@ def test_polar_with_ext_folder_neuralfoil():
 
 
 @pytest.mark.skipif(
-    system() != "Windows" and xfoil_path is None or SKIP_STEPS,
+    (system() != "Windows" and xfoil_path is None) or SKIP_STEPS,
     reason="No XFOIL executable available (or skipped)",
 )
 def test_airfoil_slope():
@@ -285,7 +285,7 @@ def test_airfoil_slope_neuralfoil():
 
 
 @pytest.mark.skipif(
-    system() != "Windows" and xfoil_path is None or SKIP_STEPS,
+    (system() != "Windows" and xfoil_path is None) or SKIP_STEPS,
     reason="No XFOIL executable available (or skipped)",
 )
 def test_airfoil_slope_wt_xfoil():
@@ -1522,7 +1522,7 @@ def test_load_factor():
     reason="No XFOIL executable available",
 )
 def test_propeller():
-    thrust_SL = np.array(
+    thrust_sl = np.array(
         [
             1619.09853324,
             2602.82704064,
@@ -1556,7 +1556,7 @@ def test_propeller():
             30147.22524794,
         ]
     )
-    thrust_SL_limit = np.array(
+    thrust_sl_limit = np.array(
         [
             12690.75906508,
             14452.03746608,
@@ -1570,7 +1570,7 @@ def test_propeller():
             30147.22524794,
         ]
     )
-    efficiency_SL = np.array(
+    efficiency_sl = np.array(
         [
             [
                 0.13570735,
@@ -1894,7 +1894,7 @@ def test_propeller():
             ],
         ]
     )
-    thrust_CL = np.array(
+    thrust_cl = np.array(
         [
             634.37045222,
             1043.01485082,
@@ -1928,7 +1928,7 @@ def test_propeller():
             12485.05801151,
         ]
     )
-    thrust_CL_limit = np.array(
+    thrust_cl_limit = np.array(
         [
             5141.33873835,
             5859.18963494,
@@ -1942,7 +1942,7 @@ def test_propeller():
             12485.05801151,
         ]
     )
-    efficiency_CL = np.array(
+    efficiency_cl = np.array(
         [
             [
                 0.12333056,
@@ -2282,18 +2282,18 @@ def test_propeller():
     )
     propeller_xfoil(
         XML_FILE,
-        thrust_SL=thrust_SL,
-        thrust_SL_limit=thrust_SL_limit,
-        efficiency_SL=efficiency_SL,
-        thrust_CL=thrust_CL,
-        thrust_CL_limit=thrust_CL_limit,
-        efficiency_CL=efficiency_CL,
+        thrust_sl=thrust_sl,
+        thrust_sl_limit=thrust_sl_limit,
+        efficiency_sl=efficiency_sl,
+        thrust_cl=thrust_cl,
+        thrust_cl_limit=thrust_cl_limit,
+        efficiency_cl=efficiency_cl,
         speed=speed,
     )
 
 
 def test_propeller_neuralfoil():
-    thrust_SL = np.array(
+    thrust_sl = np.array(
         [
             1068.74892912,
             2093.74331654,
@@ -2327,7 +2327,7 @@ def test_propeller_neuralfoil():
             30793.58616417,
         ]
     )
-    thrust_SL_limit = np.array(
+    thrust_sl_limit = np.array(
         [
             13027.69875763,
             14831.30232383,
@@ -2341,7 +2341,7 @@ def test_propeller_neuralfoil():
             30793.58616417,
         ]
     )
-    efficiency_SL = np.array(
+    efficiency_sl = np.array(
         [
             [
                 0.10907139,
@@ -2665,7 +2665,7 @@ def test_propeller_neuralfoil():
             ],
         ]
     )
-    thrust_CL = np.array(
+    thrust_cl = np.array(
         [
             470.95332813,
             894.5318113,
@@ -2699,7 +2699,7 @@ def test_propeller_neuralfoil():
             12754.72934015,
         ]
     )
-    thrust_CL_limit = np.array(
+    thrust_cl_limit = np.array(
         [
             5272.8381602,
             6007.51407156,
@@ -2713,7 +2713,7 @@ def test_propeller_neuralfoil():
             12754.72934015,
         ]
     )
-    efficiency_CL = np.array(
+    efficiency_cl = np.array(
         [
             [
                 0.10402435,
@@ -3053,12 +3053,12 @@ def test_propeller_neuralfoil():
     )
     propeller_neuralfoil(
         XML_FILE,
-        thrust_SL=thrust_SL,
-        thrust_SL_limit=thrust_SL_limit,
-        efficiency_SL=efficiency_SL,
-        thrust_CL=thrust_CL,
-        thrust_CL_limit=thrust_CL_limit,
-        efficiency_CL=efficiency_CL,
+        thrust_sl=thrust_sl,
+        thrust_sl_limit=thrust_sl_limit,
+        efficiency_sl=efficiency_sl,
+        thrust_cl=thrust_cl,
+        thrust_cl_limit=thrust_cl_limit,
+        efficiency_cl=efficiency_cl,
         speed=speed,
     )
 

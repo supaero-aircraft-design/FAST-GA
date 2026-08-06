@@ -25,12 +25,13 @@ from fastoad.openmdao.problem import AutoUnitsDefaultGroup
 from scipy.constants import g
 
 from fastga.command.api import list_inputs_metadata
-from fastga.utils.options_checkers import check_propulsion_id
 from fastga.models.performances.mission_vector.constants import SUBMODEL_EQUILIBRIUM
 from fastga.models.performances.mission_vector.mission.dep_equilibrium import (
     DEPEquilibrium,
 )
-from ..constants import SUBMODEL_WING_AREA_AERO_LOOP, SUBMODEL_WING_AREA_AERO_CONS
+from fastga.utils.options_checkers import check_propulsion_id
+
+from ..constants import SUBMODEL_WING_AREA_AERO_CONS, SUBMODEL_WING_AREA_AERO_LOOP
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -71,12 +72,15 @@ class UpdateWingAreaLiftEquilibrium(om.ExplicitComponent):
                         shape=var_shape,
                     )
 
-        self.add_input("data:aerodynamics:aircraft:landing:CL_max", val=np.nan)
+        self.add_input("data:aerodynamics:aircraft:landing:CL_max", val=np.nan, units="unitless")
         self.add_input("data:mission:sizing:landing:elevator_angle", val=np.nan, units="deg")
         self.add_input("data:mission:sizing:takeoff:elevator_angle", val=np.nan, units="deg")
 
         self.add_output("wing_area", val=10.0, units="m**2")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials(
             "wing_area",
             "*",
@@ -142,14 +146,17 @@ class ConstraintWingAreaLiftEquilibrium(om.ExplicitComponent):
                         shape=var_shape,
                     )
 
-        self.add_input("data:aerodynamics:aircraft:landing:CL_max", val=np.nan)
+        self.add_input("data:aerodynamics:aircraft:landing:CL_max", val=np.nan, units="unitless")
         self.add_input("data:mission:sizing:landing:elevator_angle", val=np.nan, units="deg")
         self.add_input("data:mission:sizing:takeoff:elevator_angle", val=np.nan, units="deg")
 
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
 
-        self.add_output("data:constraints:wing:additional_CL_capacity")
+        self.add_output("data:constraints:wing:additional_CL_capacity", units="unitless")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
@@ -181,8 +188,8 @@ def compute_wing_area(inputs, propulsion_id):
     # First, setup an initial guess
     stall_speed = inputs["data:TLAR:v_approach"] / 1.3
     mlw = inputs["data:weight:aircraft:MLW"]
-    cg_max_aft = float(inputs["data:weight:aircraft:CG:aft:x"])
-    cg_max_fwd = float(inputs["data:weight:aircraft:CG:fwd:x"])
+    cg_max_aft = inputs["data:weight:aircraft:CG:aft:x"].item()
+    cg_max_fwd = inputs["data:weight:aircraft:CG:fwd:x"].item()
     delta_cl_flaps = inputs["data:aerodynamics:flaps:landing:CL"]
     cl_alpha = inputs["data:aerodynamics:wing:cruise:CL_alpha"]
     cl_0_wing = inputs["data:aerodynamics:wing:cruise:CL0_clean"]
@@ -211,12 +218,12 @@ def compute_wing_area(inputs, propulsion_id):
     ivc.add_output(name="mass", val=np.array([mlw, mlw]), units="kg")
     # x_cg should be evaluated at the worst case scenario so either max aft or max fwd
     ivc.add_output(name="x_cg", val=np.array([cg_max_fwd, cg_max_aft]), units="m")
-    ivc.add_output(name="gamma", val=np.array([0.0, 0.0]), units=None)
+    ivc.add_output(name="gamma", val=np.array([0.0, 0.0]), units="deg")
     ivc.add_output(name="altitude", val=np.array([0.0, 0.0]), units="m")
     # Time step is not important since we don't care about the fuel consumption
     ivc.add_output(name="time_step", val=np.array([0.0, 0.0]), units="s")
     ivc.add_output(name="true_airspeed", val=np.array([stall_speed, stall_speed]), units="m/s")
-    ivc.add_output(name="engine_setting", val=np.full(2, EngineSetting.TAKEOFF))
+    ivc.add_output(name="engine_setting", val=np.full(2, EngineSetting.TAKEOFF), units="unitless")
 
     problem = om.Problem(reports=False)
     model = problem.model
@@ -235,7 +242,7 @@ def compute_wing_area(inputs, propulsion_id):
     model.add_subsystem("thrust_rate_id", _IDThrustRate(), promotes=["*"])
 
     model.nonlinear_solver = om.NewtonSolver(solve_subsystems=True)
-    model.nonlinear_solver.options["iprint"] = 2
+    model.nonlinear_solver.options["iprint"] = 0
     model.nonlinear_solver.options["maxiter"] = 100
     model.nonlinear_solver.options["rtol"] = 1e-4
     model.linear_solver = om.DirectSolver()
@@ -277,9 +284,7 @@ def compute_wing_area(inputs, propulsion_id):
     print(problem["delta_m"])
     print(problem["alpha"])
 
-    wing_area_approach = problem.get_val("data:geometry:wing:area", units="m**2")
-
-    return wing_area_approach
+    return problem.get_val("data:geometry:wing:area", units="m**2")
 
 
 def zip_equilibrium_input(propulsion_id):
@@ -305,6 +310,4 @@ def zip_equilibrium_input(propulsion_id):
     )
 
     name, unit, shape, shape_by_conn, copy_shape = list_inputs_metadata(new_component)
-    inputs_zip = zip(name, unit, shape, shape_by_conn, copy_shape)
-
-    return inputs_zip
+    return zip(name, unit, shape, shape_by_conn, copy_shape)

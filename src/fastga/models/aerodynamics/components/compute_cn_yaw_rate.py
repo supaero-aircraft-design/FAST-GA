@@ -11,15 +11,14 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import numpy as np
-
-import openmdao.api as om
 import fastoad.api as oad
+import numpy as np
+import openmdao.api as om
 
 from ..constants import (
-    SUBMODEL_CN_R_WING,
-    SUBMODEL_CN_R_VT,
     SUBMODEL_CN_R,
+    SUBMODEL_CN_R_VT,
+    SUBMODEL_CN_R_WING,
 )
 
 
@@ -87,7 +86,10 @@ class _SumCnYawRateContributions(om.ExplicitComponent):
 
             self.add_output("data:aerodynamics:aircraft:cruise:Cn_r", units="rad**-1")
 
-        self.declare_partials(of="*", wrt="*", method="exact")
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
+        self.declare_partials(of="*", wrt="*", method="exact", val=1.0)
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         if self.options["low_speed_aero"]:
@@ -100,22 +102,3 @@ class _SumCnYawRateContributions(om.ExplicitComponent):
                 inputs["data:aerodynamics:wing:cruise:Cn_r"]
                 + inputs["data:aerodynamics:vertical_tail:cruise:Cn_r"]
             )
-
-    def compute_partials(self, inputs, partials, discrete_inputs=None):
-        if self.options["low_speed_aero"]:
-            partials[
-                "data:aerodynamics:aircraft:low_speed:Cn_r",
-                "data:aerodynamics:wing:low_speed:Cn_r",
-            ] = 1.0
-            partials[
-                "data:aerodynamics:aircraft:low_speed:Cn_r",
-                "data:aerodynamics:vertical_tail:low_speed:Cn_r",
-            ] = 1.0
-        else:
-            partials[
-                "data:aerodynamics:aircraft:cruise:Cn_r", "data:aerodynamics:wing:cruise:Cn_r"
-            ] = 1.0
-            partials[
-                "data:aerodynamics:aircraft:cruise:Cn_r",
-                "data:aerodynamics:vertical_tail:cruise:Cn_r",
-            ] = 1.0

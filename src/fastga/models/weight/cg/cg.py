@@ -18,8 +18,8 @@ import fastoad.api as oad
 import openmdao.api as om
 
 from .cg_components.constants import (
-    SUBMODEL_PAYLOAD_CG,
     SUBMODEL_AIRCRAFT_CG_EXTREME,
+    SUBMODEL_PAYLOAD_CG,
     SUBMODEL_TANK_CG,
 )
 from ..constants import SUBMODEL_CENTER_OF_GRAVITY

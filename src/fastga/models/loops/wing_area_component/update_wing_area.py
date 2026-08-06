@@ -46,15 +46,14 @@ class UpdateWingArea(om.ExplicitComponent):
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        wing_area_mission = inputs["wing_area:geometric"]
-        wing_area_approach = inputs["wing_area:aerodynamic"]
+        wing_area_mission = inputs["wing_area:geometric"].item()
+        wing_area_approach = inputs["wing_area:aerodynamic"].item()
 
-        _LOGGER.info(
-            "Looping on wing area with new value equal to %f",
-            max(wing_area_mission, wing_area_approach),
-        )
+        wing_area = round(max(wing_area_mission, wing_area_approach), 5)
 
-        outputs["data:geometry:wing:area"] = max(wing_area_mission, wing_area_approach)
+        _LOGGER.info(f"Looping on wing area with new value equal to {wing_area}")
+
+        outputs["data:geometry:wing:area"] = wing_area
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         wing_area_mission = inputs["wing_area:geometric"]

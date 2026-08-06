@@ -14,8 +14,8 @@ Python module for wing sweep angle calculations, part of the wing geometry.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import openmdao.api as om
 import fastoad.api as oad
+import openmdao.api as om
 
 from .compute_wing_sweep_0 import ComputeWingSweep0
 from .compute_wing_sweep_50 import ComputeWingSweep50

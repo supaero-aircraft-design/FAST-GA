@@ -14,9 +14,9 @@ Python module for landing gear geometry calculation, part of the geometry compon
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 
 from ...constants import SERVICE_LANDING_GEAR_GEOMETRY, SUBMODEL_LANDING_GEAR_GEOMETRY_LEGACY
 
@@ -38,6 +38,9 @@ class ComputeLGGeometry(om.ExplicitComponent):
         self.add_output("data:geometry:landing_gear:height", units="m")
         self.add_output("data:geometry:landing_gear:y", units="m")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials(
             "data:geometry:landing_gear:height", "data:geometry:propeller:diameter", val=0.41
         )

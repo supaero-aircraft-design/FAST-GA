@@ -54,10 +54,9 @@ class InitializeGamma(om.ExplicitComponent):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         cruise_altitude = np.array(inputs["data:mission:sizing:main_route:cruise:altitude"]).item()
-        climb_rate_sl = float(inputs["data:mission:sizing:main_route:climb:climb_rate:sea_level"])
-        climb_rate_cl = float(
-            inputs["data:mission:sizing:main_route:climb:climb_rate:cruise_level"]
-        )
+        climb_rate_sl = inputs["data:mission:sizing:main_route:climb:climb_rate:sea_level"]
+        climb_rate_cl = inputs["data:mission:sizing:main_route:climb:climb_rate:cruise_level"]
+
         descent_rate = -abs(inputs["data:mission:sizing:main_route:descent:descent_rate"])
         altitude = inputs["altitude"]
         true_airspeed = inputs["true_airspeed"]
@@ -67,7 +66,7 @@ class InitializeGamma(om.ExplicitComponent):
         altitude_descent = altitude[POINTS_NB_CLIMB + POINTS_NB_CRUISE :]
 
         vertical_speed_climb = np.interp(
-            altitude_climb, [0.0, cruise_altitude], [climb_rate_sl, climb_rate_cl]
+            altitude_climb, [0.0, cruise_altitude], np.concatenate((climb_rate_sl, climb_rate_cl))
         )
         vertical_speed_cruise = np.full_like(altitude_cruise, 0.0)
         vertical_speed_descent = np.full_like(altitude_descent, descent_rate)

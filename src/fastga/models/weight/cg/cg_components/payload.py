@@ -15,9 +15,9 @@ Estimation of payload center(s) of gravity.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 
 from .constants import SUBMODEL_PAYLOAD_CG
 
@@ -37,6 +37,9 @@ class ComputePayloadCG(om.ExplicitComponent):
         self.add_output("data:weight:payload:rear_fret:CG:x", units="m")
         self.add_output("data:weight:payload:front_fret:CG:x", units="m")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):

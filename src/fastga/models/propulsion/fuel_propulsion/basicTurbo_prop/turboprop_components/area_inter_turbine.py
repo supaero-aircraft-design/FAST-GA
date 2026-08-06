@@ -25,13 +25,13 @@ class A45(om.ExplicitComponent):
 
         self.add_input("air_mass_flow", units="kg/s", val=np.nan, shape=n)
 
-        self.add_input("gamma_45", shape=n, val=np.nan)
+        self.add_input("gamma_45", shape=n, val=np.nan, units="unitless")
 
         self.add_input("total_pressure_45", units="Pa", shape=n, val=np.nan)
 
-        self.add_input("fuel_air_ratio", shape=n, val=np.nan)
-        self.add_input("compressor_bleed_ratio", shape=n, val=np.nan)
-        self.add_input("pressurization_bleed_ratio", shape=n, val=np.nan)
+        self.add_input("fuel_air_ratio", shape=n, val=np.nan, units="unitless")
+        self.add_input("compressor_bleed_ratio", shape=n, val=np.nan, units="unitless")
+        self.add_input("pressurization_bleed_ratio", shape=n, val=np.nan, units="unitless")
 
         self.add_input(
             "total_temperature_45",
@@ -41,16 +41,26 @@ class A45(om.ExplicitComponent):
 
         self.add_output("data:propulsion:turboprop:section:45", val=0.00457, units="m**2")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
+        n = self.options["number_of_points"]
         self.declare_partials(
-            of="*",
+            of="data:propulsion:turboprop:section:45",
             wrt=[
                 "air_mass_flow",
                 "total_pressure_45",
-                "total_temperature_45",
                 "fuel_air_ratio",
                 "compressor_bleed_ratio",
                 "pressurization_bleed_ratio",
             ],
+            method="exact",
+            rows=np.zeros(n),
+            cols=np.arange(n),
+        )
+        self.declare_partials(
+            of="data:propulsion:turboprop:section:45",
+            wrt="total_temperature_45",
             method="exact",
         )
         self.declare_partials(of="*", wrt="gamma_45", method="fd")

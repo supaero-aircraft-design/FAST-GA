@@ -19,9 +19,9 @@ import numpy as np
 import openmdao.api as om
 from stdatm import Atmosphere
 
-from ..constants import POLAR_POINT_COUNT, MACH_NB_PTS
-from ..external.xfoil.xfoil_polar import XfoilPolar
+from ..constants import MACH_NB_PTS, POLAR_POINT_COUNT
 from ..external.neuralfoil.neuralfoil_polar import NeuralfoilPolar
+from ..external.xfoil.xfoil_polar import XfoilPolar
 
 
 class ComputeMachInterpolation(om.Group):
@@ -36,8 +36,8 @@ class ComputeMachInterpolation(om.Group):
     # noinspection PyTypeChecker
     def setup(self):
         ivc_conditions = om.IndepVarComp()
-        ivc_conditions.add_output("mach", val=0.05)
-        ivc_conditions.add_output("reynolds", val=0.5e6)
+        ivc_conditions.add_output("mach", val=0.05, units="unitless")
+        ivc_conditions.add_output("reynolds", val=0.5e6, units="unitless")
         self.add_subsystem("incompressible_conditions", ivc_conditions, promotes=[])
 
         # Selects the tool for airfoil analysis: uses NeuralFoil if 'use_neuralfoil' is True;
@@ -88,15 +88,15 @@ class _ComputeMachInterpolation(om.ExplicitComponent):
     def setup(self):
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
-        self.add_input("data:geometry:wing:taper_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan, units="unitless")
+        self.add_input("data:geometry:wing:taper_ratio", val=np.nan, units="unitless")
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="deg")
         self.add_input("data:geometry:horizontal_tail:area", val=np.nan, units="m**2")
         self.add_input(
             "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="m"
         )
         self.add_input("data:geometry:horizontal_tail:z:from_wingMAC25", val=np.nan, units="m")
-        self.add_input("data:geometry:horizontal_tail:aspect_ratio", val=np.nan)
+        self.add_input("data:geometry:horizontal_tail:aspect_ratio", val=np.nan, units="unitless")
         self.add_input("data:geometry:horizontal_tail:sweep_25", val=np.nan, units="deg")
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="m")
@@ -106,13 +106,15 @@ class _ComputeMachInterpolation(om.ExplicitComponent):
 
         nans_array = np.full(POLAR_POINT_COUNT, np.nan)
         self.add_input("wing:alpha", val=nans_array, shape=POLAR_POINT_COUNT, units="deg")
-        self.add_input("wing:CL", val=nans_array, shape=POLAR_POINT_COUNT)
+        self.add_input("wing:CL", val=nans_array, shape=POLAR_POINT_COUNT, units="unitless")
         self.add_input(
             "horizontal_tail:alpha", val=nans_array, shape=POLAR_POINT_COUNT, units="deg"
         )
-        self.add_input("horizontal_tail:CL", val=nans_array, shape=POLAR_POINT_COUNT)
+        self.add_input(
+            "horizontal_tail:CL", val=nans_array, shape=POLAR_POINT_COUNT, units="unitless"
+        )
 
-        self.add_input("data:aerodynamics:horizontal_tail:efficiency", val=np.nan)
+        self.add_input("data:aerodynamics:horizontal_tail:efficiency", val=np.nan, units="unitless")
 
         self.add_output(
             "data:aerodynamics:aircraft:mach_interpolation:CL_alpha_vector",
@@ -120,33 +122,36 @@ class _ComputeMachInterpolation(om.ExplicitComponent):
             shape=MACH_NB_PTS + 1,
         )
         self.add_output(
-            "data:aerodynamics:aircraft:mach_interpolation:mach_vector", shape=MACH_NB_PTS + 1
+            "data:aerodynamics:aircraft:mach_interpolation:mach_vector",
+            shape=MACH_NB_PTS + 1,
+            units="unitless",
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        sweep_25_wing = float(inputs["data:geometry:wing:sweep_25"])
-        aspect_ratio_wing = float(inputs["data:geometry:wing:aspect_ratio"])
-        taper_ratio_wing = float(inputs["data:geometry:wing:taper_ratio"])
-        area_wing = float(inputs["data:geometry:wing:area"])
-        span_wing = float(inputs["data:geometry:wing:span"])
+        sweep_25_wing = inputs["data:geometry:wing:sweep_25"]
+        aspect_ratio_wing = inputs["data:geometry:wing:aspect_ratio"]
+        taper_ratio_wing = inputs["data:geometry:wing:taper_ratio"]
+        area_wing = inputs["data:geometry:wing:area"]
+        span_wing = inputs["data:geometry:wing:span"]
 
-        sweep_25_htp = float(inputs["data:geometry:horizontal_tail:sweep_25"])
-        aspect_ratio_htp = float(inputs["data:geometry:horizontal_tail:aspect_ratio"])
-        efficiency_htp = float(inputs["data:aerodynamics:horizontal_tail:efficiency"])
-        area_htp = float(inputs["data:geometry:horizontal_tail:area"])
-        lp_ht = float(inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"])
-        delta_z_htp = float(inputs["data:geometry:horizontal_tail:z:from_wingMAC25"])
+        sweep_25_htp = inputs["data:geometry:horizontal_tail:sweep_25"]
+        aspect_ratio_htp = inputs["data:geometry:horizontal_tail:aspect_ratio"]
+        efficiency_htp = inputs["data:aerodynamics:horizontal_tail:efficiency"]
+        area_htp = inputs["data:geometry:horizontal_tail:area"]
+        lp_ht = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"]
+        delta_z_htp = inputs["data:geometry:horizontal_tail:z:from_wingMAC25"]
 
-        fuselage_width = float(inputs["data:geometry:fuselage:maximum_width"])
-        fuselage_height = float(inputs["data:geometry:fuselage:maximum_height"])
+        fuselage_width = inputs["data:geometry:fuselage:maximum_width"]
+        fuselage_height = inputs["data:geometry:fuselage:maximum_height"]
         fuselage_diameter = np.sqrt(fuselage_width * fuselage_height)
 
         area_ratio = area_htp / area_wing
 
-        sos_cruise = Atmosphere(
+        atm = Atmosphere(
             inputs["data:mission:sizing:main_route:cruise:altitude"], altitude_in_feet=False
-        ).speed_of_sound
-        mach_cruise = float(inputs["data:TLAR:v_cruise"]) / float(sos_cruise)
+        )
+        atm.true_airspeed = inputs["data:TLAR:v_cruise"]
+        mach_cruise = atm.mach
 
         wing_cl = self._reshape(inputs["wing:alpha"], inputs["wing:CL"])
         wing_alpha = self._reshape(inputs["wing:alpha"], inputs["wing:alpha"])

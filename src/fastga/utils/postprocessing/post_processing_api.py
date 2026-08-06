@@ -14,12 +14,12 @@
 
 from .analysis_and_plots import (
     aircraft_geometry_plot,
-    evolution_diagram,
-    compressibility_effects_diagram,
-    cl_wing_diagram,
-    drag_breakdown_diagram,
     aircraft_polar,
     cg_lateral_diagram,
+    cl_wing_diagram,
+    compressibility_effects_diagram,
+    drag_breakdown_diagram,
+    evolution_diagram,
     mass_breakdown_bar_plot,
     mass_breakdown_sun_plot,
     payload_range,
@@ -30,24 +30,24 @@ from .load_analysis.analysis_and_plots_la import (
     shear_diagram,
 )
 from .propeller.analysis_and_plots_propeller import (
-    propeller_efficiency_map_plot,
     propeller_coeff_map_plot,
+    propeller_efficiency_map_plot,
 )
 
 __all__ = [
     "aircraft_geometry_plot",
-    "evolution_diagram",
-    "compressibility_effects_diagram",
-    "cl_wing_diagram",
-    "drag_breakdown_diagram",
     "aircraft_polar",
     "cg_lateral_diagram",
+    "cl_wing_diagram",
+    "compressibility_effects_diagram",
+    "drag_breakdown_diagram",
+    "evolution_diagram",
+    "force_repartition_diagram",
     "mass_breakdown_bar_plot",
     "mass_breakdown_sun_plot",
     "payload_range",
-    "force_repartition_diagram",
+    "propeller_coeff_map_plot",
+    "propeller_efficiency_map_plot",
     "rbm_diagram",
     "shear_diagram",
-    "propeller_efficiency_map_plot",
-    "propeller_coeff_map_plot",
 ]

@@ -12,26 +12,26 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import os.path as pth
+import pathlib
 
 from ..load_analysis.analysis_and_plots_la import (
     force_repartition_diagram,
-    shear_diagram,
     rbm_diagram,
+    shear_diagram,
 )
 
-DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
+DATA_FOLDER_PATH = pathlib.Path(__file__).parent / "data"
 
 
 def test_force_repartition_diagram():
     """Basic tests for testing the plotting."""
 
-    filename = pth.join(DATA_FOLDER_PATH, "problem_outputs_loads.xml")
+    filename = DATA_FOLDER_PATH / "problem_outputs_loads.xml"
 
     # First plot
     # This is a rudimentary test as plot are difficult to verify
     # The test will fail if an error is raised by the following line
-    fig = force_repartition_diagram(filename)
+    _ = force_repartition_diagram(filename)
 
     # First plot with name
     # This is a rudimentary test as plot are difficult to verify
@@ -41,18 +41,18 @@ def test_force_repartition_diagram():
     # Adding a plot to the previous fig
     # This is a rudimentary test as plot are difficult to verify
     # The test will fail if an error is raised by the following line
-    fig = force_repartition_diagram(filename, name="Second plot", fig=fig)
+    _ = force_repartition_diagram(filename, name="Second plot", fig=fig)
 
 
 def test_shear_diagram():
     """Basic tests for testing the plotting."""
 
-    filename = pth.join(DATA_FOLDER_PATH, "problem_outputs_loads.xml")
+    filename = DATA_FOLDER_PATH / "problem_outputs_loads.xml"
 
     # First plot
     # This is a rudimentary test as plot are difficult to verify
     # The test will fail if an error is raised by the following line
-    fig = shear_diagram(filename)
+    _ = shear_diagram(filename)
 
     # First plot with name
     # This is a rudimentary test as plot are difficult to verify
@@ -62,18 +62,18 @@ def test_shear_diagram():
     # Adding a plot to the previous fig
     # This is a rudimentary test as plot are difficult to verify
     # The test will fail if an error is raised by the following line
-    fig = shear_diagram(filename, name="Second plot", fig=fig)
+    _ = shear_diagram(filename, name="Second plot", fig=fig)
 
 
 def test_rbm_diagram():
     """Basic tests for testing the plotting."""
 
-    filename = pth.join(DATA_FOLDER_PATH, "problem_outputs_loads.xml")
+    filename = DATA_FOLDER_PATH / "problem_outputs_loads.xml"
 
     # First plot
     # This is a rudimentary test as plot are difficult to verify
     # The test will fail if an error is raised by the following line
-    fig = rbm_diagram(filename)
+    _ = rbm_diagram(filename)
 
     # First plot with name
     # This is a rudimentary test as plot are difficult to verify
@@ -83,4 +83,4 @@ def test_rbm_diagram():
     # Adding a plot to the previous fig
     # This is a rudimentary test as plot are difficult to verify
     # The test will fail if an error is raised by the following line
-    fig = rbm_diagram(filename, name="Second plot", fig=fig)
+    _ = rbm_diagram(filename, name="Second plot", fig=fig)

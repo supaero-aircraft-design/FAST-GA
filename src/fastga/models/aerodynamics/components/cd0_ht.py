@@ -12,12 +12,13 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 
 from fastga.models.geometry.profiles.get_profile import get_profile
-from ..constants import SUBMODEL_CD0_HT
+
+from ..constants import LIMIT_MACH_COMPRESSIBILITY_EFFECT, SUBMODEL_CD0_HT
 
 
 @oad.RegisterSubmodel(SUBMODEL_CD0_HT, "fastga.submodel.aerodynamics.horizontal_tail.cd0.legacy")
@@ -40,16 +41,21 @@ class Cd0HorizontalTail(om.ExplicitComponent):
         self.add_input("data:geometry:horizontal_tail:sweep_25", val=np.nan, units="deg")
         self.add_input("data:geometry:horizontal_tail:wet_area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
-        self.add_input("data:geometry:horizontal_tail:thickness_ratio", val=np.nan)
+        self.add_input(
+            "data:geometry:horizontal_tail:thickness_ratio", val=np.nan, units="unitless"
+        )
         if self.options["low_speed_aero"]:
-            self.add_input("data:aerodynamics:low_speed:mach", val=np.nan)
+            self.add_input("data:aerodynamics:low_speed:mach", val=np.nan, units="unitless")
             self.add_input("data:aerodynamics:low_speed:unit_reynolds", val=np.nan, units="m**-1")
-            self.add_output("data:aerodynamics:horizontal_tail:low_speed:CD0")
+            self.add_output("data:aerodynamics:horizontal_tail:low_speed:CD0", units="unitless")
         else:
-            self.add_input("data:aerodynamics:cruise:mach", val=np.nan)
+            self.add_input("data:aerodynamics:cruise:mach", val=np.nan, units="unitless")
             self.add_input("data:aerodynamics:cruise:unit_reynolds", val=np.nan, units="m**-1")
-            self.add_output("data:aerodynamics:horizontal_tail:cruise:CD0")
+            self.add_output("data:aerodynamics:horizontal_tail:cruise:CD0", units="unitless")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
@@ -72,17 +78,15 @@ class Cd0HorizontalTail(om.ExplicitComponent):
             file_name=self.options["htp_airfoil_file"],
         )
         relative_thickness = profile.get_relative_thickness()
-        index = int(
-            np.where(relative_thickness["thickness"] == np.max(relative_thickness["thickness"]))[0]
-        )
+        index = np.argmax(relative_thickness["thickness"])
         x_t_max = relative_thickness["x"][index]
-        # Root: 50% NLF
+        # Root: 50% natural laminar flow
         x_trans = 0.5
         x0_turbulent = 36.9 * x_trans**0.625 * (1 / (unit_reynolds * root_chord)) ** 0.375
         cf_root = (
             0.074 / (unit_reynolds * root_chord) ** 0.2 * (1 - (x_trans - x0_turbulent)) ** 0.8
         )
-        # Tip: 50% NLF
+        # Tip: 50% natural laminar flow
         x_trans = 0.5
         x0_turbulent = 36.9 * x_trans**0.625 * (1 / (unit_reynolds * tip_chord)) ** 0.375
         cf_tip = 0.074 / (unit_reynolds * tip_chord) ** 0.2 * (1 - (x_trans - x0_turbulent)) ** 0.8
@@ -90,7 +94,7 @@ class Cd0HorizontalTail(om.ExplicitComponent):
         cf_ht = (cf_root + cf_tip) * 0.5
         form_factor = 1 + 0.6 / x_t_max * thickness + 100 * thickness**4
         form_factor = form_factor * 1.05  # Due to hinged elevator (Raymer)
-        if mach > 0.2:
+        if mach > LIMIT_MACH_COMPRESSIBILITY_EFFECT:
             form_factor = (
                 form_factor * 1.34 * mach**0.18 * (np.cos(sweep_25_ht * np.pi / 180)) ** 0.28
             )

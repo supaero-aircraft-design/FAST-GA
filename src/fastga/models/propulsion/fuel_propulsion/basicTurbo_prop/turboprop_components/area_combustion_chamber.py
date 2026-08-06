@@ -25,13 +25,13 @@ class A41(om.ExplicitComponent):
 
         self.add_input("air_mass_flow", units="kg/s", val=np.nan, shape=n)
 
-        self.add_input("gamma_41", shape=n, val=np.nan)
+        self.add_input("gamma_41", shape=n, val=np.nan, units="unitless")
 
         self.add_input("total_pressure_4", units="Pa", shape=n, val=np.nan)
 
-        self.add_input("fuel_air_ratio", shape=n, val=np.nan)
-        self.add_input("compressor_bleed_ratio", shape=n, val=np.nan)
-        self.add_input("pressurization_bleed_ratio", shape=n, val=np.nan)
+        self.add_input("fuel_air_ratio", shape=n, val=np.nan, units="unitless")
+        self.add_input("compressor_bleed_ratio", shape=n, val=np.nan, units="unitless")
+        self.add_input("pressurization_bleed_ratio", shape=n, val=np.nan, units="unitless")
 
         self.add_input(
             "data:propulsion:turboprop:design_point:turbine_entry_temperature",
@@ -41,19 +41,36 @@ class A41(om.ExplicitComponent):
 
         self.add_output("data:propulsion:turboprop:section:41", val=0.00457, units="m**2")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
+        n = self.options["number_of_points"]
+
         self.declare_partials(
-            of="*",
+            of="data:propulsion:turboprop:section:41",
             wrt=[
                 "air_mass_flow",
                 "total_pressure_4",
-                "data:propulsion:turboprop:design_point:turbine_entry_temperature",
                 "fuel_air_ratio",
                 "compressor_bleed_ratio",
                 "pressurization_bleed_ratio",
             ],
             method="exact",
+            rows=np.zeros(n),
+            cols=np.arange(n),
         )
-        self.declare_partials(of="*", wrt="gamma_41", method="fd")
+        self.declare_partials(
+            of="data:propulsion:turboprop:section:41",
+            wrt="data:propulsion:turboprop:design_point:turbine_entry_temperature",
+            method="exact",
+        )
+        self.declare_partials(
+            of="*",
+            wrt="gamma_41",
+            method="fd",
+            rows=np.zeros(n),
+            cols=np.arange(n),
+        )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         r_g = 287.0  # Perfect gas constant

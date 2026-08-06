@@ -18,6 +18,8 @@ import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
 
+from fastga.models.constants import WingLayout
+
 from .constants import SERVICE_LANDING_GEAR_MASS, SUBMODEL_LANDING_GEAR_MASS_LEGACY
 
 oad.RegisterSubmodel.active_models[SERVICE_LANDING_GEAR_MASS] = SUBMODEL_LANDING_GEAR_MASS_LEGACY
@@ -39,12 +41,15 @@ class ComputeLandingGearWeight(om.ExplicitComponent):
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="lb")
         self.add_input("data:geometry:landing_gear:height", val=np.nan, units="inch")
 
-        self.add_input("data:geometry:landing_gear:type", val=np.nan)
-        self.add_input("data:geometry:wing_configuration", val=np.nan)
+        self.add_input("data:geometry:landing_gear:type", val=np.nan, units="unitless")
+        self.add_input("data:geometry:wing_configuration", val=np.nan, units="unitless")
 
         self.add_output("data:weight:airframe:landing_gear:main:mass", units="lb")
         self.add_output("data:weight:airframe:landing_gear:front:mass", units="lb")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials(
             "*",
             ["data:geometry:landing_gear:type", "data:geometry:wing_configuration"],
@@ -92,10 +97,7 @@ class ComputeLandingGearWeight(om.ExplicitComponent):
         else:
             weight_reduction_factor = 1.0
 
-        if wing_config == 3.0:
-            wing_config_const = 1.08
-        else:
-            wing_config_const = 1.0
+        wing_config_const = 1.08 if wing_config == WingLayout.HIGH_WING else 1.0
 
         outputs["data:weight:airframe:landing_gear:main:mass"] = (
             mlg_weight * weight_reduction_factor * wing_config_const
@@ -124,10 +126,7 @@ class ComputeLandingGearWeight(om.ExplicitComponent):
             * (1.0 + 0.8 * carrier_based)
         )
 
-        if wing_config == 3.0:
-            wing_config_const = 1.08
-        else:
-            wing_config_const = 1.0
+        wing_config_const = 1.08 if wing_config == WingLayout.HIGH_WING else 1.0
 
         if not is_retractable:
             weight_reduction = 1.4 * mtow / 100.0

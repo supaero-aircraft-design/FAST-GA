@@ -12,9 +12,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import openmdao.api as om
-
 import fastoad.api as oad
+import openmdao.api as om
 from fastoad.module_management.constants import ModelDomain
 
 from fastga.models.aerodynamics.external.openvsp import ComputeAeroOpenVSP
@@ -24,21 +23,22 @@ from fastga.models.aerodynamics.external.openvsp.compute_aero_slipstream import 
     ComputeSlipstreamOpenvspSubGroup,
 )
 from fastga.models.aerodynamics.external.vlm import ComputeAeroVLM
+
 from .constants import (
-    SUBMODEL_CD0,
+    DEFAULT_INPUT_AOA,
     SUBMODEL_AIRFOIL_LIFT_SLOPE,
-    SUBMODEL_DELTA_HIGH_LIFT,
-    SUBMODEL_DELTA_ELEVATOR,
+    SUBMODEL_CD0,
+    SUBMODEL_CL_ALPHA_VT,
+    SUBMODEL_CL_EXTREME,
     SUBMODEL_CL_EXTREME_CLEAN_HT,
     SUBMODEL_CL_EXTREME_CLEAN_WING,
-    SUBMODEL_CL_EXTREME,
-    SUBMODEL_CL_ALPHA_VT,
-    SUBMODEL_CY_RUDDER,
-    SUBMODEL_EFFECTIVE_EFFICIENCY_PROPELLER,
-    SUBMODEL_DOWNWASH,
-    SUBMODEL_CY_BETA,
     SUBMODEL_CN_BETA,
-    DEFAULT_INPUT_AOA,
+    SUBMODEL_CY_BETA,
+    SUBMODEL_CY_RUDDER,
+    SUBMODEL_DELTA_ELEVATOR,
+    SUBMODEL_DELTA_HIGH_LIFT,
+    SUBMODEL_DOWNWASH,
+    SUBMODEL_EFFECTIVE_EFFICIENCY_PROPELLER,
 )
 
 
@@ -142,7 +142,7 @@ class AerodynamicsLowSpeed(om.Group):
         self.add_subsystem(
             "airfoil_lift_slope",
             oad.RegisterSubmodel.get_submodel(SUBMODEL_AIRFOIL_LIFT_SLOPE, options=options_airfoil),
-            promotes=["*"],
+            promotes=["data:*"],
         )
 
         self.add_subsystem(

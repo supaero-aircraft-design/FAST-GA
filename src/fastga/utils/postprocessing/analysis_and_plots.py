@@ -14,6 +14,7 @@ Defines the analysis and plotting functions for postprocessing.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import pathlib
 from random import SystemRandom
 
 import fastoad.api as oad
@@ -24,18 +25,21 @@ from fastoad.io import VariableIO
 from plotly.subplots import make_subplots
 
 from fastga.models.aerodynamics.constants import FIRST_INVALID_COEFF
+from fastga.models.constants import AircraftCategory, PropulsionLayout
+
 from .postprocessing_utils import _unit_conversion
 
 COLS = plotly.colors.DEFAULT_PLOTLY_COLORS
 
 
-def aircraft_geometry_plot(
-    aircraft_file_path: str,
+def aircraft_geometry_plot(  # noqa: PLR0915
+    aircraft_file_path: pathlib.Path,
     name="",
     fig=None,
-    plot_nacelle: bool = True,
     file_formatter=None,
     length_unit="m",
+    *,
+    plot_nacelle: bool = True,
 ) -> go.FigureWidget:
     """
     Returns a figure plot of the top view of the wing.
@@ -207,7 +211,7 @@ def aircraft_geometry_plot(
                 -prop_diam / 2,
             ]
         )
-    elif prop_layout == 3.0:
+    elif prop_layout == PropulsionLayout.IN_THE_NOSE:
         x_nacelle_plot = np.array([0.0, nac_length, nac_length, 0.0, 0.0, 0.0])
         y_nacelle_plot = np.array(
             [
@@ -241,7 +245,7 @@ def aircraft_geometry_plot(
                         name="right nacelle",
                         legendgroup=name + "nacelle",
                         mode="lines+markers",
-                        line=dict(color=trace_colour),
+                        line={"color": trace_colour},
                         legendgrouptitle_text=name + " nacelle + propeller",
                     )
 
@@ -253,7 +257,7 @@ def aircraft_geometry_plot(
                         name="left nacelle",
                         legendgroup=name + "nacelle",
                         mode="lines+markers",
-                        line=dict(color=trace_colour),
+                        line={"color": trace_colour},
                     )
 
                     fig.add_trace(scatter_left)
@@ -268,7 +272,7 @@ def aircraft_geometry_plot(
             )
             fig.add_trace(scatter)
 
-    fig.layout = go.Layout(yaxis=dict(scaleanchor="x", scaleratio=1))
+    fig.layout = go.Layout(yaxis={"scaleanchor": "x", "scaleratio": 1})
 
     fig = go.FigureWidget(fig)
 
@@ -277,14 +281,14 @@ def aircraft_geometry_plot(
         title_x=0.5,
         xaxis_title="y",
         yaxis_title="x",
-        legend=dict(yanchor="top", y=0.99, xanchor="right", x=0.99),
+        legend={"yanchor": "top", "y": 0.99, "xanchor": "right", "x": 0.99},
     )
 
     return fig
 
 
-def evolution_diagram(
-    aircraft_file_path: str, name="", fig=None, file_formatter=None
+def evolution_diagram(  # noqa: PLR0915
+    aircraft_file_path: pathlib.Path, name="", fig=None, file_formatter=None
 ) -> go.FigureWidget:
     """
     Returns a figure plot of the V-N diagram of the aircraft.
@@ -350,10 +354,10 @@ def evolution_diagram(
     # Save gust envelope
     x_gust = [0.0]
     y_gust = [1.0]
-    if not (velocity_array[4] == 0.0):
+    if velocity_array[4] != 0.0:
         x_gust.append(velocity_array[4])
         y_gust.append(load_factor_array[4])
-    if (level == 4.0) or (category == 4.0):
+    if (level == 4.0) or (category == AircraftCategory.COMMUTER):  # noqa: PLR2004, litteraly level 4
         x_gust.append(velocity_array[15])
         y_gust.append(load_factor_array[15])
     x_gust.append(velocity_array[7])
@@ -364,7 +368,7 @@ def evolution_diagram(
     y_gust.append(load_factor_array[12])
     x_gust.append(velocity_array[8])
     y_gust.append(load_factor_array[8])
-    if not (velocity_array[5] == 0.0):
+    if velocity_array[5] != 0.0:
         x_gust.append(velocity_array[5])
         y_gust.append(load_factor_array[5])
     x_gust.append(0.0)
@@ -409,14 +413,14 @@ def evolution_diagram(
     fig.update_layout(
         title_text="Evolution Diagram",
         title_x=0.5,
-        xaxis=dict(range=[0.0, max(max(x_maneuver_line), max(x_gust)) * 1.1]),
+        xaxis={"range": [0.0, max(x_maneuver_line + x_gust) * 1.1]},
         xaxis_title="speed [m/s]",
-        yaxis=dict(
-            range=[
-                min(min(y_maneuver_line), min(y_gust)) * 1.1,
-                max(max(y_maneuver_line), max(y_gust)) * 1.1,
+        yaxis={
+            "range": [
+                min(y_maneuver_line + y_gust) * 1.1,
+                max(y_maneuver_line + y_gust) * 1.1,
             ]
-        ),
+        },
         yaxis_title="load [g]",
     )
 
@@ -424,7 +428,7 @@ def evolution_diagram(
 
 
 def compressibility_effects_diagram(
-    aircraft_file_path: str,
+    aircraft_file_path: pathlib.Path,
     name: str = "",
     fig=None,
     file_formatter=None,
@@ -446,7 +450,7 @@ def compressibility_effects_diagram(
         variables["data:aerodynamics:aircraft:mach_interpolation:CL_alpha_vector"].value
     )
     cl_alpha_unit = variables["data:aerodynamics:aircraft:mach_interpolation:CL_alpha_vector"].units
-    if cl_alpha_unit == "1/deg" or cl_alpha_unit == "deg**-1":
+    if cl_alpha_unit in {"1/deg", "deg**-1"}:
         cl_alpha_array = [i * 180.0 / np.pi for i in cl_alpha_array]
     mach_array = list(variables["data:aerodynamics:aircraft:mach_interpolation:mach_vector"].value)
 
@@ -462,18 +466,19 @@ def compressibility_effects_diagram(
         title_x=0.5,
         xaxis_title="Mach number [-]",
         yaxis_title="Lift coefficient slope [rad**-1]",
-        legend=dict(yanchor="top", y=0.99, xanchor="right", x=0.99),
+        legend={"yanchor": "top", "y": 0.99, "xanchor": "right", "x": 0.99},
     )
 
     return fig
 
 
 def cl_wing_diagram(
-    aircraft_file_path: str,
+    aircraft_file_path: pathlib.Path,
     name: str = "",
-    prop_on: bool = False,
     fig=None,
     file_formatter=None,
+    *,
+    prop_on: bool = False,
 ) -> go.FigureWidget:
     """
     Returns a figure plot of the CL distribution on the semi-wing.
@@ -521,10 +526,7 @@ def cl_wing_diagram(
     if fig is None:
         fig = go.Figure()
 
-    if prop_on:
-        name_diagram = " propeller ON"
-    else:
-        name_diagram = " propeller OFF"
+    name_diagram = " propeller ON" if prop_on else " propeller OFF"
 
     scatter = go.Scatter(x=span_array, y=cl_array, name=name + name_diagram)
     fig.add_trace(scatter)
@@ -535,14 +537,14 @@ def cl_wing_diagram(
         title_x=0.5,
         xaxis_title="Semi-Span [m]",
         yaxis_title="CL [-]",
-        legend=dict(yanchor="top", y=0.99, xanchor="right", x=0.99),
+        legend={"yanchor": "top", "y": 0.99, "xanchor": "right", "x": 0.99},
     )
 
     return fig
 
 
-def cg_lateral_diagram(
-    aircraft_file_path: str,
+def cg_lateral_diagram(  # noqa: PLR0915
+    aircraft_file_path: pathlib.Path,
     name="",
     fig=None,
     file_formatter=None,
@@ -646,12 +648,8 @@ def cg_lateral_diagram(
     mac_position = _unit_conversion(variables["data:geometry:wing:MAC:at25percent:x"], length_unit)
     stick_fixed_sm = variables["data:handling_qualities:stick_fixed_static_margin"].value[0]
     stick_free_sm = variables["data:handling_qualities:stick_free_static_margin"].value[0]
-    ac_ratio_fixed = _unit_conversion(
-        variables["data:aerodynamics:cruise:neutral_point:stick_fixed:x"], length_unit
-    )
-    ac_ratio_free = _unit_conversion(
-        variables["data:aerodynamics:cruise:neutral_point:stick_free:x"], length_unit
-    )
+    ac_ratio_fixed = variables["data:aerodynamics:cruise:neutral_point:stick_fixed:x"].value[0]
+    ac_ratio_free = variables["data:aerodynamics:cruise:neutral_point:stick_free:x"].value[0]
 
     ac_fixed_x = mac_position + (ac_ratio_fixed - 0.25) * l0
     ac_free_x = mac_position + (ac_ratio_free - 0.25) * l0
@@ -668,7 +666,7 @@ def cg_lateral_diagram(
             y=z_fuselage,
             mode="lines+markers",
             name=name + " geometry",
-            line=dict(color=color),
+            line={"color": color},
         )
         fig.add_trace(scatter, 1, 1)
         scatter = go.Scatter(
@@ -676,7 +674,7 @@ def cg_lateral_diagram(
             y=z_vt,
             mode="lines+markers",
             name=name,
-            line=dict(color=color),
+            line={"color": color},
             showlegend=False,
         )
         fig.add_trace(scatter, 1, 1)
@@ -686,7 +684,7 @@ def cg_lateral_diagram(
             y=z_fuselage,
             mode="lines+markers",
             name=name + " geometry",
-            line=dict(color=color),
+            line={"color": color},
         )
         fig.add_trace(scatter, 1, 1)
         scatter = go.Scatter(
@@ -694,7 +692,7 @@ def cg_lateral_diagram(
             y=z_vt,
             mode="lines+markers",
             name=name,
-            line=dict(color=color),
+            line={"color": color},
             showlegend=False,
         )
         fig.add_trace(scatter, 1, 1)
@@ -704,8 +702,8 @@ def cg_lateral_diagram(
         y=z_cg,
         mode="lines+markers",
         name=name + " CG positions",
-        line=dict(color=color, width=2),
-        marker_line=dict(width=2),
+        line={"color": color, "width": 2},
+        marker_line={"width": 2},
     )
     fig.add_trace(scatter, 1, 1)
     scatter = go.Scatter(
@@ -716,7 +714,7 @@ def cg_lateral_diagram(
         textposition=["bottom center", "top center", "top center"],
         name=name + " CG positions",
         line={"dash": "dash"},
-        marker_line=dict(width=2),
+        marker_line={"width": 2},
         line_color=color,
         showlegend=False,
     )
@@ -725,34 +723,24 @@ def cg_lateral_diagram(
     scatter = go.Scatter(
         x=[ac_fixed_x],
         y=[z_cg[0]],
-        text=" Neutral Point"
-        + "<br>"
-        + "Stick Fixed"
-        + "<br>"
-        + "Static Margin = "
-        + str(round(stick_fixed_sm, 3)),
+        text=" Neutral Point<br>Stick Fixed<br>Static Margin = " + str(round(stick_fixed_sm, 3)),
         textposition="bottom center",
         mode="markers+text",
-        line=dict(color="DarkRed"),
+        line={"color": "DarkRed"},
         showlegend=False,
-        marker_line=dict(width=2),
+        marker_line={"width": 2},
     )
     fig.add_trace(scatter, 1, 2)
 
     scatter = go.Scatter(
         x=[ac_free_x],
         y=[z_cg[0]],
-        text="Neutral Point"
-        + "<br>"
-        + "Stick Free"
-        + "<br>"
-        + "Static Margin = "
-        + str(round(stick_free_sm, 3)),
+        text="Neutral Point<br>Stick Free<br>Static Margin = " + str(round(stick_free_sm, 3)),
         textposition="bottom center",
         mode="markers+text",
-        line=dict(color="DodgerBlue"),
+        line={"color": "DodgerBlue"},
         showlegend=False,
-        marker_line=dict(width=2),
+        marker_line={"width": 2},
     )
     fig.add_trace(scatter, 1, 2)
 
@@ -761,7 +749,7 @@ def cg_lateral_diagram(
     fig.update_yaxes(title_text="Z", row=1, col=1)
     fig.update_yaxes(title_text="Z", row=1, col=2)
 
-    fig.update_layout(legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01))
+    fig.update_layout(legend={"yanchor": "top", "y": 0.99, "xanchor": "left", "x": 0.01})
 
     return fig
 
@@ -781,25 +769,26 @@ def _data_weight_decomposition(variables: oad.VariableList, owe=None, weight_uni
     owe_subcategory_names = []
     for variable in variables.names():
         name_split = variable.split(":")
-        if isinstance(name_split, list) and len(name_split) == 4:
-            if (
-                name_split[0] + name_split[1] + name_split[3] == "dataweightmass"
-                and "aircraft" not in name_split[2]
-            ):
-                value = _unit_conversion(variables[variable], weight_unit)
-                category_values.append(value)
-                category_names.append(name_split[2])
-                if owe:
-                    owe_subcategory_names.append(
-                        name_split[2]
-                        + "<br>"
-                        + str(int(value))
-                        + " ["
-                        + weight_unit
-                        + "] ("
-                        + str(round(value / owe * 100, 1))
-                        + "%)"
-                    )
+        if (
+            isinstance(name_split, list)
+            and len(name_split) == 4  # noqa: PLR2004
+            and name_split[0] + name_split[1] + name_split[3] == "dataweightmass"
+            and "aircraft" not in name_split[2]
+        ):
+            value = _unit_conversion(variables[variable], weight_unit)
+            category_values.append(value)
+            category_names.append(name_split[2])
+            if owe:
+                owe_subcategory_names.append(
+                    name_split[2]
+                    + "<br>"
+                    + str(int(value))
+                    + " ["
+                    + weight_unit
+                    + "] ("
+                    + str(round(value / owe * 100, 1))
+                    + "%)"
+                )
     if owe:
         result = category_values, category_names, owe_subcategory_names
     else:
@@ -809,7 +798,7 @@ def _data_weight_decomposition(variables: oad.VariableList, owe=None, weight_uni
 
 
 def mass_breakdown_bar_plot(
-    aircraft_file_path: str, name=None, fig=None, file_formatter=None, weight_unit="kg"
+    aircraft_file_path: pathlib.Path, name=None, fig=None, file_formatter=None, weight_unit="kg"
 ) -> go.FigureWidget:
     """
     Returns a figure plot of the aircraft mass breakdown using bar plots.
@@ -865,7 +854,9 @@ def mass_breakdown_bar_plot(
 
 
 # pylint: disable=too-many-locals
-def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None, weight_unit="kg"):
+def mass_breakdown_sun_plot(
+    aircraft_file_path: pathlib.Path, file_formatter=None, weight_unit="kg"
+):
     """
     Returns a figure sunburst plot of the mass breakdown.
     On the left a MTOW sunburst and on the right a OWE sunburst.
@@ -900,7 +891,7 @@ def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None, weight
             labels=[
                 "MTOW" + "<br>" + str(int(mtow)) + " [" + weight_unit + "]",
                 "payload"
-                + "<br>"
+                "<br>"
                 + str(int(payload))
                 + " ["
                 + weight_unit
@@ -908,7 +899,7 @@ def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None, weight
                 + str(round(payload / mtow * 100, 1))
                 + "%)",
                 "onboard_fuel_at_takeoff"
-                + "<br>"
+                "<br>"
                 + str(int(onboard_fuel_at_takeoff))
                 + " ["
                 + weight_unit
@@ -916,7 +907,7 @@ def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None, weight
                 + str(round(onboard_fuel_at_takeoff / mtow * 100, 1))
                 + "%)",
                 "OWE"
-                + "<br>"
+                "<br>"
                 + str(int(owe))
                 + " ["
                 + weight_unit
@@ -947,7 +938,7 @@ def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None, weight
     sub_categories_parent = []
     for variable in variables.names():
         name_split = variable.split(":")
-        if isinstance(name_split, list) and len(name_split) >= 5:
+        if isinstance(name_split, list) and len(name_split) >= 5:  # noqa: PLR2004
             parent_name = name_split[2]
             if parent_name in categories_names and name_split[-1] == "mass":
                 variable_name = "_".join(name_split[3:-1])
@@ -988,7 +979,7 @@ def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None, weight
 
 
 def drag_breakdown_diagram(
-    aircraft_file_path: str,
+    aircraft_file_path: pathlib.Path,
     file_formatter=None,
 ) -> go.FigureWidget:
     """Return a plot of the drag breakdown of the wing in cruise conditions."""
@@ -1115,16 +1106,14 @@ def drag_breakdown_diagram(
     )
 
     fig.update_layout(
-        margin=dict(t=0, l=0, r=0, b=0),
+        margin={"t": 0, "l": 0, "r": 0, "b": 0},
     )
 
-    fig = go.FigureWidget(fig)
-
-    return fig
+    return go.FigureWidget(fig)
 
 
 def payload_range(
-    aircraft_file_path: str, name="", fig=None, file_formatter=None
+    aircraft_file_path: pathlib.Path, name="", fig=None, file_formatter=None
 ) -> go.FigureWidget:
     """
     Returns a figure plot of the payload range diagram of the plane.
@@ -1176,9 +1165,7 @@ def payload_range(
             x=range_array[i],
             y=payload_array[i],
             text=text_plot[i],
-            font=dict(
-                size=14,
-            ),
+            font={"size": 14},
             align="center",
             bordercolor="Black",
             borderpad=4,
@@ -1192,19 +1179,24 @@ def payload_range(
         title_x=0.5,
         xaxis_title="Range [nm]",
         yaxis_title="Payload [kg]",
-        legend=dict(yanchor="top", y=0.99, xanchor="right", x=0.99),
+        legend={"yanchor": "top", "y": 0.99, "xanchor": "right", "x": 0.99},
     )
 
     fig.update_xaxes(
-        range=[-100, range_array[-1] * 1.15], title_font=dict(size=18), tickfont=dict(size=14)
+        range=[-100, range_array[-1] * 1.15], title_font={"size": 18}, tickfont={"size": 14}
     )
-    fig.update_yaxes(title_font=dict(size=18), tickfont=dict(size=14))
+    fig.update_yaxes(title_font={"size": 18}, tickfont={"size": 14})
 
     return fig
 
 
-def aircraft_polar(
-    aircraft_file_path: str, name=None, fig=None, file_formatter=None, equilibrated=False
+def aircraft_polar(  # noqa: PLR0915
+    aircraft_file_path: pathlib.Path,
+    name=None,
+    fig=None,
+    file_formatter=None,
+    *,
+    equilibrated=False,
 ) -> go.FigureWidget:
     """
     Returns a figure plot of the polar of the plane.
@@ -1266,10 +1258,10 @@ def aircraft_polar(
     l_d_max_low_speed = max(np.asarray(cl_array_low_speed) / np.asarray(cd_array_low_speed))
     l_d_max_cruise_index = np.where(
         np.asarray(cl_array_cruise) / np.asarray(cd_array_cruise) == l_d_max_cruise
-    )[0]
+    )[0].item()
     l_d_max_low_speed_index = np.where(
         np.asarray(cl_array_low_speed) / np.asarray(cd_array_low_speed) == l_d_max_low_speed
-    )[0]
+    )[0].item()
 
     text_cruise = []
     text_low_speed = []
@@ -1303,7 +1295,7 @@ def aircraft_polar(
         / cd_array_cruise[int(l_d_max_cruise_index)]
         * np.asarray(cd_array_cruise),
         mode="lines",
-        line=dict(width=2, dash="dot"),
+        line={"width": 2, "dash": "dot"},
         showlegend=False,
     )
     fig.add_trace(scatter, 1, 1)
@@ -1324,7 +1316,7 @@ def aircraft_polar(
         / cd_array_low_speed[int(l_d_max_low_speed_index)]
         * np.asarray(cd_array_low_speed),
         mode="lines",
-        line=dict(width=2, dash="dot"),
+        line={"width": 2, "dash": "dot"},
         showlegend=False,
     )
     fig.add_trace(scatter, 1, 2)
@@ -1336,15 +1328,12 @@ def aircraft_polar(
     fig.update_yaxes(title_text="CL", row=1, col=1)
     fig.update_yaxes(title_text="CL", row=1, col=2)
 
-    if equilibrated:
-        title = "Equilibrated Aircraft Polar"
-    else:
-        title = "Non Equilibrated Aircraft Polar"
+    title = "Equilibrated Aircraft Polar" if equilibrated else "Non Equilibrated Aircraft Polar"
 
     fig.update_layout(
         title_text=title,
         title_x=0.5,
-        legend=dict(yanchor="top", y=0.99, xanchor="right", x=0.99),
+        legend={"yanchor": "top", "y": 0.99, "xanchor": "right", "x": 0.99},
     )
 
     return fig

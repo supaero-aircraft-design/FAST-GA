@@ -16,9 +16,12 @@ wing geometry.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
+
+from fastga.models.constants import WingLayout
 
 from ..constants import SERVICE_WING_HEIGHT, SUBMODEL_WING_HEIGHT_LEGACY
 
@@ -38,12 +41,12 @@ class ComputeWingZ(om.ExplicitComponent):
         self.add_input("data:geometry:wing:tip:y", val=np.nan, units="m")
         self.add_input("data:geometry:wing:root:y", val=np.nan, units="m")
         self.add_input("data:geometry:wing:dihedral", val=np.nan, units="rad")
-        self.add_input("data:geometry:wing:tip:thickness_ratio", val=np.nan)
-        self.add_input("data:geometry:wing:root:thickness_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:tip:thickness_ratio", val=np.nan, units="unitless")
+        self.add_input("data:geometry:wing:root:thickness_ratio", val=np.nan, units="unitless")
         self.add_input("data:geometry:wing:root:chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:chord", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="m")
-        self.add_input("data:geometry:wing_configuration", val=np.nan)
+        self.add_input("data:geometry:wing_configuration", val=np.nan, units="unitless")
 
         self.add_output(
             "data:geometry:wing:root:z",
@@ -58,6 +61,9 @@ class ComputeWingZ(om.ExplicitComponent):
             "centerline, taken positive when wing is below the fuselage centerline",
         )
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials(
             of="data:geometry:wing:root:z",
             wrt=[
@@ -97,7 +103,7 @@ class ComputeWingZ(om.ExplicitComponent):
         # Convention is positive in a low wing configuration and negative otherwise, see Roskam
         # part VI page 384 in the graph description
 
-        if wing_config == 1.0:
+        if wing_config == WingLayout.LOW_WING:
             z2_wing = 0.5 * fus_height - 0.5 * root_thickness_ratio * l2_wing
             z4_wing = (
                 0.5 * fus_height
@@ -106,14 +112,14 @@ class ComputeWingZ(om.ExplicitComponent):
             )
             # Positive dihedral reduce distance between wing AC and fuselage centerline
 
-        elif wing_config == 2.0:
+        elif wing_config == WingLayout.MID_WING:
             # For mid-wing configuration the root AC is at the same height as the fuselage
             # centerline
 
             z2_wing = 0.0
             z4_wing = -(y4_wing - y2_wing) * np.tan(dihedral_angle)
 
-        elif wing_config == 3.0:
+        elif wing_config == WingLayout.HIGH_WING:
             z2_wing = -0.5 * fus_height + 0.5 * root_thickness_ratio * l2_wing
             z4_wing = (
                 -0.5 * fus_height
@@ -154,7 +160,7 @@ class ComputeWingZ(om.ExplicitComponent):
             y2_wing - y4_wing
         ) / np.cos(dihedral_angle) ** 2.0
 
-        if wing_config == 2.0:
+        if wing_config == WingLayout.MID_WING:
             partials["data:geometry:wing:root:z", "data:geometry:wing:root:thickness_ratio"] = 0.0
             partials["data:geometry:wing:root:z", "data:geometry:wing:root:chord"] = 0.0
             partials["data:geometry:wing:root:z", "data:geometry:fuselage:maximum_height"] = 0.0
@@ -163,7 +169,7 @@ class ComputeWingZ(om.ExplicitComponent):
             partials["data:geometry:wing:tip:z", "data:geometry:wing:tip:chord"] = 0.0
             partials["data:geometry:wing:tip:z", "data:geometry:fuselage:maximum_height"] = 0.0
 
-        elif wing_config == 3.0:
+        elif wing_config == WingLayout.HIGH_WING:
             partials["data:geometry:wing:root:z", "data:geometry:wing:root:thickness_ratio"] = (
                 0.5 * l2_wing
             )

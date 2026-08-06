@@ -40,10 +40,14 @@ class ComputeWingTankWidthArray(om.ExplicitComponent):
     def setup(self):
         nb_point_wing = self.options["number_points_wing_mfw"]
 
-        self.add_input("data:geometry:propulsion:tank:LE_chord_percentage", val=np.nan)
-        self.add_input("data:geometry:propulsion:tank:TE_chord_percentage", val=np.nan)
-        self.add_input("data:geometry:flap:chord_ratio", val=np.nan)
-        self.add_input("data:geometry:wing:aileron:chord_ratio", val=np.nan)
+        self.add_input(
+            "data:geometry:propulsion:tank:LE_chord_percentage", val=np.nan, units="unitless"
+        )
+        self.add_input(
+            "data:geometry:propulsion:tank:TE_chord_percentage", val=np.nan, units="unitless"
+        )
+        self.add_input("data:geometry:flap:chord_ratio", val=np.nan, units="unitless")
+        self.add_input("data:geometry:wing:aileron:chord_ratio", val=np.nan, units="unitless")
         self.add_input(
             "data:geometry:propulsion:tank:chord_array",
             units="m",
@@ -57,6 +61,11 @@ class ComputeWingTankWidthArray(om.ExplicitComponent):
             shape=nb_point_wing,
             val=np.full(nb_point_wing, 0.2),
         )
+
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
+        nb_point_wing = self.options["number_points_wing_mfw"]
 
         self.declare_partials(
             of="data:geometry:propulsion:tank:width_array",

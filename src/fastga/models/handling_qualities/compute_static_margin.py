@@ -13,10 +13,9 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-
-import fastoad.api as oad
 from fastoad.module_management.constants import ModelDomain
 
 from fastga.models.aerodynamics.aero_center import ComputeAeroCenter
@@ -42,14 +41,35 @@ class _ComputeStaticMargin(om.ExplicitComponent):
     """
 
     def setup(self):
-        self.add_input("data:weight:aircraft:CG:aft:MAC_position", val=np.nan)
-        self.add_input("data:aerodynamics:cruise:neutral_point:stick_fixed:x", val=np.nan)
-        self.add_input("data:aerodynamics:cruise:neutral_point:stick_free:x", val=np.nan)
+        self.add_input("data:weight:aircraft:CG:aft:MAC_position", val=np.nan, units="unitless")
+        self.add_input(
+            "data:aerodynamics:cruise:neutral_point:stick_fixed:x", val=np.nan, units="unitless"
+        )
+        self.add_input(
+            "data:aerodynamics:cruise:neutral_point:stick_free:x", val=np.nan, units="unitless"
+        )
 
-        self.add_output("data:handling_qualities:stick_fixed_static_margin")
-        self.add_output("data:handling_qualities:stick_free_static_margin")
+        self.add_output("data:handling_qualities:stick_fixed_static_margin", units="unitless")
+        self.add_output("data:handling_qualities:stick_free_static_margin", units="unitless")
 
-        self.declare_partials("*", "*", method="fd")
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
+        self.declare_partials(
+            "*", "data:weight:aircraft:CG:aft:MAC_position", method="exact", val=-1.0
+        )
+        self.declare_partials(
+            "data:handling_qualities:stick_fixed_static_margin",
+            "data:aerodynamics:cruise:neutral_point:stick_fixed:x",
+            method="exact",
+            val=1.0,
+        )
+        self.declare_partials(
+            "data:handling_qualities:stick_free_static_margin",
+            "data:aerodynamics:cruise:neutral_point:stick_free:x",
+            method="exact",
+            val=1.0,
+        )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         cg_ratio = inputs["data:weight:aircraft:CG:aft:MAC_position"]

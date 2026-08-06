@@ -16,9 +16,12 @@ component.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import warnings
+
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
+
+from fastga.models.constants import FuelType
 
 from ...constants import SERVICE_MFW, SUBMODEL_MFW_LEGACY
 
@@ -32,15 +35,18 @@ class ComputeMFWSimple(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
     def setup(self):
-        self.add_input("data:propulsion:fuel_type", val=np.nan)
+        self.add_input("data:propulsion:fuel_type", val=np.nan, units="unitless")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:root:chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:chord", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:root:thickness_ratio", val=np.nan)
-        self.add_input("data:geometry:wing:tip:thickness_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:root:thickness_ratio", val=np.nan, units="unitless")
+        self.add_input("data:geometry:wing:tip:thickness_ratio", val=np.nan, units="unitless")
 
         self.add_output("data:weight:aircraft:MFW", units="kg")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials(
             "*",
             [
@@ -65,15 +71,15 @@ class ComputeMFWSimple(om.ExplicitComponent):
         root_thickness_ratio = inputs["data:geometry:wing:root:thickness_ratio"]
         tip_thickness_ratio = inputs["data:geometry:wing:tip:thickness_ratio"]
 
-        if fuel_type == 1.0:
+        if fuel_type == FuelType.AVGAS:
             m_vol_fuel = 718.9  # gasoline volume-mass [kg/m**3], cold worst case, Avgas
-        elif fuel_type == 2.0:
+        elif fuel_type == FuelType.DIESEL:
             m_vol_fuel = 860.0  # Diesel volume-mass [kg/m**3], cold worst case
-        elif fuel_type == 3.0:
+        elif fuel_type == FuelType.JET_A1:
             m_vol_fuel = 804.0  # Jet-A1 volume mass [kg/m**3], cold worst case
         else:
             m_vol_fuel = 718.9
-            warnings.warn("Fuel type {} does not exist, replaced by type 1!".format(fuel_type))
+            warnings.warn(f"Fuel type {fuel_type} does not exist, replaced by type 1!")
 
         # Tanks are between 1st (30% MAC) and 3rd (60% MAC) longeron: 30% of the wing
         ave_thickness = (
@@ -94,11 +100,11 @@ class ComputeMFWSimple(om.ExplicitComponent):
         root_thickness_ratio = inputs["data:geometry:wing:root:thickness_ratio"]
         tip_thickness_ratio = inputs["data:geometry:wing:tip:thickness_ratio"]
 
-        if fuel_type == 1.0:
+        if fuel_type == FuelType.AVGAS:
             m_vol_fuel = 718.9  # gasoline volume-mass [kg/m**3], cold worst case, Avgas
-        elif fuel_type == 2.0:
+        elif fuel_type == FuelType.DIESEL:
             m_vol_fuel = 860.0  # Diesel volume-mass [kg/m**3], cold worst case
-        elif fuel_type == 3.0:
+        elif fuel_type == FuelType.JET_A1:
             m_vol_fuel = 804.0  # Jet-A1 volume mass [kg/m**3], cold worst case
         else:
             m_vol_fuel = 718.9

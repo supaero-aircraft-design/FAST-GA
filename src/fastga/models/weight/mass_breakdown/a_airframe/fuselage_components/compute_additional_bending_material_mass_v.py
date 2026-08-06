@@ -103,7 +103,7 @@ class ComputeAddBendingMassVertical(om.ExplicitComponent):
         # Ratio of the cabin before and after the wing centroid point
 
         # The fuselage length is roughly discretized with a fixed length step.
-        nb_points_front = int(FUSELAGE_MESH_POINT * wing_centroid / tail_x_cg)
+        nb_points_front = int((FUSELAGE_MESH_POINT * wing_centroid / tail_x_cg).item())
         x_vector_rear = np.linspace(wing_centroid, tail_x_cg, FUSELAGE_MESH_POINT - nb_points_front)
 
         vertical_bending_vector = np.zeros_like(x_vector_rear)

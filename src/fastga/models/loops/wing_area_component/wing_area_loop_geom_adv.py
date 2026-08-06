@@ -33,7 +33,8 @@ from fastga.models.geometry.geom_components.wing.components.compute_wing_y impor
 from fastga.models.geometry.geom_components.wing_tank.compute_mfw_advanced import (
     ComputeMFWAdvanced,
 )
-from ..constants import SUBMODEL_WING_AREA_GEOM_LOOP, SUBMODEL_WING_AREA_GEOM_CONS
+
+from ..constants import SUBMODEL_WING_AREA_GEOM_CONS, SUBMODEL_WING_AREA_GEOM_LOOP
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -142,7 +143,15 @@ class DistanceToMFWForUpdate(om.ImplicitComponent):
 
         self.add_output("wing_area", val=15.0, units="m**2")
 
-        self.declare_partials(of="*", wrt="*", method="exact")
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
+        self.declare_partials(
+            of="wing_area", wrt="data:weight:aircraft:MFW", method="exact", val=0.1
+        )
+        self.declare_partials(
+            of="wing_area", wrt="data:mission:sizing:fuel", method="exact", val=-0.1
+        )
 
     # pylint: disable=missing-function-docstring, unused-argument, too-many-arguments, too-many-positional-arguments
     # Overriding OpenMDAO apply_nonlinear, not all arguments are used
@@ -153,12 +162,6 @@ class DistanceToMFWForUpdate(om.ImplicitComponent):
         residuals["wing_area"] = (
             inputs["data:weight:aircraft:MFW"] - inputs["data:mission:sizing:fuel"]
         ) / 10.0
-
-    # pylint: disable=missing-function-docstring, too-many-arguments, unused-argument, too-many-positional-arguments
-    # Overriding OpenMDAO linearize, not all arguments are used
-    def linearize(self, inputs, outputs, jacobian, discrete_inputs=None, discrete_outputs=None):
-        jacobian["wing_area", "data:weight:aircraft:MFW"] = 0.1
-        jacobian["wing_area", "data:mission:sizing:fuel"] = -0.1
 
 
 # pylint: disable=too-few-public-methods
@@ -211,20 +214,23 @@ class DistanceToMFWForConstraint(om.ExplicitComponent):
 
         self.add_output("data:constraints:wing:additional_fuel_capacity", val=0.0, units="kg")
 
-        self.declare_partials(of="*", wrt="*", method="exact")
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
+        self.declare_partials(
+            of="data:constraints:wing:additional_fuel_capacity",
+            wrt="data:mission:sizing:fuel",
+            method="exact",
+            val=-1.0,
+        )
+        self.declare_partials(
+            of="data:constraints:wing:additional_fuel_capacity", wrt="MFW", method="exact", val=1.0
+        )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         outputs["data:constraints:wing:additional_fuel_capacity"] = (
             inputs["MFW"] - inputs["data:mission:sizing:fuel"]
         )
-
-    # pylint: disable=missing-function-docstring, unused-argument
-    # Overriding OpenMDAO compute_partials, not all arguments are used
-    def compute_partials(self, inputs, partials, discrete_inputs=None):
-        partials["data:constraints:wing:additional_fuel_capacity", "MFW"] = 1.0
-        partials[
-            "data:constraints:wing:additional_fuel_capacity", "data:mission:sizing:fuel"
-        ] = -1.0
 
 
 # pylint: disable=too-few-public-methods

@@ -13,13 +13,11 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from abc import ABC, abstractmethod
-from typing import Union
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
 import pandas as pd
-
-import fastoad.api as oad
 from fastoad.model_base.propulsion import IPropulsion
 
 
@@ -37,7 +35,7 @@ class IPropulsionCS23(IPropulsion):
         """
 
     @abstractmethod
-    def compute_max_power(self, flight_points: Union[oad.FlightPoint, pd.DataFrame]):
+    def compute_max_power(self, flight_points: oad.FlightPoint | pd.DataFrame):
         """
         Computes max available power on one engine.
 
@@ -55,10 +53,10 @@ class IPropulsionCS23(IPropulsion):
     @abstractmethod
     def compute_drag(
         self,
-        mach: Union[float, np.array],
-        unit_reynolds: Union[float, np.array],
+        mach: float | np.ndarray,
+        unit_reynolds: float | np.ndarray,
         wing_mac: float,
-    ) -> Union[float, np.array]:
+    ) -> float | np.ndarray:
         """
         Computes nacelle drag force for out of fuselage engine.
 
@@ -82,17 +80,22 @@ class BaseOMPropulsionComponent(om.ExplicitComponent, ABC):
 
     def setup(self):
         shape = self.options["flight_point_count"]
-        self.add_input("data:propulsion:mach", np.nan, shape=shape)
+        self.add_input("data:propulsion:mach", np.nan, shape=shape, units="unitless")
         self.add_input("data:propulsion:altitude", np.nan, shape=shape, units="m")
-        self.add_input("data:propulsion:engine_setting", np.nan, shape=shape)
-        self.add_input("data:propulsion:use_thrust_rate", np.nan, shape=shape)
-        self.add_input("data:propulsion:required_thrust_rate", np.nan, shape=shape)
+        self.add_input("data:propulsion:engine_setting", np.nan, shape=shape, units="unitless")
+        self.add_input("data:propulsion:use_thrust_rate", np.nan, shape=shape, units="unitless")
+        self.add_input(
+            "data:propulsion:required_thrust_rate", np.nan, shape=shape, units="unitless"
+        )
         self.add_input("data:propulsion:required_thrust", np.nan, shape=shape, units="N")
 
         self.add_output("data:propulsion:SFC", shape=shape, units="kg/s/N")
-        self.add_output("data:propulsion:thrust_rate", shape=shape)
+        self.add_output("data:propulsion:thrust_rate", shape=shape, units="unitless")
         self.add_output("data:propulsion:thrust", shape=shape, units="N")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):

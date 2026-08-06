@@ -13,16 +13,18 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
 
-import fastoad.api as oad
 from ..constants import SUBMODEL_RESERVES
 
 _LOGGER = logging.getLogger(__name__)
 
 POINTS_NB_CLIMB = 100
 MAX_CALCULATION_TIME = 15  # time in seconds
+MIN_CRUISE_DURATION = 1e-6  # To avoid division by zero
 
 oad.RegisterSubmodel.active_models[SUBMODEL_RESERVES] = (
     "fastga.submodel.performances.mission.reserves.legacy"
@@ -36,18 +38,65 @@ class ComputeReserve(om.ExplicitComponent):
         self.add_input("data:mission:sizing:main_route:cruise:duration", np.nan, units="s")
         self.add_input("data:mission:sizing:main_route:reserve:duration", np.nan, units="s")
 
-        self.add_input("settings:mission:sizing:main_route:reserve:k_factor", val=1.0)
+        self.add_input(
+            "settings:mission:sizing:main_route:reserve:k_factor", val=1.0, units="unitless"
+        )
 
         self.add_output("data:mission:sizing:main_route:reserve:fuel", units="kg")
 
-        self.declare_partials("*", "*", method="fd")
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
+        self.declare_partials("*", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         m_reserve = (
             inputs["data:mission:sizing:main_route:cruise:fuel"]
             * inputs["data:mission:sizing:main_route:reserve:duration"]
             / max(
-                1e-6, inputs["data:mission:sizing:main_route:cruise:duration"]
+                MIN_CRUISE_DURATION, inputs["data:mission:sizing:main_route:cruise:duration"]
             )  # avoid 0 division
         ) * inputs["settings:mission:sizing:main_route:reserve:k_factor"]
         outputs["data:mission:sizing:main_route:reserve:fuel"] = m_reserve
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+
+        cruise_duration = max(
+            MIN_CRUISE_DURATION, inputs["data:mission:sizing:main_route:cruise:duration"]
+        )
+
+        partials[
+            "data:mission:sizing:main_route:reserve:fuel",
+            "data:mission:sizing:main_route:cruise:fuel",
+        ] = (
+            inputs["data:mission:sizing:main_route:reserve:duration"]
+            * cruise_duration
+            * inputs["settings:mission:sizing:main_route:reserve:k_factor"]
+        )
+        partials[
+            "data:mission:sizing:main_route:reserve:fuel",
+            "data:mission:sizing:main_route:reserve:duration",
+        ] = (
+            inputs["data:mission:sizing:main_route:cruise:fuel"]
+            * cruise_duration
+            * inputs["settings:mission:sizing:main_route:reserve:k_factor"]
+        )
+        partials[
+            "data:mission:sizing:main_route:reserve:fuel",
+            "settings:mission:sizing:main_route:reserve:k_factor",
+        ] = (
+            inputs["data:mission:sizing:main_route:cruise:fuel"]
+            * inputs["data:mission:sizing:main_route:reserve:duration"]
+            * cruise_duration
+        )
+        partials_cruise_duration = (
+            0
+            if cruise_duration == MIN_CRUISE_DURATION
+            else inputs["data:mission:sizing:main_route:cruise:fuel"]
+            * inputs["data:mission:sizing:main_route:reserve:duration"]
+            * inputs["settings:mission:sizing:main_route:reserve:k_factor"]
+        )
+        partials[
+            "data:mission:sizing:main_route:reserve:fuel",
+            "data:mission:sizing:main_route:cruise:duration",
+        ] = partials_cruise_duration

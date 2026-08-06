@@ -12,9 +12,10 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 
 from .compute_cl_wing import ComputeWingLiftCoefficient
 from .compute_compressibility_correction_wing import ComputeCompressibilityCorrectionWing
@@ -133,10 +134,10 @@ class _MachCorrection(om.ExplicitComponent):
             val=np.nan,
             units="unitless",
         )
-        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan, units="unitless")
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="rad")
 
-        self.add_output("mach_correction", val=0.99)
+        self.add_output("mach_correction", val=0.99, units="unitless")
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup_partials
@@ -245,8 +246,8 @@ class _ClRollMomentLiftEffectPartA(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
     def setup(self):
-        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
-        self.add_input("data:geometry:wing:taper_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan, units="unitless")
+        self.add_input("data:geometry:wing:taper_ratio", val=np.nan, units="unitless")
 
         self.add_output("k_coefficient", units="unitless")
 
@@ -419,7 +420,7 @@ class _ClRollMomentDihedralEffect(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
     def setup(self):
-        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan, units="unitless")
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="rad")
 
         self.add_output("dihedral_effect", val=0.001, units="unitless")
@@ -473,8 +474,8 @@ class _ClRollMomentFromTwist(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
     def setup(self):
-        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
-        self.add_input("data:geometry:wing:taper_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan, units="unitless")
+        self.add_input("data:geometry:wing:taper_ratio", val=np.nan, units="unitless")
 
         self.add_output("cl_r_twist_effect", val=0.001, units="unitless")
 

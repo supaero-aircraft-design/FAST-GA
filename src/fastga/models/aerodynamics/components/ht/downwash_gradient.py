@@ -11,10 +11,9 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import numpy as np
-
-import openmdao.api as om
 import fastoad.api as oad
+import numpy as np
+import openmdao.api as om
 
 from ...constants import SUBMODEL_DOWNWASH
 
@@ -28,14 +27,28 @@ class DownWashGradientComputation(om.ExplicitComponent):
         self.options.declare("low_speed_aero", default=False, types=bool)
 
     def setup(self):
-        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan, units="unitless")
 
         if self.options["low_speed_aero"]:
             self.add_input("data:aerodynamics:wing:low_speed:CL_alpha", val=np.nan, units="rad**-1")
             self.add_output(
                 "data:aerodynamics:horizontal_tail:low_speed:downwash_gradient",
                 val=0.35,
+                units="unitless",
             )
+
+        else:
+            self.add_input("data:aerodynamics:wing:cruise:CL_alpha", val=np.nan, units="rad**-1")
+            self.add_output(
+                "data:aerodynamics:horizontal_tail:cruise:downwash_gradient",
+                val=0.35,
+                units="unitless",
+            )
+
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
+        if self.options["low_speed_aero"]:
             self.declare_partials(
                 of="data:aerodynamics:horizontal_tail:low_speed:downwash_gradient",
                 wrt=[
@@ -45,11 +58,6 @@ class DownWashGradientComputation(om.ExplicitComponent):
                 method="exact",
             )
         else:
-            self.add_input("data:aerodynamics:wing:cruise:CL_alpha", val=np.nan, units="rad**-1")
-            self.add_output(
-                "data:aerodynamics:horizontal_tail:cruise:downwash_gradient",
-                val=0.35,
-            )
             self.declare_partials(
                 of="data:aerodynamics:horizontal_tail:cruise:downwash_gradient",
                 wrt=["data:geometry:wing:aspect_ratio", "data:aerodynamics:wing:cruise:CL_alpha"],

@@ -14,6 +14,8 @@ Defines the analysis and plotting functions for postprocessing of propeller perf
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import pathlib
+
 import numpy as np
 import plotly
 import plotly.graph_objects as go
@@ -24,7 +26,7 @@ COLS = plotly.colors.DEFAULT_PLOTLY_COLORS
 
 
 def propeller_efficiency_map_plot(
-    aircraft_file_path: str, file_formatter=None, sea_level=False
+    aircraft_file_path: pathlib.Path, file_formatter=None, *, sea_level=False
 ) -> go.FigureWidget:
     """
     Returns a contour plot of the propeller efficiency maps as they are used in FAST-OAD-GA.
@@ -80,13 +82,11 @@ def propeller_efficiency_map_plot(
             font_size=15,
         )
 
-    fig = go.FigureWidget(fig)
-
-    return fig
+    return go.FigureWidget(fig)
 
 
 def propeller_coeff_map_plot(
-    aircraft_file_path: str, name="", fig=None, file_formatter=None
+    aircraft_file_path: pathlib.Path, name="", fig=None, file_formatter=None
 ) -> go.FigureWidget:
     """
     Returns a two subplot figure of the thrust and power coefficient of the propeller.
@@ -129,6 +129,4 @@ def propeller_coeff_map_plot(
         font_size=15,
     )
 
-    fig = go.FigureWidget(fig)
-
-    return fig
+    return go.FigureWidget(fig)

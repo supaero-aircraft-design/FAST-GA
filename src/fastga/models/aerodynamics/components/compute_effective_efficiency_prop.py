@@ -14,10 +14,12 @@
 
 import warnings
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 from stdatm import Atmosphere
+
+from fastga.models.constants import PropulsionLayout
 
 from ..constants import SUBMODEL_EFFECTIVE_EFFICIENCY_PROPELLER
 
@@ -37,7 +39,7 @@ class ComputeEffectiveEfficiencyPropeller(om.ExplicitComponent):
         self.options.declare("low_speed_aero", default=False, types=bool)
 
     def setup(self):
-        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan, units="unitless")
         self.add_input("data:geometry:propeller:diameter", val=np.nan, units="m")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
 
@@ -45,67 +47,69 @@ class ComputeEffectiveEfficiencyPropeller(om.ExplicitComponent):
         self.add_input("data:geometry:propulsion:nacelle:wet_area", val=np.nan, units="m**2")
 
         if self.options["low_speed_aero"]:
-            self.add_input("data:aerodynamics:nacelles:low_speed:CD0", val=np.nan)
-            self.add_input("data:aerodynamics:fuselage:low_speed:CD0", val=np.nan)
+            self.add_input("data:aerodynamics:nacelles:low_speed:CD0", val=np.nan, units="unitless")
+            self.add_input("data:aerodynamics:fuselage:low_speed:CD0", val=np.nan, units="unitless")
             self.add_output(
                 "data:aerodynamics:propeller:installation_effect:effective_efficiency:low_speed",
                 val=1.0,
+                units="unitless",
                 desc="Value to multiply the uninstalled efficiency with to obtain the effective "
                 "efficiency due to the presence of cowling (fuselage or nacelle) behind the "
                 "propeller",
             )
 
-            self.declare_partials("*", "*", method="fd")
         else:
-            self.add_input("data:aerodynamics:nacelles:cruise:CD0", val=np.nan)
-            self.add_input("data:aerodynamics:fuselage:cruise:CD0", val=np.nan)
+            self.add_input("data:aerodynamics:nacelles:cruise:CD0", val=np.nan, units="unitless")
+            self.add_input("data:aerodynamics:fuselage:cruise:CD0", val=np.nan, units="unitless")
             self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="m")
             self.add_output(
                 "data:aerodynamics:propeller:installation_effect:effective_efficiency:cruise",
                 val=1.0,
+                units="unitless",
                 desc="Value to multiply the uninstalled efficiency with to obtain the effective "
                 "efficiency due to the presence of cowling (fuselage or nacelle) behind the "
                 "propeller",
             )
 
-            self.declare_partials("*", "*", method="fd")
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
+        self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         propeller_diameter = inputs["data:geometry:propeller:diameter"]
         wing_area = inputs["data:geometry:wing:area"]
-        engine_layout = inputs["data:geometry:propulsion:engine:layout"]
+        engine_layout = inputs["data:geometry:propulsion:engine:layout"].item()
 
         if self.options["low_speed_aero"]:
             altitude = 0.0
-            if engine_layout == 3.0:
+            if engine_layout == PropulsionLayout.IN_THE_NOSE:
                 wet_area_cowling = inputs["data:geometry:fuselage:wet_area"]
                 friction_drag_coeff = inputs["data:aerodynamics:fuselage:low_speed:CD0"]
-            elif engine_layout == 1.0 or engine_layout == 2.0:
+            elif engine_layout in {PropulsionLayout.UNDER_THE_WING, PropulsionLayout.IN_THE_REAR}:
                 wet_area_cowling = inputs["data:geometry:propulsion:nacelle:wet_area"]
                 friction_drag_coeff = inputs["data:aerodynamics:nacelles:low_speed:CD0"]
             else:
                 wet_area_cowling = inputs["data:geometry:fuselage:wet_area"]
                 friction_drag_coeff = inputs["data:aerodynamics:fuselage:low_speed:CD0"]
                 warnings.warn(
-                    "Propulsion layout {} not implemented in model, replaced by layout 3!".format(
-                        engine_layout
-                    )
+                    f"Propulsion layout {engine_layout} not implemented in model, replaced by "
+                    f"layout 3!"
                 )
         else:
             altitude = inputs["data:mission:sizing:main_route:cruise:altitude"]
-            if engine_layout == 3.0:
+            if engine_layout == PropulsionLayout.IN_THE_NOSE:
                 wet_area_cowling = inputs["data:geometry:fuselage:wet_area"]
                 friction_drag_coeff = inputs["data:aerodynamics:fuselage:cruise:CD0"]
-            elif engine_layout == 1.0 or engine_layout == 2.0:
+            elif engine_layout in {PropulsionLayout.UNDER_THE_WING, PropulsionLayout.IN_THE_REAR}:
                 wet_area_cowling = inputs["data:geometry:propulsion:nacelle:wet_area"]
                 friction_drag_coeff = inputs["data:aerodynamics:nacelles:cruise:CD0"]
             else:
                 wet_area_cowling = inputs["data:geometry:fuselage:wet_area"]
                 friction_drag_coeff = inputs["data:aerodynamics:fuselage:cruise:CD0"]
                 warnings.warn(
-                    "Propulsion layout {} not implemented in model, replaced by layout 3!".format(
-                        engine_layout
-                    )
+                    f"Propulsion layout {engine_layout} not implemented in model, replaced by "
+                    f"layout 3!"
                 )
 
         # All drag coefficient are given wrt the wing area but for this formula we need to have

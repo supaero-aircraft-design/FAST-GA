@@ -20,10 +20,10 @@ import numpy as np
 import openmdao.api as om
 
 from .vlm import VLMSimpleGeometry
-from ..xfoil.xfoil_polar import XfoilPolar
 from ..neuralfoil.neuralfoil_polar import NeuralfoilPolar
+from ..xfoil.xfoil_polar import XfoilPolar
 from ...components.compute_reynolds import ComputeUnitReynolds
-from ...constants import SPAN_MESH_POINT, MACH_NB_PTS, DEFAULT_INPUT_AOA
+from ...constants import DEFAULT_INPUT_AOA, MACH_NB_PTS, SPAN_MESH_POINT
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -173,41 +173,66 @@ class ComputeLocalReynolds(om.ExplicitComponent):
         self.options.declare("low_speed_aero", default=False, types=bool)
 
     def setup(self):
-        if self.options["low_speed_aero"]:
-            self.add_input("data:aerodynamics:low_speed:unit_reynolds", val=np.nan, units="m**-1")
-        else:
-            self.add_input("data:aerodynamics:cruise:unit_reynolds", val=np.nan, units="m**-1")
+        ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
+
+        self.add_input("data:aerodynamics:" + ls_tag + ":unit_reynolds", val=np.nan, units="m**-1")
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
         self.add_input("data:geometry:horizontal_tail:MAC:length", val=np.nan, units="m")
 
-        if self.options["low_speed_aero"]:
-            self.add_output("data:aerodynamics:wing:low_speed:reynolds")
-            self.add_output("data:aerodynamics:horizontal_tail:low_speed:reynolds")
-        else:
-            self.add_output("data:aerodynamics:wing:cruise:reynolds")
-            self.add_output("data:aerodynamics:horizontal_tail:cruise:reynolds")
+        self.add_output("data:aerodynamics:wing:" + ls_tag + ":reynolds", units="unitless")
+        self.add_output(
+            "data:aerodynamics:horizontal_tail:" + ls_tag + ":reynolds", units="unitless"
+        )
 
-        self.declare_partials("*", "*", method="fd")
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
+        ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
+        self.declare_partials(
+            "data:aerodynamics:wing:" + ls_tag + ":reynolds",
+            ["data:aerodynamics:" + ls_tag + ":unit_reynolds", "data:geometry:wing:MAC:length"],
+            method="exact",
+        )
+        self.declare_partials(
+            "data:aerodynamics:horizontal_tail:" + ls_tag + ":reynolds",
+            [
+                "data:aerodynamics:" + ls_tag + ":unit_reynolds",
+                "data:geometry:horizontal_tail:MAC:length",
+            ],
+            method="exact",
+        )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        if self.options["low_speed_aero"]:
-            outputs["data:aerodynamics:wing:low_speed:reynolds"] = (
-                inputs["data:aerodynamics:low_speed:unit_reynolds"]
-                * inputs["data:geometry:wing:MAC:length"]
-            )
-            outputs["data:aerodynamics:horizontal_tail:low_speed:reynolds"] = (
-                inputs["data:aerodynamics:low_speed:unit_reynolds"]
-                * inputs["data:geometry:horizontal_tail:MAC:length"]
-            )
-        else:
-            outputs["data:aerodynamics:wing:cruise:reynolds"] = (
-                inputs["data:aerodynamics:cruise:unit_reynolds"]
-                * inputs["data:geometry:wing:MAC:length"]
-            )
-            outputs["data:aerodynamics:horizontal_tail:cruise:reynolds"] = (
-                inputs["data:aerodynamics:cruise:unit_reynolds"]
-                * inputs["data:geometry:horizontal_tail:MAC:length"]
-            )
+        ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
+
+        outputs["data:aerodynamics:wing:" + ls_tag + ":reynolds"] = (
+            inputs["data:aerodynamics:" + ls_tag + ":unit_reynolds"]
+            * inputs["data:geometry:wing:MAC:length"]
+        )
+        outputs["data:aerodynamics:horizontal_tail:" + ls_tag + ":reynolds"] = (
+            inputs["data:aerodynamics:" + ls_tag + ":unit_reynolds"]
+            * inputs["data:geometry:horizontal_tail:MAC:length"]
+        )
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+        ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
+
+        partials[
+            "data:aerodynamics:wing:" + ls_tag + ":reynolds",
+            "data:aerodynamics:" + ls_tag + ":unit_reynolds",
+        ] = inputs["data:geometry:wing:MAC:length"]
+        partials[
+            "data:aerodynamics:wing:" + ls_tag + ":reynolds", "data:geometry:wing:MAC:length"
+        ] = inputs["data:aerodynamics:" + ls_tag + ":unit_reynolds"]
+
+        partials[
+            "data:aerodynamics:horizontal_tail:" + ls_tag + ":reynolds",
+            "data:aerodynamics:" + ls_tag + ":unit_reynolds",
+        ] = inputs["data:geometry:horizontal_tail:MAC:length"]
+        partials[
+            "data:aerodynamics:horizontal_tail:" + ls_tag + ":reynolds",
+            "data:geometry:horizontal_tail:MAC:length",
+        ] = inputs["data:aerodynamics:" + ls_tag + ":unit_reynolds"]
 
 
 class _ComputeAeroVLM(VLMSimpleGeometry):
@@ -227,26 +252,32 @@ class _ComputeAeroVLM(VLMSimpleGeometry):
     def setup(self):
         super().setup()
         if self.options["low_speed_aero"]:
-            self.add_input("data:aerodynamics:low_speed:mach", val=np.nan)
+            self.add_input("data:aerodynamics:low_speed:mach", val=np.nan, units="unitless")
         else:
-            self.add_input("data:aerodynamics:cruise:mach", val=np.nan)
+            self.add_input("data:aerodynamics:cruise:mach", val=np.nan, units="unitless")
             self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="m")
 
         if self.options["low_speed_aero"]:
-            self.add_output("data:aerodynamics:wing:low_speed:CL0_clean")
-            self.add_output("data:aerodynamics:wing:low_speed:CL_ref")
+            self.add_output("data:aerodynamics:wing:low_speed:CL0_clean", units="unitless")
+            self.add_output("data:aerodynamics:wing:low_speed:CL_ref", units="unitless")
             self.add_output("data:aerodynamics:wing:low_speed:CL_alpha", units="rad**-1")
-            self.add_output("data:aerodynamics:wing:low_speed:CM0_clean")
+            self.add_output("data:aerodynamics:wing:low_speed:CM0_clean", units="unitless")
             self.add_output(
                 "data:aerodynamics:wing:low_speed:Y_vector", shape=SPAN_MESH_POINT, units="m"
             )
-            self.add_output("data:aerodynamics:wing:low_speed:CL_vector", shape=SPAN_MESH_POINT)
+            self.add_output(
+                "data:aerodynamics:wing:low_speed:CL_vector",
+                shape=SPAN_MESH_POINT,
+                units="unitless",
+            )
             self.add_output(
                 "data:aerodynamics:wing:low_speed:chord_vector", shape=SPAN_MESH_POINT, units="m"
             )
-            self.add_output("data:aerodynamics:wing:low_speed:induced_drag_coefficient")
-            self.add_output("data:aerodynamics:horizontal_tail:low_speed:CL0")
-            self.add_output("data:aerodynamics:horizontal_tail:low_speed:CL_ref")
+            self.add_output(
+                "data:aerodynamics:wing:low_speed:induced_drag_coefficient", units="unitless"
+            )
+            self.add_output("data:aerodynamics:horizontal_tail:low_speed:CL0", units="unitless")
+            self.add_output("data:aerodynamics:horizontal_tail:low_speed:CL_ref", units="unitless")
             self.add_output("data:aerodynamics:horizontal_tail:low_speed:CL_alpha", units="rad**-1")
             self.add_output(
                 "data:aerodynamics:horizontal_tail:low_speed:CL_alpha_isolated", units="rad**-1"
@@ -257,21 +288,31 @@ class _ComputeAeroVLM(VLMSimpleGeometry):
                 units="m",
             )
             self.add_output(
-                "data:aerodynamics:horizontal_tail:low_speed:CL_vector", shape=SPAN_MESH_POINT
+                "data:aerodynamics:horizontal_tail:low_speed:CL_vector",
+                shape=SPAN_MESH_POINT,
+                units="unitless",
             )
-            self.add_output("data:aerodynamics:horizontal_tail:low_speed:induced_drag_coefficient")
+            self.add_output(
+                "data:aerodynamics:horizontal_tail:low_speed:induced_drag_coefficient",
+                units="unitless",
+            )
         else:
-            self.add_output("data:aerodynamics:wing:cruise:CL0_clean")
-            self.add_output("data:aerodynamics:wing:cruise:CL_ref")
+            self.add_output("data:aerodynamics:wing:cruise:CL0_clean", units="unitless")
+            self.add_output("data:aerodynamics:wing:cruise:CL_ref", units="unitless")
             self.add_output("data:aerodynamics:wing:cruise:CL_alpha", units="rad**-1")
-            self.add_output("data:aerodynamics:wing:cruise:CM0_clean")
-            self.add_output("data:aerodynamics:wing:cruise:induced_drag_coefficient")
-            self.add_output("data:aerodynamics:horizontal_tail:cruise:CL0")
+            self.add_output("data:aerodynamics:wing:cruise:CM0_clean", units="unitless")
+            self.add_output(
+                "data:aerodynamics:wing:cruise:induced_drag_coefficient", units="unitless"
+            )
+            self.add_output("data:aerodynamics:horizontal_tail:cruise:CL0", units="unitless")
             self.add_output("data:aerodynamics:horizontal_tail:cruise:CL_alpha", units="rad**-1")
             self.add_output(
                 "data:aerodynamics:horizontal_tail:cruise:CL_alpha_isolated", units="rad**-1"
             )
-            self.add_output("data:aerodynamics:horizontal_tail:cruise:induced_drag_coefficient")
+            self.add_output(
+                "data:aerodynamics:horizontal_tail:cruise:induced_drag_coefficient",
+                units="unitless",
+            )
             if self.options["compute_mach_interpolation"]:
                 self.add_output(
                     "data:aerodynamics:aircraft:mach_interpolation:mach_vector",
@@ -283,6 +324,9 @@ class _ComputeAeroVLM(VLMSimpleGeometry):
                     units="rad**-1",
                 )
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
@@ -320,11 +364,10 @@ class _ComputeAeroVLM(VLMSimpleGeometry):
 
         if self.options["low_speed_aero"]:
             pass
-        else:
-            if self.options["compute_mach_interpolation"]:
-                mach_interp, cl_alpha_interp = self.compute_cl_alpha_mach(
-                    inputs, input_aoa, altitude, mach
-                )
+        elif self.options["compute_mach_interpolation"]:
+            mach_interp, cl_alpha_interp = self.compute_cl_alpha_mach(
+                inputs, input_aoa, altitude, mach
+            )
 
         # Defining outputs
         if self.options["low_speed_aero"]:

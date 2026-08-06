@@ -14,16 +14,16 @@ Python module for vertical tail geometry calculation, part of the geometry compo
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import openmdao.api as om
 import fastoad.api as oad
+import openmdao.api as om
 
 from .components import ComputeVTMAC, ComputeVTMACDistanceXLocal
 from .constants import (
     SERVICE_VT_CHORD,
+    SERVICE_VT_DISTANCE_FD,
+    SERVICE_VT_DISTANCE_FL,
     SERVICE_VT_SWEEP,
     SERVICE_VT_WET_AREA,
-    SERVICE_VT_DISTANCE_FL,
-    SERVICE_VT_DISTANCE_FD,
 )
 
 

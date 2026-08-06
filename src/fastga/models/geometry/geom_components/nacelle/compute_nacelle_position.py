@@ -14,8 +14,8 @@ Python module for nacelle position calculations, part of the geometry component.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import openmdao.api as om
 import fastoad.api as oad
+import openmdao.api as om
 
 from .components import ComputeNacelleXPosition, ComputeNacelleYPosition
 from ...constants import SERVICE_NACELLE_POSITION, SUBMODEL_NACELLE_POSITION_LEGACY

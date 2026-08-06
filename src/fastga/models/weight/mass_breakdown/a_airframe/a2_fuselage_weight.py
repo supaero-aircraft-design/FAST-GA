@@ -21,6 +21,8 @@ import numpy as np
 import openmdao.api as om
 from stdatm import AtmosphereWithPartials
 
+from fastga.models.constants import WingLayout
+
 from .constants import (
     SERVICE_FUSELAGE_MASS,
     SUBMODEL_FUSELAGE_MASS_LEGACY,
@@ -29,6 +31,8 @@ from .constants import (
 )
 
 _LOGGER = logging.getLogger(__name__)
+
+MIN_ALT_PRESSURIZATION = 10000.0
 
 oad.RegisterSubmodel.active_models[SERVICE_FUSELAGE_MASS] = SUBMODEL_FUSELAGE_MASS_LEGACY
 
@@ -45,9 +49,11 @@ class ComputeFuselageWeight(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
     def setup(self):
-        self.add_input("data:mission:sizing:cs23:sizing_factor:ultimate_aircraft", val=np.nan)
+        self.add_input(
+            "data:mission:sizing:cs23:sizing_factor:ultimate_aircraft", val=np.nan, units="unitless"
+        )
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="lb")
-        self.add_input("data:weight:airframe:fuselage:k_factor", val=1.0)
+        self.add_input("data:weight:airframe:fuselage:k_factor", val=1.0, units="unitless")
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:length", val=np.nan, units="m")
@@ -55,6 +61,9 @@ class ComputeFuselageWeight(om.ExplicitComponent):
 
         self.add_output("data:weight:airframe:fuselage:mass", units="lb")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials("*", "*", method="exact")
 
     # pylint: disable=missing-function-docstring, unused-argument
@@ -214,9 +223,11 @@ class ComputeFuselageWeightRaymer(om.ExplicitComponent):
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="ft")
         self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="ft")
         self.add_input("data:geometry:fuselage:wet_area", val=np.nan, units="ft**2")
-        self.add_input("data:mission:sizing:cs23:sizing_factor:ultimate_aircraft", val=np.nan)
+        self.add_input(
+            "data:mission:sizing:cs23:sizing_factor:ultimate_aircraft", val=np.nan, units="unitless"
+        )
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="lb")
-        self.add_input("data:weight:airframe:fuselage:k_factor", val=1.0)
+        self.add_input("data:weight:airframe:fuselage:k_factor", val=1.0, units="unitless")
         self.add_input(
             "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="ft"
         )
@@ -225,11 +236,10 @@ class ComputeFuselageWeightRaymer(om.ExplicitComponent):
 
         self.add_output("data:weight:airframe:fuselage:mass", units="lb")
 
-        self.declare_partials(
-            of="*",
-            wrt="*",
-            method="exact",
-        )
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
+        self.declare_partials(of="*", wrt="*", method="exact")
 
     # pylint: disable=missing-function-docstring, unused-argument
     # Overriding OpenMDAO compute, not all arguments are used
@@ -254,10 +264,7 @@ class ComputeFuselageWeightRaymer(om.ExplicitComponent):
 
         dynamic_pressure = 1.0 / 2.0 * rho_cruise * v_cruise**2.0 * 0.020885434273039
 
-        if cruise_alt > 10000.0:
-            is_pressurized = 1.0
-        else:
-            is_pressurized = 0.0
+        is_pressurized = 1.0 if cruise_alt > MIN_ALT_PRESSURIZATION else 0.0
 
         # is_pressurized is an option that affects the fuselage sizing.
         # It describes whether the fuselage is pressurized or not depending on the cruise altitude.
@@ -307,10 +314,7 @@ class ComputeFuselageWeightRaymer(om.ExplicitComponent):
         v_press = (fus_length - lar - lav) * np.pi * (fus_dia / 2.0) ** 2.0
         delta_p = (pressure_sl - pressure_cruise) * 0.000145038
 
-        if cruise_alt > 10000.0:
-            is_pressurized = 1.0
-        else:
-            is_pressurized = 0.0
+        is_pressurized = 1.0 if cruise_alt > MIN_ALT_PRESSURIZATION else 0.0
 
         # is_pressurized is an option that affects the fuselage sizing.
         # It describes whether the fuselage is pressurized or not depending on the cruise altitude.
@@ -527,13 +531,16 @@ class ComputeFuselageWeightRoskam(om.ExplicitComponent):
         self.add_input("data:geometry:fuselage:length", val=np.nan, units="ft")
         self.add_input("data:geometry:fuselage:front_length", val=np.nan, units="ft")
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="lb")
-        self.add_input("data:geometry:cabin:seats:passenger:NPAX_max", val=np.nan)
+        self.add_input("data:geometry:cabin:seats:passenger:NPAX_max", val=np.nan, units="unitless")
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="ft")
         self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="ft")
-        self.add_input("data:geometry:wing_configuration", val=np.nan)
+        self.add_input("data:geometry:wing_configuration", val=np.nan, units="unitless")
 
         self.add_output("data:weight:airframe:fuselage:mass", units="lb")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials(
             of="*",
             wrt=[
@@ -564,7 +571,7 @@ class ComputeFuselageWeightRoskam(om.ExplicitComponent):
         fus_dia = (maximum_height + maximum_width) / 2.0
         p_max = 2 * np.pi * (fus_dia / 2)  # maximum perimeter of the fuselage
 
-        if wing_config == 1.0:
+        if wing_config == WingLayout.LOW_WING:
             # The formula found in Roskam originally contains a division by 100, but it leads to
             # results way too low. It will be omitted here. It does not seem to cause an issue
             # for the high wing configuration however, so we will simply issue a warning with a
@@ -576,7 +583,7 @@ class ComputeFuselageWeightRoskam(om.ExplicitComponent):
                 "wing aircraft as it gives very small results. Consider switching submodel"
             )
 
-        elif wing_config == 3.0:
+        elif wing_config == WingLayout.HIGH_WING:
             a2 = 14.86 * (
                 mtow**0.144
                 * ((fus_length - lav) / p_max) ** 0.778
@@ -603,7 +610,7 @@ class ComputeFuselageWeightRoskam(om.ExplicitComponent):
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         wing_config = inputs["data:geometry:wing_configuration"]
 
-        if wing_config == 1.0:
+        if wing_config == WingLayout.LOW_WING:
             fus_length = inputs["data:geometry:fuselage:length"]
             lav = inputs["data:geometry:fuselage:front_length"]
             mtow = inputs["data:weight:aircraft:MTOW"]

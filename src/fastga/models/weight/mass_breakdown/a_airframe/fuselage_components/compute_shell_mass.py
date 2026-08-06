@@ -15,6 +15,9 @@
 import numpy as np
 import openmdao.api as om
 
+LOW_FUSELAGE_SLENDERNESS_LIMIT = 2.61
+HIGH_FUSELAGE_MASS_LIMIT = 286.0
+
 
 class ComputeShell(om.ExplicitComponent):
     def setup(self):
@@ -29,7 +32,9 @@ class ComputeShell(om.ExplicitComponent):
             "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="m"
         )
         self.add_input("data:mission:sizing:cs23:characteristic_speed:vd", val=np.nan, units="m/s")
-        self.add_input("data:mission:sizing:cs23:sizing_factor:ultimate_aircraft", val=np.nan)
+        self.add_input(
+            "data:mission:sizing:cs23:sizing_factor:ultimate_aircraft", val=np.nan, units="unitless"
+        )
 
         self.add_input("settings:materials:fuselage:skin:density", val=np.nan, units="kg/m**3")
         self.add_input("settings:materials:fuselage:stringer:density", val=np.nan, units="kg/m**3")
@@ -39,13 +44,17 @@ class ComputeShell(om.ExplicitComponent):
         self.add_input("settings:materials:fuselage:skin:sigma_02", val=np.nan, units="Pa")
         self.add_input("settings:materials:fuselage:skin:sigma_max", val=np.nan, units="Pa")
         self.add_input("settings:geometry:fuselage:min_skin_thickness", val=np.nan, units="m")
-        self.add_input("settings:weight:airframe:fuselage:reinforcements:mass_fraction", val=np.nan)
+        self.add_input(
+            "settings:weight:airframe:fuselage:reinforcements:mass_fraction",
+            val=np.nan,
+            units="unitless",
+        )
 
         self.add_output("data:geometry:fuselage:skin_thickness", val=1e-3, units="m")
         self.add_output("data:loads:fuselage:inertia", units="m**4")
         self.add_output("data:loads:fuselage:sigmaMh", units="N/m**2")
         self.add_output("data:weight:airframe:fuselage:shell:mass", units="kg")
-        self.add_output("data:weight:airframe:fuselage:shell:added_weight_ratio")
+        self.add_output("data:weight:airframe:fuselage:shell:added_weight_ratio", units="unitless")
         self.add_output("data:weight:airframe:fuselage:shell:area_density", units="kg/m**2")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
@@ -101,14 +110,14 @@ class ComputeShell(om.ExplicitComponent):
 
         # Mass of stringers (Torenbeek p459 formula D-6)
         # k_lambda is the factor which takes in account fuselage slenderness
-        if (lp_ht / (fuselage_max_height + fuselage_max_width)) <= 2.61:
+        if (lp_ht / (fuselage_max_height + fuselage_max_width)) <= LOW_FUSELAGE_SLENDERNESS_LIMIT:
             k_lambda = 0.56 * (lp_ht / (fuselage_max_height + fuselage_max_width)) ** 0.75
         else:
             k_lambda = 1.15
         mass_stringer = 0.0117 * k_lambda * fuselage_wet_area**1.45 * vd**0.39 * n_ult**0.316
 
         # Mass of frames (Torenbeek p459 formulas D-8 D-9)
-        if mass_stringer + mass_skin > 286.0:
+        if mass_stringer + mass_skin > HIGH_FUSELAGE_MASS_LIMIT:
             mass_frames = 0.19 * (mass_stringer + mass_skin)
         else:
             mass_frames = 0.0911 * (mass_stringer + mass_skin) ** 1.13

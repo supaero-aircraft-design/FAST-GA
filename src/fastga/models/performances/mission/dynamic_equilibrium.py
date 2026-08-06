@@ -14,18 +14,16 @@ FAST - Copyright (c) 2016 ONERA ISAE.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import os
+import logging
+import pathlib
 from copy import deepcopy
 
-import logging
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
+import pandas as pd
 from scipy.constants import g
 from scipy.optimize import fsolve
-import pandas as pd
-import fastoad.api as oad
-
-
 from stdatm import Atmosphere
 
 # Definition of Fast-ga custom fields
@@ -85,14 +83,16 @@ class DynamicEquilibrium(om.ExplicitComponent):
             "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="m"
         )
         self.add_input("data:aerodynamics:wing:cruise:CL_alpha", val=np.nan, units="rad**-1")
-        self.add_input("data:aerodynamics:wing:cruise:CL0_clean", val=np.nan)
-        self.add_input("data:aerodynamics:wing:cruise:CM0_clean", val=np.nan)
+        self.add_input("data:aerodynamics:wing:cruise:CL0_clean", val=np.nan, units="unitless")
+        self.add_input("data:aerodynamics:wing:cruise:CM0_clean", val=np.nan, units="unitless")
         self.add_input("data:aerodynamics:wing:low_speed:CL_alpha", val=np.nan, units="rad**-1")
-        self.add_input("data:aerodynamics:wing:low_speed:CL0_clean", val=np.nan)
-        self.add_input("data:aerodynamics:wing:low_speed:CM0_clean", val=np.nan)
-        self.add_input("data:aerodynamics:wing:low_speed:CL_max_clean", val=np.nan)
+        self.add_input("data:aerodynamics:wing:low_speed:CL0_clean", val=np.nan, units="unitless")
+        self.add_input("data:aerodynamics:wing:low_speed:CM0_clean", val=np.nan, units="unitless")
+        self.add_input(
+            "data:aerodynamics:wing:low_speed:CL_max_clean", val=np.nan, units="unitless"
+        )
         self.add_input("data:aerodynamics:fuselage:cm_alpha", val=np.nan, units="rad**-1")
-        self.add_input("data:aerodynamics:horizontal_tail:cruise:CL0", val=np.nan)
+        self.add_input("data:aerodynamics:horizontal_tail:cruise:CL0", val=np.nan, units="unitless")
         self.add_input(
             "data:aerodynamics:horizontal_tail:cruise:CL_alpha", val=np.nan, units="rad**-1"
         )
@@ -101,7 +101,9 @@ class DynamicEquilibrium(om.ExplicitComponent):
             val=np.nan,
             units="rad**-1",
         )
-        self.add_input("data:aerodynamics:horizontal_tail:low_speed:CL0", val=np.nan)
+        self.add_input(
+            "data:aerodynamics:horizontal_tail:low_speed:CL0", val=np.nan, units="unitless"
+        )
         self.add_input(
             "data:aerodynamics:horizontal_tail:low_speed:CL_alpha", val=np.nan, units="rad**-1"
         )
@@ -110,8 +112,12 @@ class DynamicEquilibrium(om.ExplicitComponent):
             val=np.nan,
             units="rad**-1",
         )
-        self.add_input("data:aerodynamics:horizontal_tail:low_speed:CL_max_clean", val=np.nan)
-        self.add_input("data:aerodynamics:horizontal_tail:low_speed:CL_min_clean", val=np.nan)
+        self.add_input(
+            "data:aerodynamics:horizontal_tail:low_speed:CL_max_clean", val=np.nan, units="unitless"
+        )
+        self.add_input(
+            "data:aerodynamics:horizontal_tail:low_speed:CL_min_clean", val=np.nan, units="unitless"
+        )
         self.add_input("data:aerodynamics:elevator:low_speed:CL_delta", val=np.nan, units="rad**-1")
         self.add_input("data:aerodynamics:elevator:low_speed:CD_delta", val=np.nan, units="rad**-2")
         self.add_input("data:weight:aircraft:CG:aft:x", val=np.nan, units="m")
@@ -128,7 +134,7 @@ class DynamicEquilibrium(om.ExplicitComponent):
         self.add_input("data:weight:propulsion:engine:CG:z", val=np.nan, units="m")
         self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="m")
 
-    def dynamic_equilibrium(
+    def dynamic_equilibrium(  # noqa: PLR0913
         self,
         inputs,
         gamma: float,
@@ -138,8 +144,9 @@ class DynamicEquilibrium(om.ExplicitComponent):
         mass: float,
         flap_condition: str,
         previous_step: tuple,
+        *,
         low_speed: bool = False,
-        x_cg=None,
+        x_cg: float | None = None,
     ):
         """
         Method that finds the regulated thrust and aircraft to air angle to obtain dynamic
@@ -165,7 +172,7 @@ class DynamicEquilibrium(om.ExplicitComponent):
         cl_max_clean_htp = inputs["data:aerodynamics:horizontal_tail:low_speed:CL_max_clean"]
         cl_min_clean_htp = inputs["data:aerodynamics:horizontal_tail:low_speed:CL_min_clean"]
 
-        if len(previous_step) == 2:
+        if len(previous_step) == 2:  # noqa: PLR2004
             result = fsolve(
                 self.equation_outer,
                 np.array([previous_step[0] * 180.0 / np.pi, previous_step[1] / 1000.0]),
@@ -211,8 +218,9 @@ class DynamicEquilibrium(om.ExplicitComponent):
         mass: float,
         q: float,
         delta_cm: float,
+        *,
         low_speed: bool = False,
-        x_cg: float = None,
+        x_cg: float | None = None,
     ):
         """
         Method that founds the lift equilibrium with regard to the global moment
@@ -262,7 +270,7 @@ class DynamicEquilibrium(om.ExplicitComponent):
         a22 = x_htp - x_cg
         b2 = (cm0_wing + delta_cm + (cm_alpha_fus / cl_alpha_wing) * cl0_wing) * l0_wing
 
-        a = np.array([[a11, a12], [float(a21), float(a22)]])
+        a = np.array([[a11, a12], [a21.item(), a22.item()]])
         b = np.array([b1, b2])
         inv_a = np.linalg.inv(a)
         cl_array = np.dot(inv_a, b)
@@ -270,11 +278,11 @@ class DynamicEquilibrium(om.ExplicitComponent):
         # Return equilibrated lift coefficients if low speed maximum clean Cl not exceeded
         # otherwise only cl_wing, 3rd term is an error flag returned by the function
         if cl_array[0] < cl_max_clean:
-            cl_wing_return = float(cl_array[0])
-            cl_htp_return = float(cl_array[1])
+            cl_wing_return = cl_array[0].item()
+            cl_htp_return = cl_array[1].item()
             error = False
         else:
-            cl_wing_return = float(mass * g * load_factor / (q * wing_area))
+            cl_wing_return = (mass * g * load_factor / (q * wing_area)).item()
             cl_htp_return = 0.0
             error = True
 
@@ -303,14 +311,14 @@ class DynamicEquilibrium(om.ExplicitComponent):
         dataframe_to_add.rename(columns=rename_dict, inplace=True)
 
         # Save and recycle data if a file is already present.
-        out_file = self.options["out_file"]
+        out_file = pathlib.Path(self.options["out_file"])
         if not out_file:
             return
-        if not os.path.exists(out_file):
+        if not out_file.exists():
             dataframe_to_add.index = range(len(dataframe_to_add))
-            out_dir = os.path.dirname(out_file)
+            out_dir = out_file.parent
             if out_dir:
-                os.makedirs(out_dir, exist_ok=True)
+                out_dir.mkdir(parents=True, exist_ok=True)
             dataframe_to_add.to_csv(out_file)
         else:
             dataframe_existing = pd.read_csv(self.options["out_file"])
@@ -322,7 +330,7 @@ class DynamicEquilibrium(om.ExplicitComponent):
             dataframe_existing = pd.concat([dataframe_existing, dataframe_to_add])
             dataframe_existing.to_csv(self.options["out_file"])
 
-    def equation_outer(
+    def equation_outer(  # noqa: PLR0913, PLR0915
         self,
         x,
         inputs,
@@ -332,8 +340,8 @@ class DynamicEquilibrium(om.ExplicitComponent):
         dvz_dt: float,
         mass: float,
         flap_condition: str,
-        low_speed: bool = False,
-        x_cg=None,
+        low_speed: bool,  # noqa: FBT001
+        x_cg: float,
     ):
         # Define the system of equations to be solved: load equilibrium along the air x/z axis
         # and moment equilibrium performed with found_cl_repartition sub-function. The moment
@@ -378,7 +386,7 @@ class DynamicEquilibrium(om.ExplicitComponent):
         delta_cl = 0.0
         delta_cm = z_eng * thrust * np.cos(alpha - alpha_eng) / (wing_mac * q * wing_area)
         cl_wing_blown, cl_htp, error_tag = self.found_cl_repartition(
-            inputs, load_factor, mass, q, delta_cm, low_speed, x_cg
+            inputs, load_factor, mass, q, delta_cm, low_speed=low_speed, x_cg=x_cg
         )
 
         self.error_on_pitch_equilibrium = error_tag
@@ -409,23 +417,23 @@ class DynamicEquilibrium(om.ExplicitComponent):
         )
         drag = q * cd * wing_area
         # Divide the results by characteristic number to have homogeneous responses
-        f1 = float(
+        f1 = (
             thrust * np.cos(alpha - alpha_eng) - mass * g * np.sin(gamma) - drag - mass * dvx_dt
-        ) / (float(mass) / 10.0)
-        f2 = float(cl_wing_blown - (cl_wing + delta_cl)) / float(cl_max_clean)
+        ) / (mass / 10.0)
+        f2 = (cl_wing_blown - (cl_wing + delta_cl)) / cl_max_clean
 
         self.cl_wing_sol = cl_wing_blown
         self.cl_tail_sol = cl_htp
         self.delta_e_sol = delta_e
         self.cd_aircraft_sol = cd
 
-        return np.array([f1, f2])
+        return np.array([f1.item(), f2.item()])
 
     def compute_flight_point_drag(
         self,
         flight_point: oad.FlightPoint = None,
-        equilibrium_result: tuple = None,
-        wing_area: float = None,
+        equilibrium_result: tuple | None = None,
+        wing_area: float | None = None,
     ):
         """
         Method to extract the drag coefficient from the equilibrium results and add it to the
@@ -436,7 +444,7 @@ class DynamicEquilibrium(om.ExplicitComponent):
         :param flight_point: the flight_point to add
         """
 
-        flight_point.CD = float(equilibrium_result[5])
+        flight_point.CD = equilibrium_result[5]
 
         density = Atmosphere(flight_point.altitude, altitude_in_feet=False).density
         drag = 0.5 * density * flight_point.true_airspeed**2.0 * wing_area * equilibrium_result[5]
@@ -444,7 +452,7 @@ class DynamicEquilibrium(om.ExplicitComponent):
         flight_point.drag = drag
 
     def add_flight_point(
-        self, flight_point: oad.FlightPoint = None, equilibrium_result: tuple = None
+        self, flight_point: oad.FlightPoint = None, equilibrium_result: tuple | None = None
     ):
         """
         Method to add single flight_point to a list of flight_point and treats equilibrium_result

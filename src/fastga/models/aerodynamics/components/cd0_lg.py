@@ -12,9 +12,9 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 
 from ..constants import SUBMODEL_CD0_LANDING_GEAR
 
@@ -34,23 +34,30 @@ class Cd0LandingGear(om.ExplicitComponent):
         self.options.declare("low_speed_aero", default=False, types=bool)
 
     def setup(self):
-        self.add_input("data:geometry:landing_gear:type", val=np.nan)
+        self.add_input("data:geometry:landing_gear:type", val=np.nan, units="unitless")
         self.add_input("data:geometry:landing_gear:height", val=np.nan, units="m")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         if self.options["low_speed_aero"]:
-            self.add_output("data:aerodynamics:landing_gear:low_speed:CD0")
+            self.add_output("data:aerodynamics:landing_gear:low_speed:CD0", units="unitless")
             self.declare_partials(
                 "data:aerodynamics:landing_gear:low_speed:CD0",
                 ["data:geometry:landing_gear:height", "data:geometry:wing:area"],
                 method="exact",
             )
         else:
-            self.add_output("data:aerodynamics:landing_gear:cruise:CD0")
+            self.add_output("data:aerodynamics:landing_gear:cruise:CD0", units="unitless")
             self.declare_partials(
                 "data:aerodynamics:landing_gear:cruise:CD0",
                 ["data:geometry:landing_gear:height", "data:geometry:wing:area"],
                 method="exact",
             )
+
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
+        self.declare_partials(
+            of="*", wrt=["data:geometry:landing_gear:height", "data:geometry:wing:area"]
+        )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         lg_type = inputs["data:geometry:landing_gear:type"]

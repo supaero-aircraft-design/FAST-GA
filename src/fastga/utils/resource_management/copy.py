@@ -11,14 +11,14 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import os.path as pth
+import pathlib
 import shutil
 
 # noinspection PyProtectedMember
 from fastoad._utils.files import make_parent_dir
 
 
-def copy_resource_from_path(source: str, resource: str, target_path):
+def copy_resource_from_path(source: pathlib.Path, resource: str, target_path):
     """
     Copies the indicated resource file to provided target path.
 
@@ -30,4 +30,4 @@ def copy_resource_from_path(source: str, resource: str, target_path):
     :param target_path: file system path
     """
     make_parent_dir(target_path)
-    shutil.copy(pth.join(source, resource), target_path)
+    shutil.copy(source / resource, target_path)

@@ -20,6 +20,8 @@ import openmdao.api as om
 from scipy.interpolate import make_interp_spline
 from stdatm import Atmosphere
 
+from .constants import NB_ENGINE_MIN_DEP
+
 
 class ComputeSkinMass(om.ExplicitComponent):
     def setup(self):
@@ -27,14 +29,14 @@ class ComputeSkinMass(om.ExplicitComponent):
         self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="m")
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
-        self.add_input("data:geometry:wing:thickness_ratio", val=np.nan)
-        self.add_input("data:geometry:wing:taper_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:thickness_ratio", val=np.nan, units="unitless")
+        self.add_input("data:geometry:wing:taper_ratio", val=np.nan, units="unitless")
         self.add_input("data:geometry:wing:root:chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="rad")
-        self.add_input("data:geometry:wing:aileron:chord_ratio", val=np.nan)
-        self.add_input("data:geometry:wing:aileron:span_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:aileron:chord_ratio", val=np.nan, units="unitless")
+        self.add_input("data:geometry:wing:aileron:span_ratio", val=np.nan, units="unitless")
         self.add_input("data:geometry:wing:aileron:max_deflection", val=np.nan, units="rad")
-        self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:count", val=np.nan, units="unitless")
 
         self.add_input("data:mission:sizing:cs23:characteristic_speed:va", val=np.nan, units="m/s")
         self.add_input("data:mission:sizing:cs23:characteristic_speed:vc", val=np.nan, units="m/s")
@@ -52,6 +54,7 @@ class ComputeSkinMass(om.ExplicitComponent):
         self.add_input(
             "data:aerodynamics:aircraft:mach_interpolation:mach_vector",
             val=np.nan,
+            units="unitless",
             shape_by_conn=True,
         )
 
@@ -70,18 +73,20 @@ class ComputeSkinMass(om.ExplicitComponent):
         self.add_input(
             "settings:wing:airfoil:skin:ka",
             val=0.92,
+            units="unitless",
             desc="Correction coefficient needed to account for the hypothesis of a rectangular "
             "wingbox",
         )
         self.add_input(
             "settings:wing:airfoil:skin:d_wingbox",
             val=0.4,
+            units="unitless",
             desc="ratio of the wingbox working depth/airfoil chord",
         )
 
         self.add_output("data:weight:airframe:wing:skin:mass", units="kg")
 
-    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):  # noqa: PLR0915
         """
         Component that computes the skin mass necessary to react to the given linear force
         vector, according to the methodology developed by Raquel Alonso Castilla.
@@ -98,7 +103,7 @@ class ComputeSkinMass(om.ExplicitComponent):
         aileron_span_ratio = inputs["data:geometry:wing:aileron:span_ratio"]
         aileron_max_deflection = inputs["data:geometry:wing:aileron:max_deflection"]
 
-        cruise_alt = inputs["data:mission:sizing:main_route:cruise:altitude"]
+        cruise_alt = inputs["data:mission:sizing:main_route:cruise:altitude"].item()
 
         rho_m = inputs["settings:materials:aluminium:density"]
         shear_modulus = inputs["settings:materials:aluminium:shear_modulus"]
@@ -107,8 +112,7 @@ class ComputeSkinMass(om.ExplicitComponent):
         # that could not be solved by hand, consequently when taper ratio gets too close to 1. it
         # will be taken as 0.97
         taper_ratio = inputs["data:geometry:wing:taper_ratio"]
-        if taper_ratio > 0.97:
-            taper_ratio = 0.97
+        taper_ratio = min(taper_ratio, 0.97)
 
         ka = inputs["settings:wing:airfoil:skin:ka"]  # Approximates the wingbox area by a rectangle
         kl = 0.97  # Approximates the wingbox perimeter by a rectangle
@@ -217,7 +221,7 @@ class ComputeSkinMass(om.ExplicitComponent):
             / np.cos(sweep_e)
         )
 
-        if inputs["data:geometry:propulsion:engine:count"] > 4:
+        if inputs["data:geometry:propulsion:engine:count"] > NB_ENGINE_MIN_DEP:
             skin_mass *= 1.1
 
         outputs["data:weight:airframe:wing:skin:mass"] = skin_mass

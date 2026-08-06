@@ -36,9 +36,13 @@ class ComputeFuelPropulsionCG(om.ExplicitComponent):
 
         self.add_input("data:weight:propulsion:engine:mass", units="kg", val=np.nan)
         self.add_input("data:weight:propulsion:fuel_lines:mass", units="kg", val=np.nan)
-        self.add_input("data:weight:propulsion:mass", units="kg", val=np.nan)
 
         self.add_output("data:weight:propulsion:CG:x", units="m")
+
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
+        self.declare_partials(of="*", wrt="*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         engine_cg = inputs["data:weight:propulsion:engine:CG:x"]
@@ -52,3 +56,24 @@ class ComputeFuelPropulsionCG(om.ExplicitComponent):
         )
 
         outputs["data:weight:propulsion:CG:x"] = cg_propulsion
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+        engine_cg = inputs["data:weight:propulsion:engine:CG:x"]
+        fuel_lines_cg = inputs["data:weight:propulsion:fuel_lines:CG:x"]
+
+        engine_mass = inputs["data:weight:propulsion:engine:mass"]
+        fuel_lines_mass = inputs["data:weight:propulsion:fuel_lines:mass"]
+
+        partials["data:weight:propulsion:CG:x", "data:weight:propulsion:engine:CG:x"] = (
+            engine_mass / (engine_mass + fuel_lines_mass)
+        )
+        partials["data:weight:propulsion:CG:x", "data:weight:propulsion:fuel_lines:CG:x"] = (
+            fuel_lines_mass / (engine_mass + fuel_lines_mass)
+        )
+
+        partials["data:weight:propulsion:CG:x", "data:weight:propulsion:engine:mass"] = (
+            engine_cg * fuel_lines_mass - fuel_lines_cg * fuel_lines_mass
+        ) / (engine_mass + fuel_lines_mass) ** 2.0
+        partials["data:weight:propulsion:CG:x", "data:weight:propulsion:fuel_lines:mass"] = (
+            fuel_lines_cg * engine_mass - engine_cg * engine_mass
+        ) / (engine_mass + fuel_lines_mass) ** 2.0

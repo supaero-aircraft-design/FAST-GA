@@ -12,25 +12,23 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 from openmdao.core.component import Component
 
-import fastoad.api as oad
-
+from fastga.models.aerodynamics.external.propeller_code.compute_propeller_aero import (
+    SPEED_PTS_NB,
+    THRUST_PTS_NB,
+)
+from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
+from fastga.models.propulsion.fuel_propulsion.basicTurbo_prop_map.basicTP_engine_constructor import (  # noqa: E501
+    MACH_PTS_NB_TURBOPROP,
+    THRUST_PTS_NB_TURBOPROP,
+)
 from fastga.models.propulsion.fuel_propulsion.basicTurbo_prop_map.basicTP_engine_mapped import (
     BasicTPEngineMapped,
 )
-
-from fastga.models.propulsion.propulsion import IPropulsion, BaseOMPropulsionComponent
-from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
-from fastga.models.aerodynamics.external.propeller_code.compute_propeller_aero import (
-    THRUST_PTS_NB,
-    SPEED_PTS_NB,
-)
-from fastga.models.propulsion.fuel_propulsion.basicTurbo_prop_map.basicTP_engine_constructor import (
-    THRUST_PTS_NB_TURBOPROP,
-    MACH_PTS_NB_TURBOPROP,
-)
+from fastga.models.propulsion.propulsion import BaseOMPropulsionComponent, IPropulsion
 
 
 @oad.RegisterPropulsion("fastga.wrapper.propulsion.basicTurbopropMapped")
@@ -73,16 +71,20 @@ class OMBasicTurbopropMapWrapper(oad.IOMPropulsionWrapper):
         component.add_input(
             "data:propulsion:turboprop:design_point:turbine_entry_temperature", np.nan, units="K"
         )
-        component.add_input("data:propulsion:turboprop:design_point:OPR", np.nan)
+        component.add_input("data:propulsion:turboprop:design_point:OPR", np.nan, units="unitless")
         component.add_input("data:propulsion:turboprop:design_point:altitude", np.nan, units="m")
-        component.add_input("data:propulsion:turboprop:design_point:mach", np.nan)
-        component.add_input("data:propulsion:turboprop:off_design:bleed_usage", np.nan)
+        component.add_input("data:propulsion:turboprop:design_point:mach", np.nan, units="unitless")
+        component.add_input(
+            "data:propulsion:turboprop:off_design:bleed_usage", np.nan, units="unitless"
+        )
         component.add_input("data:propulsion:turboprop:off_design:itt_limit", np.nan, units="K")
         component.add_input("data:propulsion:turboprop:off_design:power_limit", np.nan, units="kW")
-        component.add_input("data:propulsion:turboprop:off_design:opr_limit", np.nan)
+        component.add_input(
+            "data:propulsion:turboprop:off_design:opr_limit", np.nan, units="unitless"
+        )
         component.add_input("data:aerodynamics:propeller:cruise_level:altitude", np.nan, units="m")
-        component.add_input("data:geometry:propulsion:engine:layout", np.nan)
-        component.add_input("data:geometry:propulsion:engine:count", val=np.nan)
+        component.add_input("data:geometry:propulsion:engine:layout", np.nan, units="unitless")
+        component.add_input("data:geometry:propulsion:engine:count", val=np.nan, units="unitless")
         component.add_input(
             "data:aerodynamics:propeller:sea_level:speed",
             np.full(SPEED_PTS_NB, np.nan),
@@ -101,6 +103,7 @@ class OMBasicTurbopropMapWrapper(oad.IOMPropulsionWrapper):
         component.add_input(
             "data:aerodynamics:propeller:sea_level:efficiency",
             np.full((SPEED_PTS_NB, THRUST_PTS_NB), np.nan),
+            units="unitless",
         )
         component.add_input(
             "data:aerodynamics:propeller:cruise_level:speed",
@@ -120,52 +123,81 @@ class OMBasicTurbopropMapWrapper(oad.IOMPropulsionWrapper):
         component.add_input(
             "data:aerodynamics:propeller:cruise_level:efficiency",
             np.full((SPEED_PTS_NB, THRUST_PTS_NB), np.nan),
+            units="unitless",
         )
         component.add_input(
             "data:aerodynamics:propeller:installation_effect:effective_efficiency:low_speed",
             val=1.0,
+            units="unitless",
         )
         component.add_input(
             "data:aerodynamics:propeller:installation_effect:effective_efficiency:cruise",
             val=1.0,
+            units="unitless",
         )
         component.add_input(
             "data:aerodynamics:propeller:installation_effect:effective_advance_ratio",
             val=1.0,
+            units="unitless",
         )
 
         component.add_input(
-            "settings:propulsion:turboprop:efficiency:first_compressor_stage", val=0.85
+            "settings:propulsion:turboprop:efficiency:first_compressor_stage",
+            val=0.85,
+            units="unitless",
         )
         component.add_input(
-            "settings:propulsion:turboprop:efficiency:second_compressor_stage", val=0.86
+            "settings:propulsion:turboprop:efficiency:second_compressor_stage",
+            val=0.86,
+            units="unitless",
         )
         component.add_input(
-            "settings:propulsion:turboprop:efficiency:high_pressure_turbine", val=0.86
+            "settings:propulsion:turboprop:efficiency:high_pressure_turbine",
+            val=0.86,
+            units="unitless",
         )
-        component.add_input("settings:propulsion:turboprop:efficiency:power_turbine", val=0.86)
+        component.add_input(
+            "settings:propulsion:turboprop:efficiency:power_turbine", val=0.86, units="unitless"
+        )
         component.add_input(
             "settings:propulsion:turboprop:efficiency:combustion", val=43.260e6 * 0.95, units="J/kg"
         )
-        component.add_input("settings:propulsion:turboprop:efficiency:high_pressure_axe", val=0.98)
-        component.add_input("settings:propulsion:turboprop:pressure_loss:inlet", val=0.8)
         component.add_input(
-            "settings:propulsion:turboprop:pressure_loss:combustion_chamber", val=0.95
+            "settings:propulsion:turboprop:efficiency:high_pressure_axe", val=0.98, units="unitless"
         )
-        component.add_input("settings:propulsion:turboprop:bleed:turbine_cooling", val=0.05)
+        component.add_input(
+            "settings:propulsion:turboprop:pressure_loss:inlet", val=0.8, units="unitless"
+        )
+        component.add_input(
+            "settings:propulsion:turboprop:pressure_loss:combustion_chamber",
+            val=0.95,
+            units="unitless",
+        )
+        component.add_input(
+            "settings:propulsion:turboprop:bleed:turbine_cooling", val=0.05, units="unitless"
+        )
         component.add_input(
             "settings:propulsion:turboprop:electric_power_offtake", val=50 * 745.7, units="W"
         )
-        component.add_input("settings:propulsion:turboprop:efficiency:gearbox", val=0.98)
-        component.add_input("settings:propulsion:turboprop:bleed:inter_compressor", val=0.04)
-        component.add_input("settings:propulsion:turboprop:design_point:mach_exhaust", val=0.4)
         component.add_input(
-            "settings:propulsion:turboprop:design_point:first_stage_pressure_ratio", val=0.25
+            "settings:propulsion:turboprop:efficiency:gearbox", val=0.98, units="unitless"
+        )
+        component.add_input(
+            "settings:propulsion:turboprop:bleed:inter_compressor", val=0.04, units="kg/s"
+        )
+        component.add_input(
+            "settings:propulsion:turboprop:design_point:mach_exhaust", val=0.4, units="unitless"
+        )
+        component.add_input(
+            "settings:propulsion:turboprop:design_point:first_stage_pressure_ratio",
+            val=0.25,
+            units="unitless",
         )
 
         component.add_input(
             "data:propulsion:turboprop:sea_level:mach",
             shape=MACH_PTS_NB_TURBOPROP,
+            units="unitless",
         )
         component.add_input(
             "data:propulsion:turboprop:sea_level:thrust", shape=THRUST_PTS_NB_TURBOPROP, units="N"
@@ -184,6 +216,7 @@ class OMBasicTurbopropMapWrapper(oad.IOMPropulsionWrapper):
         component.add_input(
             "data:propulsion:turboprop:cruise_level:mach",
             shape=MACH_PTS_NB_TURBOPROP,
+            units="unitless",
         )
         component.add_input(
             "data:propulsion:turboprop:cruise_level:thrust",
@@ -205,6 +238,7 @@ class OMBasicTurbopropMapWrapper(oad.IOMPropulsionWrapper):
         component.add_input(
             "data:propulsion:turboprop:intermediate_level:mach",
             shape=MACH_PTS_NB_TURBOPROP,
+            units="unitless",
         )
         component.add_input(
             "data:propulsion:turboprop:intermediate_level:thrust",
@@ -221,7 +255,6 @@ class OMBasicTurbopropMapWrapper(oad.IOMPropulsionWrapper):
             shape=(MACH_PTS_NB_TURBOPROP, THRUST_PTS_NB_TURBOPROP),
             units="kg/s/N",
         )
-        # TODO: add effective efficiency
 
     @staticmethod
     def get_model(inputs) -> IPropulsion:
@@ -237,7 +270,7 @@ class OMBasicTurbopropMapWrapper(oad.IOMPropulsionWrapper):
             "opr_design": inputs["data:propulsion:turboprop:design_point:OPR"],
             "cruise_altitude_propeller": inputs[
                 "data:aerodynamics:propeller:cruise_level:altitude"
-            ],
+            ].item(),
             "design_altitude": inputs["data:propulsion:turboprop:design_point:altitude"],
             "design_mach": inputs["data:propulsion:turboprop:design_point:mach"],
             "prop_layout": inputs["data:geometry:propulsion:engine:layout"],
@@ -245,38 +278,38 @@ class OMBasicTurbopropMapWrapper(oad.IOMPropulsionWrapper):
             "itt_limit": inputs["data:propulsion:turboprop:off_design:itt_limit"],
             "power_limit": inputs["data:propulsion:turboprop:off_design:power_limit"],
             "opr_limit": inputs["data:propulsion:turboprop:off_design:opr_limit"],
-            "speed_SL": inputs["data:aerodynamics:propeller:sea_level:speed"],
-            "thrust_SL": inputs["data:aerodynamics:propeller:sea_level:thrust"],
-            "thrust_limit_SL": inputs["data:aerodynamics:propeller:sea_level:thrust_limit"],
-            "efficiency_SL": inputs["data:aerodynamics:propeller:sea_level:efficiency"],
-            "speed_CL": inputs["data:aerodynamics:propeller:cruise_level:speed"],
-            "thrust_CL": inputs["data:aerodynamics:propeller:cruise_level:thrust"],
-            "thrust_limit_CL": inputs["data:aerodynamics:propeller:cruise_level:thrust_limit"],
-            "efficiency_CL": inputs["data:aerodynamics:propeller:cruise_level:efficiency"],
-            "effective_J": inputs[
+            "speed_sl": inputs["data:aerodynamics:propeller:sea_level:speed"],
+            "thrust_sl": inputs["data:aerodynamics:propeller:sea_level:thrust"],
+            "thrust_limit_sl": inputs["data:aerodynamics:propeller:sea_level:thrust_limit"],
+            "efficiency_sl": inputs["data:aerodynamics:propeller:sea_level:efficiency"],
+            "speed_cl": inputs["data:aerodynamics:propeller:cruise_level:speed"],
+            "thrust_cl": inputs["data:aerodynamics:propeller:cruise_level:thrust"],
+            "thrust_limit_cl": inputs["data:aerodynamics:propeller:cruise_level:thrust_limit"],
+            "efficiency_cl": inputs["data:aerodynamics:propeller:cruise_level:efficiency"],
+            "effective_j": inputs[
                 "data:aerodynamics:propeller:installation_effect:effective_advance_ratio"
-            ],
+            ].item(),
             "effective_efficiency_ls": inputs[
                 "data:aerodynamics:propeller:installation_effect:effective_efficiency:low_speed"
-            ],
+            ].item(),
             "effective_efficiency_cruise": inputs[
                 "data:aerodynamics:propeller:installation_effect:effective_efficiency:cruise"
-            ],
-            "turbo_mach_SL": inputs["data:propulsion:turboprop:sea_level:mach"],
-            "turbo_thrust_SL": inputs["data:propulsion:turboprop:sea_level:thrust"],
-            "turbo_thrust_max_SL": inputs["data:propulsion:turboprop:sea_level:thrust_limit"],
-            "turbo_sfc_SL": inputs["data:propulsion:turboprop:sea_level:sfc"],
-            "turbo_mach_CL": inputs["data:propulsion:turboprop:cruise_level:mach"],
-            "turbo_thrust_CL": inputs["data:propulsion:turboprop:cruise_level:thrust"],
-            "turbo_thrust_max_CL": inputs["data:propulsion:turboprop:cruise_level:thrust_limit"],
-            "turbo_sfc_CL": inputs["data:propulsion:turboprop:cruise_level:sfc"],
-            "turbo_mach_IL": inputs["data:propulsion:turboprop:intermediate_level:mach"],
-            "turbo_thrust_IL": inputs["data:propulsion:turboprop:intermediate_level:thrust"],
-            "turbo_thrust_max_IL": inputs[
+            ].item(),
+            "turbo_mach_sl": inputs["data:propulsion:turboprop:sea_level:mach"],
+            "turbo_thrust_sl": inputs["data:propulsion:turboprop:sea_level:thrust"],
+            "turbo_thrust_max_sl": inputs["data:propulsion:turboprop:sea_level:thrust_limit"],
+            "turbo_sfc_sl": inputs["data:propulsion:turboprop:sea_level:sfc"],
+            "turbo_mach_cl": inputs["data:propulsion:turboprop:cruise_level:mach"],
+            "turbo_thrust_cl": inputs["data:propulsion:turboprop:cruise_level:thrust"],
+            "turbo_thrust_max_cl": inputs["data:propulsion:turboprop:cruise_level:thrust_limit"],
+            "turbo_sfc_cl": inputs["data:propulsion:turboprop:cruise_level:sfc"],
+            "turbo_mach_il": inputs["data:propulsion:turboprop:intermediate_level:mach"],
+            "turbo_thrust_il": inputs["data:propulsion:turboprop:intermediate_level:thrust"],
+            "turbo_thrust_max_il": inputs[
                 "data:propulsion:turboprop:intermediate_level:thrust_limit"
             ],
-            "turbo_sfc_IL": inputs["data:propulsion:turboprop:intermediate_level:sfc"],
-            "level_IL": inputs["data:propulsion:turboprop:intermediate_level:altitude"],
+            "turbo_sfc_il": inputs["data:propulsion:turboprop:intermediate_level:sfc"],
+            "level_il": inputs["data:propulsion:turboprop:intermediate_level:altitude"].item(),
             "eta_225": inputs["settings:propulsion:turboprop:efficiency:first_compressor_stage"],
             "eta_253": inputs["settings:propulsion:turboprop:efficiency:second_compressor_stage"],
             "eta_445": inputs["settings:propulsion:turboprop:efficiency:high_pressure_turbine"],

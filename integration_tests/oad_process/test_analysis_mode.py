@@ -14,8 +14,7 @@ Test module for Overall Aircraft Design process
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import os
-import os.path as pth
+import pathlib
 import shutil
 from shutil import rmtree
 
@@ -24,19 +23,12 @@ from numpy.testing import assert_allclose
 
 from fastga.command import api
 from fastga.models.aerodynamics.aerodynamics import Aerodynamics
-import fastga.notebooks.tutorial.data as data
+from fastga.models.geometry.geometry import GeometryFixedTailDistance as Geometry
+from fastga.notebooks.tutorial import data
 
-DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
-WORKDIR_FOLDER_PATH = pth.join(pth.dirname(__file__), "workdir")
-RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")
-PATH = pth.dirname(__file__).split(os.path.sep)
-NOTEBOOKS_PATH = PATH[0] + os.path.sep
-for folder in PATH[1 : len(PATH) - 3]:
-    NOTEBOOKS_PATH = pth.join(NOTEBOOKS_PATH, folder)
-NOTEBOOKS_PATH = pth.join(NOTEBOOKS_PATH, "notebooks")
-
-AIRCRAFT_ID = ["be76", "sr22"]
-MDA_WING_POSITION = False
+DATA_FOLDER_PATH = pathlib.Path(__file__).parent / "data"
+WORKDIR_FOLDER_PATH = pathlib.Path(__file__).parent / "workdir"
+RESULTS_FOLDER_PATH = pathlib.Path(__file__).parent / "results"
 
 
 @pytest.fixture(scope="module")
@@ -51,12 +43,12 @@ def test_analysis_mode():
     """
 
     # Copy used file
-    if not pth.exists(RESULTS_FOLDER_PATH):
-        os.mkdir(RESULTS_FOLDER_PATH)
+    if not RESULTS_FOLDER_PATH.exists():
+        RESULTS_FOLDER_PATH.mkdir()
 
     shutil.copy(
-        pth.join(data.__path__[0], "reference_aircraft.xml"),
-        pth.join(RESULTS_FOLDER_PATH, "geometry_long_wing.xml"),
+        pathlib.Path(data.__path__[0]) / "reference_aircraft.xml",
+        RESULTS_FOLDER_PATH / "geometry_long_wing.xml",
     )
     var_inputs = [
         "data:geometry:wing:area",
@@ -64,22 +56,19 @@ def test_analysis_mode():
         "data:geometry:wing:taper_ratio",
     ]
 
-    # Need to do these import locally to avoid circular imports
-    from fastga.models.geometry.geometry import GeometryFixedTailDistance as Geometry
-
     # Declare geometry function
     compute_geometry = api.generate_block_analysis(
         Geometry(propulsion_id="fastga.wrapper.propulsion.basicIC_engine"),
         var_inputs,
-        str(pth.join(RESULTS_FOLDER_PATH, "geometry_long_wing.xml")),
-        True,
+        RESULTS_FOLDER_PATH / "geometry_long_wing.xml",
+        overwrite=True,
     )
 
     # Compute long-wing aircraft
     inputs_dict = {
         "data:geometry:wing:area": (21.66, "m**2"),
-        "data:geometry:wing:aspect_ratio": (9.332, None),
-        "data:geometry:wing:taper_ratio": (0.77, None),
+        "data:geometry:wing:aspect_ratio": (9.332, "unitless"),
+        "data:geometry:wing:taper_ratio": (0.77, "unitless"),
     }
     outputs_dict = compute_geometry(inputs_dict)
     assert_allclose(outputs_dict["data:geometry:wing:tip:y"][0], 7.108, atol=1e-3)
@@ -132,11 +121,11 @@ def test_analysis_mode():
             compute_mach_interpolation=False,
             compute_slipstream_low_speed=False,
             compute_slipstream_cruise=False,
-            result_folder_path=WORKDIR_FOLDER_PATH,
+            result_folder_path=WORKDIR_FOLDER_PATH.as_posix(),
         ),
         var_inputs,
-        str(pth.join(RESULTS_FOLDER_PATH, "geometry_long_wing.xml")),
-        True,
+        RESULTS_FOLDER_PATH / "geometry_long_wing.xml",
+        overwrite=True,
     )
 
     compute_aero(inputs_dict)

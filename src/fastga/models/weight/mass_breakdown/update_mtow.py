@@ -14,9 +14,9 @@ Main component for mass breakdown.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 from fastoad.module_management.constants import ModelDomain
 
 
@@ -32,6 +32,9 @@ class UpdateMTOW(om.ExplicitComponent):
 
         self.add_output("data:weight:aircraft:MTOW", 1500.0, units="kg")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials("data:weight:aircraft:MTOW", "data:weight:aircraft:ZFW", val=1.0)
         self.declare_partials("data:weight:aircraft:MTOW", "data:mission:sizing:fuel", val=1.0)
 

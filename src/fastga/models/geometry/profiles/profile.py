@@ -14,7 +14,7 @@
 
 import operator
 from collections import namedtuple
-from typing import Sequence, Tuple
+from collections.abc import Sequence
 
 import numpy as np
 import pandas as pd
@@ -64,6 +64,7 @@ class Profile:
         self,
         x: Sequence,
         z: Sequence,
+        *,
         keep_chord_length: bool = True,
         keep_relative_thickness: bool = True,
     ):
@@ -98,8 +99,7 @@ class Profile:
 
         DataFrame keys are 'x' and 'z', given in meters.
         """
-        mean_line = self._rel_mean_line_and_thickness[[X, Z]] * self.chord_length
-        return mean_line
+        return self._rel_mean_line_and_thickness[[X, Z]] * self.chord_length
 
     def get_relative_thickness(self) -> pd.DataFrame:
         """Point set of relative thickness of the profile.
@@ -145,12 +145,11 @@ class Profile:
         half_thickness[Z] = (
             self._rel_mean_line_and_thickness[THICKNESS] / 2.0 * self.thickness_ratio
         )
-        points = operator_(mean_line, half_thickness) * self.chord_length
-        return points
+        return operator_(mean_line, half_thickness) * self.chord_length
 
     def _compute_mean_line_and_thickness(
         self, upper_side_points, lower_side_points
-    ) -> Tuple[float, float]:
+    ) -> tuple[float, float]:
         """
         Computes mean line and thickness from upper_side_points and lower_side_points.
 
@@ -184,7 +183,7 @@ class Profile:
         return chord_length, max_thickness
 
     @staticmethod
-    def _create_upper_lower_sides(x: Sequence, z: Sequence) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    def _create_upper_lower_sides(x: Sequence, z: Sequence) -> tuple[pd.DataFrame, pd.DataFrame]:
         """returns upper side points and lower side points using provided x and z"""
 
         # Find middle point (inversion of delta_x locally for 1-0-1 (or 0-1-0) chord struct. or

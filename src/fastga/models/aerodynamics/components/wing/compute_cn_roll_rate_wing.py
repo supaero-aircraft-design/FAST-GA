@@ -11,14 +11,13 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 
 from .compute_cl_wing import ComputeWingLiftCoefficient
 from .compute_compressibility_correction_wing import ComputeCompressibilityCorrectionWing
 from ..digitization.compute_cn_p_wing_twist_contribution import ComputeWingTwistContributionCnp
-
 from ...constants import SUBMODEL_CN_P_WING
 
 
@@ -114,10 +113,10 @@ class ComputeCnRollRateWithZeroMach(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
     def setup(self):
-        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan, units="unitless")
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="rad")
 
-        self.add_output("cn_p_wing_mach_0", val=-0.1)
+        self.add_output("cn_p_wing_mach_0", val=-0.1, units="unitless")
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup_partials
@@ -174,11 +173,11 @@ class ComputeCnRollRateWithMach(om.ExplicitComponent):
     # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="rad")
-        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
-        self.add_input("cn_p_wing_mach_0", val=np.nan)
-        self.add_input("mach_correction", val=np.nan)
+        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan, units="unitless")
+        self.add_input("cn_p_wing_mach_0", val=np.nan, units="unitless")
+        self.add_input("mach_correction", val=np.nan, units="unitless")
 
-        self.add_output("cn_p_wing_mach", val=-0.1)
+        self.add_output("cn_p_wing_mach", val=-0.1, units="unitless")
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup_partials
@@ -299,8 +298,8 @@ class ComputeCnpWing(om.ExplicitComponent):
             units="deg",
             desc="Negative twist means tip AOA is smaller than root",
         )
-        self.add_input("cn_p_wing_mach", val=np.nan)
-        self.add_input("twist_contribution_cn_p", val=np.nan)
+        self.add_input("cn_p_wing_mach", val=np.nan, units="unitless")
+        self.add_input("twist_contribution_cn_p", val=np.nan, units="unitless")
         self.add_input("CL_wing", val=np.nan, units="unitless")
 
         self.add_output("data:aerodynamics:wing:" + ls_tag + ":Cn_p", units="rad**-1")

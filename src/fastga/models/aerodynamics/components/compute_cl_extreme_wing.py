@@ -12,13 +12,13 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 
 from fastga.models.aerodynamics.constants import SPAN_MESH_POINT, SUBMODEL_CL_EXTREME_CLEAN_WING
-from fastga.models.aerodynamics.external.xfoil.xfoil_polar import XfoilPolar
 from fastga.models.aerodynamics.external.neuralfoil.neuralfoil_polar import NeuralfoilPolar
+from fastga.models.aerodynamics.external.xfoil.xfoil_polar import XfoilPolar
 
 
 @oad.RegisterSubmodel(
@@ -112,16 +112,35 @@ class ComputeExtremeCLWing(om.Group):
 
 class ComputeLocalReynolds(om.ExplicitComponent):
     def setup(self):
-        self.add_input("data:aerodynamics:low_speed:mach", val=np.nan)
+        self.add_input("data:aerodynamics:low_speed:mach", val=np.nan, units="unitless")
         self.add_input("data:aerodynamics:low_speed:unit_reynolds", val=np.nan, units="m**-1")
         self.add_input("data:geometry:wing:root:chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:chord", val=np.nan, units="m")
 
-        self.add_output("data:aerodynamics:wing:root:low_speed:reynolds")
-        self.add_output("data:aerodynamics:wing:tip:low_speed:reynolds")
-        self.add_output(name="mach")
+        self.add_output("data:aerodynamics:wing:root:low_speed:reynolds", units="unitless")
+        self.add_output("data:aerodynamics:wing:tip:low_speed:reynolds", units="unitless")
+        self.add_output(name="mach", units="unitless")
 
-        self.declare_partials("*", "*", method="fd")
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
+        self.declare_partials(
+            "data:aerodynamics:wing:root:low_speed:reynolds",
+            [
+                "data:aerodynamics:low_speed:unit_reynolds",
+                "data:geometry:wing:root:chord",
+            ],
+            method="exact",
+        )
+        self.declare_partials(
+            "data:aerodynamics:wing:tip:low_speed:reynolds",
+            [
+                "data:aerodynamics:low_speed:unit_reynolds",
+                "data:geometry:wing:tip:chord",
+            ],
+            method="exact",
+        )
+        self.declare_partials("mach", "data:aerodynamics:low_speed:mach", method="exact", val=1)
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         outputs["data:aerodynamics:wing:root:low_speed:reynolds"] = (
@@ -134,6 +153,25 @@ class ComputeLocalReynolds(om.ExplicitComponent):
         )
         outputs["mach"] = inputs["data:aerodynamics:low_speed:mach"]
 
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+        partials[
+            "data:aerodynamics:horizontal_tail:root:low_speed:reynolds",
+            "data:aerodynamics:low_speed:unit_reynolds",
+        ] = inputs["data:geometry:horizontal_tail:root:chord"]
+        partials[
+            "data:aerodynamics:horizontal_tail:root:low_speed:reynolds",
+            "data:geometry:horizontal_tail:root:chord",
+        ] = inputs["data:aerodynamics:low_speed:unit_reynolds"]
+
+        partials[
+            "data:aerodynamics:horizontal_tail:tip:low_speed:reynolds",
+            "data:aerodynamics:low_speed:unit_reynolds",
+        ] = inputs["data:geometry:horizontal_tail:tip:chord"]
+        partials[
+            "data:aerodynamics:horizontal_tail:tip:low_speed:reynolds",
+            "data:geometry:horizontal_tail:tip:chord",
+        ] = inputs["data:aerodynamics:low_speed:unit_reynolds"]
+
 
 class ComputeWing3DExtremeCL(om.ExplicitComponent):
     """Computes wing 3D min/max CL from 2D CL (XFOIL-computed) and lift repartition."""
@@ -141,11 +179,19 @@ class ComputeWing3DExtremeCL(om.ExplicitComponent):
     def setup(self):
         self.add_input("data:geometry:wing:root:y", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:y", val=np.nan, units="m")
-        self.add_input("data:aerodynamics:wing:low_speed:root:CL_max_2D", val=np.nan)
-        self.add_input("data:aerodynamics:wing:low_speed:tip:CL_max_2D", val=np.nan)
-        self.add_input("data:aerodynamics:wing:low_speed:root:CL_min_2D", val=np.nan)
-        self.add_input("data:aerodynamics:wing:low_speed:tip:CL_min_2D", val=np.nan)
-        self.add_input("data:aerodynamics:wing:low_speed:CL_ref", val=np.nan)
+        self.add_input(
+            "data:aerodynamics:wing:low_speed:root:CL_max_2D", val=np.nan, units="unitless"
+        )
+        self.add_input(
+            "data:aerodynamics:wing:low_speed:tip:CL_max_2D", val=np.nan, units="unitless"
+        )
+        self.add_input(
+            "data:aerodynamics:wing:low_speed:root:CL_min_2D", val=np.nan, units="unitless"
+        )
+        self.add_input(
+            "data:aerodynamics:wing:low_speed:tip:CL_min_2D", val=np.nan, units="unitless"
+        )
+        self.add_input("data:aerodynamics:wing:low_speed:CL_ref", val=np.nan, units="unitless")
         self.add_input(
             "data:aerodynamics:wing:low_speed:Y_vector",
             val=np.nan,
@@ -155,23 +201,27 @@ class ComputeWing3DExtremeCL(om.ExplicitComponent):
         self.add_input(
             "data:aerodynamics:wing:low_speed:CL_vector",
             val=np.nan,
+            units="unitless",
             shape_by_conn=True,
             copy_shape="data:aerodynamics:wing:low_speed:Y_vector",
         )
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="rad")
 
-        self.add_output("data:aerodynamics:wing:low_speed:CL_max_clean")
-        self.add_output("data:aerodynamics:wing:low_speed:CL_min_clean")
+        self.add_output("data:aerodynamics:wing:low_speed:CL_max_clean", units="unitless")
+        self.add_output("data:aerodynamics:wing:low_speed:CL_min_clean", units="unitless")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        y_root = float(inputs["data:geometry:wing:root:y"])
-        y_tip = float(inputs["data:geometry:wing:tip:y"])
-        cl_max_2d_root = float(inputs["data:aerodynamics:wing:low_speed:root:CL_max_2D"])
-        cl_max_2d_tip = float(inputs["data:aerodynamics:wing:low_speed:tip:CL_max_2D"])
-        cl_min_2d_root = float(inputs["data:aerodynamics:wing:low_speed:root:CL_min_2D"])
-        cl_min_2d_tip = float(inputs["data:aerodynamics:wing:low_speed:tip:CL_min_2D"])
+        y_root = inputs["data:geometry:wing:root:y"].item()
+        y_tip = inputs["data:geometry:wing:tip:y"].item()
+        cl_max_2d_root = inputs["data:aerodynamics:wing:low_speed:root:CL_max_2D"].item()
+        cl_max_2d_tip = inputs["data:aerodynamics:wing:low_speed:tip:CL_max_2D"].item()
+        cl_min_2d_root = inputs["data:aerodynamics:wing:low_speed:root:CL_min_2D"].item()
+        cl_min_2d_tip = inputs["data:aerodynamics:wing:low_speed:tip:CL_min_2D"].item()
         cl_ref = inputs["data:aerodynamics:wing:low_speed:CL_ref"]
         y_interp = inputs["data:aerodynamics:wing:low_speed:Y_vector"]
         cl_interp = inputs["data:aerodynamics:wing:low_speed:CL_vector"]

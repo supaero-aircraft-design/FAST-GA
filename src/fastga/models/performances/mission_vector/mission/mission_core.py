@@ -11,8 +11,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import openmdao.api as om
 import fastoad.api as oad
+import openmdao.api as om
 
 from ..constants import SUBMODEL_EQUILIBRIUM
 from ..mission.compute_time_step import ComputeTimeStep

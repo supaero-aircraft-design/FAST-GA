@@ -26,9 +26,9 @@ class A81(om.ExplicitComponent):
 
         self.add_input("total_pressure_5", units="Pa", shape=n, val=np.nan)
 
-        self.add_input("fuel_air_ratio", shape=n, val=np.nan)
-        self.add_input("compressor_bleed_ratio", shape=n, val=np.nan)
-        self.add_input("pressurization_bleed_ratio", shape=n, val=np.nan)
+        self.add_input("fuel_air_ratio", shape=n, val=np.nan, units="unitless")
+        self.add_input("compressor_bleed_ratio", shape=n, val=np.nan, units="unitless")
+        self.add_input("pressurization_bleed_ratio", shape=n, val=np.nan, units="unitless")
 
         self.add_input(
             "total_temperature_5",
@@ -38,8 +38,13 @@ class A81(om.ExplicitComponent):
 
         self.add_output("data:propulsion:turboprop:section:81", val=0.00457, units="m**2")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
+        n = self.options["number_of_points"]
+
         self.declare_partials(
-            of="*",
+            of="data:propulsion:turboprop:section:81",
             wrt=[
                 "air_mass_flow",
                 "total_pressure_5",
@@ -49,6 +54,8 @@ class A81(om.ExplicitComponent):
                 "pressurization_bleed_ratio",
             ],
             method="exact",
+            rows=np.zeros(n),
+            cols=np.arange(n),
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
@@ -120,17 +127,29 @@ class A82(om.ExplicitComponent):
     def setup(self):
         n = self.options["number_of_points"]
 
-        self.add_input("gamma_5", shape=n, val=np.nan)
-        self.add_input("settings:propulsion:turboprop:design_point:mach_exhaust", val=0.4)
+        self.add_input("gamma_5", shape=n, val=np.nan, units="unitless")
+        self.add_input(
+            "settings:propulsion:turboprop:design_point:mach_exhaust", val=0.4, units="unitless"
+        )
 
         self.add_output("data:propulsion:turboprop:section:82", val=0.00457, units="m**2")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
+        n = self.options["number_of_points"]
         self.declare_partials(
             of="data:propulsion:turboprop:section:82",
             wrt="settings:propulsion:turboprop:design_point:mach_exhaust",
             method="exact",
         )
-        self.declare_partials(of="data:propulsion:turboprop:section:82", wrt="gamma_5", method="fd")
+        self.declare_partials(
+            of="data:propulsion:turboprop:section:82",
+            wrt="gamma_5",
+            method="fd",
+            rows=np.zeros(n),
+            cols=np.arange(n),
+        )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         gamma_5 = inputs["gamma_5"]
@@ -169,6 +188,9 @@ class A8(om.ExplicitComponent):
 
         self.add_output("data:propulsion:turboprop:section:8", val=0.00457, units="m**2")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):

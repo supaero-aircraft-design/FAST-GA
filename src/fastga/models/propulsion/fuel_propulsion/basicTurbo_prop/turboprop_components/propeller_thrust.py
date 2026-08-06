@@ -1,6 +1,6 @@
 import numpy as np
 import openmdao.api as om
-from scipy.interpolate import RectBivariateSpline, CubicSpline
+from scipy.interpolate import CubicSpline, RectBivariateSpline
 from stdatm import Atmosphere
 
 THRUST_PTS_NB = 30
@@ -19,16 +19,29 @@ class PropellerThrustRequired(om.ExplicitComponent):
 
         self.add_output("propeller_thrust", units="N", shape=n, val=2e3)
 
-        self.declare_partials(of="*", wrt="*", method="exact")
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
+        n = self.options["number_of_points"]
+        self.declare_partials(
+            of="propeller_thrust",
+            wrt="required_thrust",
+            method="exact",
+            rows=np.arange(n),
+            cols=np.arange(n),
+            val=np.ones(n),
+        )
+        self.declare_partials(
+            of="propeller_thrust",
+            wrt="exhaust_thrust",
+            method="exact",
+            rows=np.arange(n),
+            cols=np.arange(n),
+            val=-np.ones(n),
+        )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         outputs["propeller_thrust"] = inputs["required_thrust"] - inputs["exhaust_thrust"]
-
-    def compute_partials(self, inputs, partials, discrete_inputs=None):
-        n = self.options["number_of_points"]
-
-        partials["propeller_thrust", "required_thrust"] = np.eye(n)
-        partials["propeller_thrust", "exhaust_thrust"] = -np.eye(n)
 
 
 class ShaftPowerRequired(om.ExplicitComponent):
@@ -45,7 +58,7 @@ class ShaftPowerRequired(om.ExplicitComponent):
         n = self.options["number_of_points"]
 
         self.add_input("altitude", units="m", shape=n, val=np.nan)
-        self.add_input("mach_0", val=np.nan, shape=n)
+        self.add_input("mach_0", val=np.nan, shape=n, units="unitless")
         self.add_input("propeller_thrust", units="N", shape=n, val=np.nan)
         self.add_input("data:aerodynamics:propeller:cruise_level:altitude", np.nan, units="m")
         self.add_input(
@@ -66,6 +79,7 @@ class ShaftPowerRequired(om.ExplicitComponent):
         self.add_input(
             "data:aerodynamics:propeller:sea_level:efficiency",
             np.full((SPEED_PTS_NB, THRUST_PTS_NB), np.nan),
+            units="unitless",
         )
         self.add_input(
             "data:aerodynamics:propeller:cruise_level:speed",
@@ -85,30 +99,56 @@ class ShaftPowerRequired(om.ExplicitComponent):
         self.add_input(
             "data:aerodynamics:propeller:cruise_level:efficiency",
             np.full((SPEED_PTS_NB, THRUST_PTS_NB), np.nan),
+            units="unitless",
         )
         self.add_input(
             "data:aerodynamics:propeller:installation_effect:effective_efficiency:low_speed",
             val=1.0,
+            units="unitless",
         )
         self.add_input(
             "data:aerodynamics:propeller:installation_effect:effective_efficiency:cruise",
             val=1.0,
+            units="unitless",
         )
         self.add_input(
             "data:aerodynamics:propeller:installation_effect:effective_advance_ratio",
             val=1.0,
+            units="unitless",
         )
 
         self.add_output("required_shaft_power", units="W", shape=n, val=500e3)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
+        n = self.options["number_of_points"]
         self.declare_partials(
-            of="required_shaft_power", wrt="altitude", method="fd", step=1.0, form="central"
+            of="required_shaft_power",
+            wrt="altitude",
+            method="fd",
+            step=1.0,
+            form="central",
+            rows=np.arange(n),
+            cols=np.arange(n),
         )
         self.declare_partials(
-            of="required_shaft_power", wrt="mach_0", method="fd", step=1e-4, form="central"
+            of="required_shaft_power",
+            wrt="mach_0",
+            method="fd",
+            step=1e-4,
+            form="central",
+            rows=np.arange(n),
+            cols=np.arange(n),
         )
         self.declare_partials(
-            of="required_shaft_power", wrt="propeller_thrust", method="fd", step=1.0, form="central"
+            of="required_shaft_power",
+            wrt="propeller_thrust",
+            method="fd",
+            step=1.0,
+            form="central",
+            rows=np.arange(n),
+            cols=np.arange(n),
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
@@ -190,7 +230,7 @@ class PropellerMaxThrust(om.ExplicitComponent):
         n = self.options["number_of_points"]
 
         self.add_input("altitude", units="m", shape=n, val=np.nan)
-        self.add_input("mach_0", val=np.nan, shape=n)
+        self.add_input("mach_0", val=np.nan, shape=n, units="unitless")
         self.add_input("data:aerodynamics:propeller:cruise_level:altitude", np.nan, units="m")
         self.add_input(
             "data:aerodynamics:propeller:sea_level:speed",
@@ -215,14 +255,21 @@ class PropellerMaxThrust(om.ExplicitComponent):
         self.add_input(
             "data:aerodynamics:propeller:installation_effect:effective_advance_ratio",
             val=1.0,
+            units="unitless",
         )
 
         self.add_output("propeller_max_thrust", units="N", shape=n, val=5000.0)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
+        n = self.options["number_of_points"]
         self.declare_partials(
             of="propeller_max_thrust",
             wrt=["altitude", "mach_0"],
             method="fd",
+            rows=np.arange(n),
+            cols=np.arange(n),
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):

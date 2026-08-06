@@ -53,6 +53,9 @@ class ComputeHTcg(om.ExplicitComponent):
 
         self.add_output("data:weight:airframe:horizontal_tail:CG:x", units="m")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
@@ -87,10 +90,13 @@ class ComputeVTcg(om.ExplicitComponent):
         self.add_input("data:geometry:vertical_tail:sweep_25", val=np.nan, units="deg")
         self.add_input("data:geometry:vertical_tail:span", val=np.nan, units="m")
         self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
-        self.add_input("data:geometry:has_T_tail", val=np.nan)
+        self.add_input("data:geometry:has_T_tail", val=np.nan, units="unitless")
 
         self.add_output("data:weight:airframe:vertical_tail:CG:x", units="m")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):

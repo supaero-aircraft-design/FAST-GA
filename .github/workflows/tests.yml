@@ -1,7 +1,7 @@
 name: Tests
 
 on:
-  push:
+  pull_request:  # To avoid overly frequent tests
     branches:
       - '**'
     tags-ignore:
@@ -18,28 +18,50 @@ jobs:
   tests:
     timeout-minutes: 120  # On 17/04/2025: to avoid tests that take too long
     runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
     if: ${{ !contains(github.event.head_commit.message, '[ci skip]') && !contains(github.event.head_commit.message, '[skip ci]') }}
     strategy:
       matrix:
-        python-version: [ "3.9", "3.10", "3.11" ]
+        python-version: [ "3.10", "3.12", "3.14" ]
         os: [ ubuntu-latest, windows-latest, macos-latest ]
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Poetry
-        run: pipx install poetry==1.8.3
-
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-          cache: 'poetry'
 
-      - name: Activate environment and install dependencies
-        run: |
-          poetry env use ${{ matrix.python-version }}
-          poetry install
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: 2.3.3
+          virtualenvs-create: true
+          installer-parallel: true
+
+      - name: Load cached venv # Copied from https://github.com/snok/install-poetry/blob/d526ede1e27960b7b181a5ac53044f552afdaa38/README.md
+        # load cached venv if cache exists
+        # restore-keys allow fallback cache hits when the exact key is not found.
+        # GitHub Actions will try to restore any cache whose key *starts with* the prefixes listed here.
+        # This helps reuse older venv caches for the same OS & Python version when poetry.lock changes slightly,
+        # instead of reinstalling all dependencies from scratch.
+        id: cached-poetry-dependencies
+        uses: actions/cache@v4
+        with:
+          path: .venv
+          key: venv-${{ matrix.os }}-${{ matrix.python-version }}-${{ hashFiles('poetry.lock') }}
+          restore-keys: |
+            venv-${{ matrix.os }}-${{ matrix.python-version }}-
+
+      - name: Install dependencies # Heavy dependencies (cached) - only runs on cache miss
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        run: poetry install --no-interaction --no-root
+
+      - name: Install library # Light project install (always runs) - runs every time
+        run: poetry install --no-interaction
 
       - name: Check with Ruff
         run: |
@@ -47,8 +69,54 @@ jobs:
           poetry run ruff format --check .  # Check format
         shell: bash
 
-      - name: Unit tests without coverage
-        run: poetry run pytest src
+      - name: Command unit tests (without coverage)
+        if: ${{ (runner.os != 'Linux' ) || matrix.python-version != '3.10' }}
+        run: poetry run pytest src/fastga/command --no-cov
+        shell: bash
+
+      - name: Aerodynamic unit tests (without coverage)
+        if: ${{ (runner.os != 'Linux' ) || matrix.python-version != '3.10' }}
+        run: poetry run pytest src/fastga/models/aerodynamics --no-cov
+        shell: bash
+
+      - name: Geometry unit tests (without coverage)
+        if: ${{ (runner.os != 'Linux' ) || matrix.python-version != '3.10' }}
+        run: poetry run pytest src/fastga/models/geometry --no-cov
+        shell: bash
+
+      - name: HQ unit tests (without coverage)
+        if: ${{ (runner.os != 'Linux' ) || matrix.python-version != '3.10' }}
+        run: poetry run pytest src/fastga/models/handling_qualities --no-cov
+        shell: bash
+
+      - name: Loads unit tests (without coverage)
+        if: ${{ (runner.os != 'Linux' ) || matrix.python-version != '3.10' }}
+        run: poetry run pytest src/fastga/models/load_analysis --no-cov
+        shell: bash
+
+      - name: Loops unit tests (without coverage)
+        if: ${{ (runner.os != 'Linux' ) || matrix.python-version != '3.10' }}
+        run: poetry run pytest src/fastga/models/loops --no-cov
+        shell: bash
+
+      - name: Propulsion unit tests (without coverage)
+        if: ${{ (runner.os != 'Linux' ) || matrix.python-version != '3.10' }}
+        run: poetry run pytest src/fastga/models/propulsion --no-cov
+        shell: bash
+
+      - name: Performances unit tests (without coverage)
+        if: ${{ (runner.os != 'Linux' ) || matrix.python-version != '3.10' }}
+        run: poetry run pytest src/fastga/models/performances --no-cov
+        shell: bash
+
+      - name: Weight unit tests (without coverage)
+        if: ${{ (runner.os != 'Linux' ) || matrix.python-version != '3.10' }}
+        run: poetry run pytest src/fastga/models/weight --no-cov
+        shell: bash
+
+      - name: Utils unit tests (without coverage)
+        if: ${{ (runner.os != 'Linux' ) || matrix.python-version != '3.10' }}
+        run: poetry run pytest src/fastga/utils --no-cov
         shell: bash
 
       - name: Unit tests with coverage

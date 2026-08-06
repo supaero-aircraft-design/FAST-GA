@@ -14,20 +14,20 @@ Python module for wing geometry calculation, part of the geometry component.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import openmdao.api as om
 import fastoad.api as oad
+import openmdao.api as om
 
 from .constants import (
-    SERVICE_WING_THICKNESS_RATIO,
-    SERVICE_WING_SPAN,
+    SERVICE_WING_B50,
     SERVICE_WING_HEIGHT,
     SERVICE_WING_L1_L4,
     SERVICE_WING_L2_L3,
-    SERVICE_WING_X_LOCAL,
-    SERVICE_WING_X_ABSOLUTE,
-    SERVICE_WING_B50,
     SERVICE_WING_MAC,
+    SERVICE_WING_SPAN,
     SERVICE_WING_SWEEP,
+    SERVICE_WING_THICKNESS_RATIO,
+    SERVICE_WING_X_ABSOLUTE,
+    SERVICE_WING_X_LOCAL,
     SUBMODEL_WING_WET_AREA,
 )
 from ...constants import SERVICE_WING_GEOMETRY, SUBMODEL_WING_GEOMETRY_LEGACY

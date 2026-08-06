@@ -1,6 +1,6 @@
 import numpy as np
 import openmdao.api as om
-from stdatm import Atmosphere
+from stdatm import AtmosphereWithPartials
 
 
 class Station0(om.ExplicitComponent):
@@ -26,22 +26,30 @@ class Station0(om.ExplicitComponent):
         if self.options["design_point"]:
             self.input_mach_name = "data:propulsion:turboprop:design_point:mach"
 
-        self.add_input(self.input_mach_name, val=np.nan, shape=n)
+        self.add_input(self.input_mach_name, val=np.nan, shape=n, units="unitless")
         self.add_input("static_temperature_0", units="K", shape=n, val=np.nan)
         self.add_input("static_pressure_0", units="Pa", shape=n, val=np.nan)
 
         self.add_output("total_temperature_0", units="K", shape=n)
         self.add_output("total_pressure_0", units="Pa", shape=n)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
+        n = self.options["number_of_points"]
         self.declare_partials(
             of="total_temperature_0",
             wrt=[self.input_mach_name, "static_temperature_0"],
             method="exact",
+            rows=np.arange(n),
+            cols=np.arange(n),
         )
         self.declare_partials(
             of="total_pressure_0",
             wrt=[self.input_mach_name, "static_pressure_0"],
             method="exact",
+            rows=np.arange(n),
+            cols=np.arange(n),
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
@@ -69,20 +77,20 @@ class Station0(om.ExplicitComponent):
 
         d_total_factor_d_mach_0 = (gamma - 1.0) * mach_0
 
-        partials["total_temperature_0", self.input_mach_name] = np.diag(
+        partials["total_temperature_0", self.input_mach_name] = (
             static_temperature_0 * d_total_factor_d_mach_0
         )
-        partials["total_temperature_0", "static_temperature_0"] = np.diag(total_factor)
+        partials["total_temperature_0", "static_temperature_0"] = total_factor
 
-        partials["total_pressure_0", self.input_mach_name] = np.diag(
+        partials["total_pressure_0", self.input_mach_name] = (
             static_pressure_0
             * gamma
             / (gamma - 1.0)
             * total_factor ** (gamma / (gamma - 1.0) - 1.0)
             * d_total_factor_d_mach_0
         )
-        partials["total_pressure_0", "static_pressure_0"] = np.diag(
-            total_factor ** (gamma / (gamma - 1.0) - 1.0)
+        partials["total_pressure_0", "static_pressure_0"] = total_factor ** (
+            gamma / (gamma - 1.0) - 1.0
         )
 
 
@@ -108,13 +116,29 @@ class Station0Static(om.ExplicitComponent):
         self.add_output("static_temperature_0", units="K", shape=n)
         self.add_output("static_pressure_0", units="Pa", shape=n)
 
-        self.declare_partials(of="*", wrt="*", method="fd")
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
+        n = self.options["number_of_points"]
+        self.declare_partials(
+            of="*",
+            wrt="*",
+            method="exact",
+            rows=np.arange(n),
+            cols=np.arange(n),
+        )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        # TODO: In later version of stdatm a class with analytic computation of partials exists.
-        #  Increasing the minimum version to allow that would however require us to drop the
-        #  support for Python 3.7 which is another task on its own.
-        self.atm = Atmosphere(altitude=inputs[self.input_alt_name], altitude_in_feet=False)
+        self.atm = AtmosphereWithPartials(
+            altitude=inputs[self.input_alt_name], altitude_in_feet=False
+        )
 
         outputs["static_temperature_0"] = self.atm.temperature
         outputs["static_pressure_0"] = self.atm.pressure
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+
+        partials["static_temperature_0", self.input_alt_name] = (
+            self.atm.partial_temperature_altitude
+        )
+        partials["static_pressure_0", self.input_alt_name] = self.atm.partial_pressure_altitude

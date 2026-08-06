@@ -19,20 +19,20 @@ import numpy as np
 import openmdao.api as om
 
 from ..cg_components.constants import (
-    SUBMODEL_WING_CG,
-    SUBMODEL_FUSELAGE_CG,
-    SUBMODEL_TAIL_CG,
-    SUBMODEL_FLIGHT_CONTROLS_CG,
-    SUBMODEL_LANDING_GEAR_CG,
-    SUBMODEL_PROPULSION_CG,
-    SUBMODEL_POWER_SYSTEMS_CG,
-    SUBMODEL_LIFE_SUPPORT_SYSTEMS_CG,
-    SUBMODEL_NAVIGATION_SYSTEMS_CG,
-    SUBMODEL_RECORDING_SYSTEMS_CG,
-    SUBMODEL_SEATS_CG,
     SUBMODEL_AIRCRAFT_X_CG,
     SUBMODEL_AIRCRAFT_X_CG_RATIO,
     SUBMODEL_AIRCRAFT_Z_CG,
+    SUBMODEL_FLIGHT_CONTROLS_CG,
+    SUBMODEL_FUSELAGE_CG,
+    SUBMODEL_LANDING_GEAR_CG,
+    SUBMODEL_LIFE_SUPPORT_SYSTEMS_CG,
+    SUBMODEL_NAVIGATION_SYSTEMS_CG,
+    SUBMODEL_POWER_SYSTEMS_CG,
+    SUBMODEL_PROPULSION_CG,
+    SUBMODEL_RECORDING_SYSTEMS_CG,
+    SUBMODEL_SEATS_CG,
+    SUBMODEL_TAIL_CG,
+    SUBMODEL_WING_CG,
 )
 
 
@@ -153,6 +153,9 @@ class ComputeCG(om.ExplicitComponent):
         self.add_output("data:weight:aircraft_empty:mass", units="kg")
         self.add_output("data:weight:aircraft_empty:CG:x", units="m")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials("data:weight:aircraft_empty:mass", "*", method="fd")
         self.declare_partials("data:weight:aircraft_empty:CG:x", "*", method="fd")
 
@@ -172,7 +175,7 @@ class CGRatio(om.ExplicitComponent):
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
         self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
 
-        self.add_output("data:weight:aircraft:empty:CG:MAC_position")
+        self.add_output("data:weight:aircraft:empty:CG:MAC_position", units="unitless")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         x_cg_all = inputs["data:weight:aircraft_empty:CG:x"]
@@ -217,7 +220,7 @@ class ComputeZCG(om.ExplicitComponent):
         self.add_input("data:geometry:horizontal_tail:z:from_wingMAC25", val=np.nan, units="m")
         self.add_input("data:geometry:vertical_tail:span", val=np.nan, units="m")
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:thickness_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:thickness_ratio", val=np.nan, units="unitless")
 
         self.add_output("data:weight:aircraft_empty:CG:z", units="m")
         self.add_output("data:weight:propulsion:engine:CG:z", units="m")

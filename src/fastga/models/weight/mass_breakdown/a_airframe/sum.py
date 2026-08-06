@@ -17,13 +17,14 @@ part of the Operating Empty Weight (OEW) estimation.
 
 import fastoad.api as oad
 import openmdao.api as om
+
 from .constants import (
-    SERVICE_WING_MASS,
-    SERVICE_FUSELAGE_MASS,
-    SERVICE_TAIL_MASS,
     SERVICE_FLIGHT_CONTROLS_MASS,
+    SERVICE_FUSELAGE_MASS,
     SERVICE_LANDING_GEAR_MASS,
     SERVICE_PAINT_MASS,
+    SERVICE_TAIL_MASS,
+    SERVICE_WING_MASS,
 )
 from ..constants import SERVICE_AIRFRAME_MASS, SUBMODEL_AIRFRAME_MASS_LEGACY
 

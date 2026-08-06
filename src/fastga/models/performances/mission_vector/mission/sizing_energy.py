@@ -39,9 +39,13 @@ class SizingEnergy(om.ExplicitComponent):
         self.add_output("data:mission:sizing:fuel", val=250, units="kg")
         self.add_output("data:mission:sizing:energy", val=200e3, units="W*h")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
-        self.declare_partials(of="data:mission:sizing:fuel", wrt="*:fuel", method="exact")
-        self.declare_partials(of="data:mission:sizing:energy", wrt="*:energy", method="exact")
+        self.declare_partials(of="data:mission:sizing:fuel", wrt="*:fuel", method="exact", val=1.0)
+        self.declare_partials(
+            of="data:mission:sizing:energy", wrt="*:energy", method="exact", val=1.0
+        )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         outputs["data:mission:sizing:fuel"] = (
@@ -65,22 +69,3 @@ class SizingEnergy(om.ExplicitComponent):
             + inputs["data:mission:sizing:takeoff:energy"]
             + inputs["data:mission:sizing:initial_climb:energy"]
         )
-
-    def compute_partials(self, inputs, partials, discrete_inputs=None):
-        partials["data:mission:sizing:fuel", "data:mission:sizing:main_route:climb:fuel"] = 1
-        partials["data:mission:sizing:fuel", "data:mission:sizing:main_route:cruise:fuel"] = 1
-        partials["data:mission:sizing:fuel", "data:mission:sizing:main_route:descent:fuel"] = 1
-        partials["data:mission:sizing:fuel", "data:mission:sizing:main_route:reserve:fuel"] = 1
-        partials["data:mission:sizing:fuel", "data:mission:sizing:taxi_out:fuel"] = 1
-        partials["data:mission:sizing:fuel", "data:mission:sizing:taxi_in:fuel"] = 1
-        partials["data:mission:sizing:fuel", "data:mission:sizing:takeoff:fuel"] = 1
-        partials["data:mission:sizing:fuel", "data:mission:sizing:initial_climb:fuel"] = 1
-
-        partials["data:mission:sizing:energy", "data:mission:sizing:main_route:climb:energy"] = 1
-        partials["data:mission:sizing:energy", "data:mission:sizing:main_route:cruise:energy"] = 1
-        partials["data:mission:sizing:energy", "data:mission:sizing:main_route:descent:energy"] = 1
-        partials["data:mission:sizing:energy", "data:mission:sizing:main_route:reserve:energy"] = 1
-        partials["data:mission:sizing:energy", "data:mission:sizing:taxi_out:energy"] = 1
-        partials["data:mission:sizing:energy", "data:mission:sizing:taxi_in:energy"] = 1
-        partials["data:mission:sizing:energy", "data:mission:sizing:takeoff:energy"] = 1
-        partials["data:mission:sizing:energy", "data:mission:sizing:initial_climb:energy"] = 1

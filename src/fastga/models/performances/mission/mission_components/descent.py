@@ -15,22 +15,21 @@
 import copy
 import logging
 import time
+
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-
-from scipy.constants import g
+from fastoad.constants import EngineSetting
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
-import fastoad.api as oad
-from fastoad.constants import EngineSetting
-
+from scipy.constants import g
 from stdatm import Atmosphere
 
 from fastga.utils.options_checkers import check_propulsion_id
 
-from ..dynamic_equilibrium import DynamicEquilibrium
 from ..constants import SUBMODEL_DESCENT, SUBMODEL_DESCENT_SPEED
+from ..dynamic_equilibrium import DynamicEquilibrium
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -68,9 +67,15 @@ class ComputeDescent(DynamicEquilibrium):
         self._engine_wrapper.setup(self)
 
         self.add_input("data:mission:sizing:main_route:descent:descent_rate", np.nan, units="m/s")
-        self.add_input("data:aerodynamics:aircraft:cruise:CD0", np.nan)
-        self.add_input("data:aerodynamics:wing:cruise:induced_drag_coefficient", np.nan)
-        self.add_input("data:aerodynamics:horizontal_tail:cruise:induced_drag_coefficient", np.nan)
+        self.add_input("data:aerodynamics:aircraft:cruise:CD0", np.nan, units="unitless")
+        self.add_input(
+            "data:aerodynamics:wing:cruise:induced_drag_coefficient", np.nan, units="unitless"
+        )
+        self.add_input(
+            "data:aerodynamics:horizontal_tail:cruise:induced_drag_coefficient",
+            np.nan,
+            units="unitless",
+        )
         self.add_input("data:weight:aircraft:MTOW", np.nan, units="kg")
         self.add_input("data:mission:sizing:taxi_out:fuel", np.nan, units="kg")
         self.add_input("data:mission:sizing:takeoff:fuel", np.nan, units="kg")
@@ -87,9 +92,12 @@ class ComputeDescent(DynamicEquilibrium):
         self.add_output("data:mission:sizing:main_route:descent:distance", 0.0, units="m")
         self.add_output("data:mission:sizing:main_route:descent:duration", units="s")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
-    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):  # noqa: PLR0915
         wing_area = inputs["data:geometry:wing:area"]
         propulsion_model = self._engine_wrapper.get_model(inputs)
         cruise_altitude = inputs["data:mission:sizing:main_route:cruise:altitude"]
@@ -120,7 +128,7 @@ class ComputeDescent(DynamicEquilibrium):
 
         # Define specific time step ~POINTS_NB_DESCENT points for calculation (with ground
         # conditions)
-        time_step = abs((altitude_t / descent_rate)) / float(POINTS_NB_DESCENT)
+        time_step = abs(altitude_t / descent_rate) / POINTS_NB_DESCENT
 
         while altitude_t > 0.0:
             flight_point = oad.FlightPoint(
@@ -198,8 +206,8 @@ class ComputeDescent(DynamicEquilibrium):
             # Check calculation duration
             if (time.time() - t_start) > MAX_CALCULATION_TIME:
                 raise Exception(
-                    "Time calculation duration for descent phase [%f s] exceeded!"
-                    % MAX_CALCULATION_TIME
+                    f"Time calculation duration for descent phase [{MAX_CALCULATION_TIME} s] "
+                    f"exceeded!"
                 )
 
         # Save results
@@ -218,10 +226,14 @@ class ComputeDescentSpeed(om.ExplicitComponent):
     def setup(self):
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
 
-        self.add_input("data:aerodynamics:aircraft:cruise:optimal_CL", np.nan)
-        self.add_input("data:aerodynamics:aircraft:cruise:CD0", np.nan)
-        self.add_input("data:aerodynamics:wing:cruise:induced_drag_coefficient", np.nan)
-        self.add_input("data:aerodynamics:wing:low_speed:CL_max_clean", val=np.nan)
+        self.add_input("data:aerodynamics:aircraft:cruise:optimal_CL", np.nan, units="unitless")
+        self.add_input("data:aerodynamics:aircraft:cruise:CD0", np.nan, units="unitless")
+        self.add_input(
+            "data:aerodynamics:wing:cruise:induced_drag_coefficient", np.nan, units="unitless"
+        )
+        self.add_input(
+            "data:aerodynamics:wing:low_speed:CL_max_clean", val=np.nan, units="unitless"
+        )
 
         self.add_input("data:weight:aircraft:MTOW", np.nan, units="kg")
 

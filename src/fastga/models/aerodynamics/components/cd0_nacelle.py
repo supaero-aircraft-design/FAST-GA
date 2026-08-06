@@ -14,15 +14,17 @@
 
 import warnings
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
 
+from fastga.models.constants import PropulsionLayout
 from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
 from fastga.utils.options_checkers import check_propulsion_id
+
 from ..constants import SUBMODEL_CD0_NACELLE
 
 
@@ -50,20 +52,23 @@ class Cd0Nacelle(om.ExplicitComponent):
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         if self.options["low_speed_aero"]:
-            self.add_input("data:aerodynamics:low_speed:mach", val=np.nan)
+            self.add_input("data:aerodynamics:low_speed:mach", val=np.nan, units="unitless")
             self.add_input("data:aerodynamics:low_speed:unit_reynolds", val=np.nan, units="m**-1")
-            self.add_output("data:aerodynamics:nacelles:low_speed:CD0")
+            self.add_output("data:aerodynamics:nacelles:low_speed:CD0", units="unitless")
         else:
-            self.add_input("data:aerodynamics:cruise:mach", val=np.nan)
+            self.add_input("data:aerodynamics:cruise:mach", val=np.nan, units="unitless")
             self.add_input("data:aerodynamics:cruise:unit_reynolds", val=np.nan, units="m**-1")
-            self.add_output("data:aerodynamics:nacelles:cruise:CD0")
+            self.add_output("data:aerodynamics:nacelles:cruise:CD0", units="unitless")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         propulsion_model = FuelEngineSet(self._engine_wrapper.get_model(inputs), 1.0)
         engine_number = inputs["data:geometry:propulsion:engine:count"]
-        prop_layout = inputs["data:geometry:propulsion:engine:layout"]
+        prop_layout = inputs["data:geometry:propulsion:engine:layout"].item()
         l0_wing = inputs["data:geometry:wing:MAC:length"]
         wing_area = inputs["data:geometry:wing:area"]
         if self.options["low_speed_aero"]:
@@ -75,16 +80,14 @@ class Cd0Nacelle(om.ExplicitComponent):
 
         drag_force = propulsion_model.compute_drag(mach, unit_reynolds, l0_wing)
 
-        if (prop_layout == 1.0) or (prop_layout == 2.0):
+        if prop_layout in {PropulsionLayout.UNDER_THE_WING, PropulsionLayout.IN_THE_REAR}:
             cd0 = drag_force / wing_area * engine_number
-        elif prop_layout == 3.0:
+        elif prop_layout == PropulsionLayout.IN_THE_NOSE:
             cd0 = 0.0
         else:
             cd0 = 0.0
             warnings.warn(
-                "Propulsion layout {} not implemented in model, replaced by layout 1!".format(
-                    prop_layout
-                )
+                f"Propulsion layout {prop_layout} not implemented in model, replaced by layout 1!"
             )
 
         if self.options["low_speed_aero"]:

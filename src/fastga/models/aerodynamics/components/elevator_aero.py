@@ -12,10 +12,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import Union
-
-import numpy as np
 import fastoad.api as oad
+import numpy as np
 
 from .figure_digitization import FigureDigitization
 from ..constants import SUBMODEL_DELTA_ELEVATOR
@@ -35,9 +33,13 @@ class ComputeDeltaElevator(FigureDigitization):
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:horizontal_tail:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:horizontal_tail:sweep_25", val=np.nan, units="rad")
-        self.add_input("data:geometry:horizontal_tail:elevator_chord_ratio", val=np.nan)
-        self.add_input("data:geometry:horizontal_tail:thickness_ratio", val=np.nan)
-        self.add_input("data:aerodynamics:low_speed:mach", val=np.nan)
+        self.add_input(
+            "data:geometry:horizontal_tail:elevator_chord_ratio", val=np.nan, units="unitless"
+        )
+        self.add_input(
+            "data:geometry:horizontal_tail:thickness_ratio", val=np.nan, units="unitless"
+        )
+        self.add_input("data:aerodynamics:low_speed:mach", val=np.nan, units="unitless")
         self.add_input(
             "data:aerodynamics:horizontal_tail:airfoil:CL_alpha", val=np.nan, units="rad**-1"
         )
@@ -46,6 +48,9 @@ class ComputeDeltaElevator(FigureDigitization):
         self.add_output("data:aerodynamics:elevator:low_speed:CL_delta", units="rad**-1")
         self.add_output("data:aerodynamics:elevator:low_speed:CD_delta", units="rad**-2")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
@@ -62,8 +67,8 @@ class ComputeDeltaElevator(FigureDigitization):
         # derivative wrt to the wing, multiplies the deflection angle squared
         outputs["data:aerodynamics:elevator:low_speed:CD_delta"] = (
             self.delta_cd_plain_flap(
-                float(elevator_chord_ratio),
-                abs(float(inputs["data:mission:sizing:landing:elevator_angle"])),
+                elevator_chord_ratio.item(),
+                abs(inputs["data:mission:sizing:landing:elevator_angle"].item()),
             )
             / (abs(inputs["data:mission:sizing:landing:elevator_angle"]) * np.pi / 180.0) ** 2.0
             * np.cos(inputs["data:geometry:horizontal_tail:sweep_25"])
@@ -71,9 +76,7 @@ class ComputeDeltaElevator(FigureDigitization):
             / wing_area
         )
 
-    def _get_elevator_delta_cl(
-        self, inputs, elevator_angle: Union[float, np.array]
-    ) -> Union[float, np.array]:
+    def _get_elevator_delta_cl(self, inputs, elevator_angle: float) -> float:
         """
         Computes the elevator lift increment as a plain flap following the method presented in
         Roskam part 6, section 8.1.2.1.a.
@@ -84,17 +87,15 @@ class ComputeDeltaElevator(FigureDigitization):
 
         ht_area = inputs["data:geometry:horizontal_tail:area"]
         wing_area = inputs["data:geometry:wing:area"]
-        elevator_chord_ratio = inputs["data:geometry:horizontal_tail:elevator_chord_ratio"]
-        htp_thickness_ratio = inputs["data:geometry:horizontal_tail:thickness_ratio"]
-        cl_alpha_airfoil_ht = inputs["data:aerodynamics:horizontal_tail:airfoil:CL_alpha"]
+        elevator_chord_ratio = inputs["data:geometry:horizontal_tail:elevator_chord_ratio"].item()
+        htp_thickness_ratio = inputs["data:geometry:horizontal_tail:thickness_ratio"].item()
+        cl_alpha_airfoil_ht = inputs["data:aerodynamics:horizontal_tail:airfoil:CL_alpha"].item()
 
         # Elevator (plain flap). Default: maximum deflection (25deg)
-        cl_delta_theory = self.cl_delta_theory_plain_flap(
-            float(htp_thickness_ratio), float(elevator_chord_ratio)
-        )
-        k = self.k_prime_plain_flap(abs(float(elevator_angle)), float(elevator_chord_ratio))
+        cl_delta_theory = self.cl_delta_theory_plain_flap(htp_thickness_ratio, elevator_chord_ratio)
+        k = self.k_prime_plain_flap(abs(elevator_angle), elevator_chord_ratio)
         k_cl_delta = self.k_cl_delta_plain_flap(
-            float(htp_thickness_ratio), float(cl_alpha_airfoil_ht), float(elevator_chord_ratio)
+            htp_thickness_ratio, cl_alpha_airfoil_ht, elevator_chord_ratio
         )
         cl_alpha_elev = (cl_delta_theory * k * k_cl_delta) * ht_area / wing_area
         cl_alpha_elev *= 0.9  # Correction for the central fuselage part (no elevator there)

@@ -34,7 +34,7 @@ class ComputeHTMACFromWing25(om.ExplicitComponent):
             "data:geometry:horizontal_tail:MAC:at25percent:x:local", val=np.nan, units="m"
         )
         self.add_input("data:geometry:fuselage:length", val=np.nan, units="m")
-        self.add_input("data:geometry:has_T_tail", val=np.nan)
+        self.add_input("data:geometry:has_T_tail", val=np.nan, units="unitless")
         self.add_input(
             "data:geometry:horizontal_tail:MAC:at25percent:x:absolute", val=np.nan, units="m"
         )
@@ -42,6 +42,9 @@ class ComputeHTMACFromWing25(om.ExplicitComponent):
 
         self.add_output("data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", units="m")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials("*", "*", method="exact")
         self.declare_partials(of="*", wrt="data:geometry:has_T_tail", method="fd")
 

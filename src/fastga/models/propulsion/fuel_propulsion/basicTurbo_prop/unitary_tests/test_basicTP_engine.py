@@ -17,15 +17,13 @@ Test module for basicIC_engine.py
 
 import time
 
-import pytest
-
-import numpy as np
-
 import fastoad.api as oad
+import numpy as np
+import pytest
 from fastoad.constants import EngineSetting
 from stdatm import Atmosphere
 
-from ..basicTP_engine import BasicTPEngine, CACHE_MAX_SIZE
+from ..basicTP_engine import CACHE_MAX_SIZE, BasicTPEngine
 
 INVALID_SFC = 0.0
 
@@ -803,15 +801,15 @@ def test_compute_flight_points_tbm_700():
         itt_limit=1100.0,
         power_limit=521.99,
         opr_limit=12.0,
-        speed_SL=SPEED,
-        thrust_SL=THRUST_SL,
-        thrust_limit_SL=THRUST_SL_LIMIT,
-        efficiency_SL=EFFICIENCY_SL,
-        speed_CL=SPEED,
-        thrust_CL=THRUST_CL,
-        thrust_limit_CL=THRUST_CL_LIMIT,
-        efficiency_CL=EFFICIENCY_CL,
-        effective_J=1.0,  # Effective advance ratio factor
+        speed_sl=SPEED,
+        thrust_sl=THRUST_SL,
+        thrust_limit_sl=THRUST_SL_LIMIT,
+        efficiency_sl=EFFICIENCY_SL,
+        speed_cl=SPEED,
+        thrust_cl=THRUST_CL,
+        thrust_limit_cl=THRUST_CL_LIMIT,
+        efficiency_cl=EFFICIENCY_CL,
+        effective_j=1.0,  # Effective advance ratio factor
         effective_efficiency_ls=1.0,  # Effective efficiency in low speed conditions
         effective_efficiency_cruise=1.0,  # Effective efficiency in cruise conditions
         eta_225=0.85,
@@ -879,15 +877,15 @@ def test_compute_flight_points():
         itt_limit=1100.0,
         power_limit=521.99,
         opr_limit=12.0,
-        speed_SL=SPEED,
-        thrust_SL=THRUST_SL,
-        thrust_limit_SL=THRUST_SL_LIMIT,
-        efficiency_SL=EFFICIENCY_SL,
-        speed_CL=SPEED,
-        thrust_CL=THRUST_CL,
-        thrust_limit_CL=THRUST_CL_LIMIT,
-        efficiency_CL=EFFICIENCY_CL,
-        effective_J=0.95,  # Effective advance ratio factor
+        speed_sl=SPEED,
+        thrust_sl=THRUST_SL,
+        thrust_limit_sl=THRUST_SL_LIMIT,
+        efficiency_sl=EFFICIENCY_SL,
+        speed_cl=SPEED,
+        thrust_cl=THRUST_CL,
+        thrust_limit_cl=THRUST_CL_LIMIT,
+        efficiency_cl=EFFICIENCY_CL,
+        effective_j=0.95,  # Effective advance ratio factor
         effective_efficiency_ls=0.97,  # Effective efficiency in low speed conditions
         effective_efficiency_cruise=0.98,  # Effective efficiency in cruise conditions
         eta_225=0.85,
@@ -950,15 +948,15 @@ def test_engine_weight():
         itt_limit=1100.0,
         power_limit=521.99,
         opr_limit=12.0,
-        speed_SL=SPEED,
-        thrust_SL=THRUST_SL,
-        thrust_limit_SL=THRUST_SL_LIMIT,
-        efficiency_SL=EFFICIENCY_SL,
-        speed_CL=SPEED,
-        thrust_CL=THRUST_CL,
-        thrust_limit_CL=THRUST_CL_LIMIT,
-        efficiency_CL=EFFICIENCY_CL,
-        effective_J=0.95,  # Effective advance ratio factor
+        speed_sl=SPEED,
+        thrust_sl=THRUST_SL,
+        thrust_limit_sl=THRUST_SL_LIMIT,
+        efficiency_sl=EFFICIENCY_SL,
+        speed_cl=SPEED,
+        thrust_cl=THRUST_CL,
+        thrust_limit_cl=THRUST_CL_LIMIT,
+        efficiency_cl=EFFICIENCY_CL,
+        effective_j=0.95,  # Effective advance ratio factor
         effective_efficiency_ls=0.97,  # Effective efficiency in low speed conditions
         effective_efficiency_cruise=0.98,  # Effective efficiency in cruise conditions
         eta_225=0.85,
@@ -989,15 +987,15 @@ def test_engine_weight():
         itt_limit=1100.0,
         power_limit=521.99,
         opr_limit=12.0,
-        speed_SL=SPEED,
-        thrust_SL=THRUST_SL,
-        thrust_limit_SL=THRUST_SL_LIMIT,
-        efficiency_SL=EFFICIENCY_SL,
-        speed_CL=SPEED,
-        thrust_CL=THRUST_CL,
-        thrust_limit_CL=THRUST_CL_LIMIT,
-        efficiency_CL=EFFICIENCY_CL,
-        effective_J=0.95,  # Effective advance ratio factor
+        speed_sl=SPEED,
+        thrust_sl=THRUST_SL,
+        thrust_limit_sl=THRUST_SL_LIMIT,
+        efficiency_sl=EFFICIENCY_SL,
+        speed_cl=SPEED,
+        thrust_cl=THRUST_CL,
+        thrust_limit_cl=THRUST_CL_LIMIT,
+        efficiency_cl=EFFICIENCY_CL,
+        effective_j=0.95,  # Effective advance ratio factor
         effective_efficiency_ls=0.97,  # Effective efficiency in low speed conditions
         effective_efficiency_cruise=0.98,  # Effective efficiency in cruise conditions
         eta_225=0.85,
@@ -1031,15 +1029,15 @@ def test_engine_dim():
         itt_limit=1100.0,
         power_limit=521.99,
         opr_limit=12.0,
-        speed_SL=SPEED,
-        thrust_SL=THRUST_SL,
-        thrust_limit_SL=THRUST_SL_LIMIT,
-        efficiency_SL=EFFICIENCY_SL,
-        speed_CL=SPEED,
-        thrust_CL=THRUST_CL,
-        thrust_limit_CL=THRUST_CL_LIMIT,
-        efficiency_CL=EFFICIENCY_CL,
-        effective_J=0.95,  # Effective advance ratio factor
+        speed_sl=SPEED,
+        thrust_sl=THRUST_SL,
+        thrust_limit_sl=THRUST_SL_LIMIT,
+        efficiency_sl=EFFICIENCY_SL,
+        speed_cl=SPEED,
+        thrust_cl=THRUST_CL,
+        thrust_limit_cl=THRUST_CL_LIMIT,
+        efficiency_cl=EFFICIENCY_CL,
+        effective_j=0.95,  # Effective advance ratio factor
         effective_efficiency_ls=0.97,  # Effective efficiency in low speed conditions
         effective_efficiency_cruise=0.98,  # Effective efficiency in cruise conditions
         eta_225=0.85,
@@ -1072,15 +1070,15 @@ def test_engine_dim():
         itt_limit=1100.0,
         power_limit=521.99,
         opr_limit=12.0,
-        speed_SL=SPEED,
-        thrust_SL=THRUST_SL,
-        thrust_limit_SL=THRUST_SL_LIMIT,
-        efficiency_SL=EFFICIENCY_SL,
-        speed_CL=SPEED,
-        thrust_CL=THRUST_CL,
-        thrust_limit_CL=THRUST_CL_LIMIT,
-        efficiency_CL=EFFICIENCY_CL,
-        effective_J=0.95,  # Effective advance ratio factor
+        speed_sl=SPEED,
+        thrust_sl=THRUST_SL,
+        thrust_limit_sl=THRUST_SL_LIMIT,
+        efficiency_sl=EFFICIENCY_SL,
+        speed_cl=SPEED,
+        thrust_cl=THRUST_CL,
+        thrust_limit_cl=THRUST_CL_LIMIT,
+        efficiency_cl=EFFICIENCY_CL,
+        effective_j=0.95,  # Effective advance ratio factor
         effective_efficiency_ls=0.97,  # Effective efficiency in low speed conditions
         effective_efficiency_cruise=0.98,  # Effective efficiency in cruise conditions
         eta_225=0.85,
@@ -1116,15 +1114,15 @@ def test_compute_max_power():
         itt_limit=1100.0,
         power_limit=521.99,
         opr_limit=12.0,
-        speed_SL=SPEED,
-        thrust_SL=THRUST_SL,
-        thrust_limit_SL=THRUST_SL_LIMIT,
-        efficiency_SL=EFFICIENCY_SL,
-        speed_CL=SPEED,
-        thrust_CL=THRUST_CL,
-        thrust_limit_CL=THRUST_CL_LIMIT,
-        efficiency_CL=EFFICIENCY_CL,
-        effective_J=0.95,  # Effective advance ratio factor
+        speed_sl=SPEED,
+        thrust_sl=THRUST_SL,
+        thrust_limit_sl=THRUST_SL_LIMIT,
+        efficiency_sl=EFFICIENCY_SL,
+        speed_cl=SPEED,
+        thrust_cl=THRUST_CL,
+        thrust_limit_cl=THRUST_CL_LIMIT,
+        efficiency_cl=EFFICIENCY_CL,
+        effective_j=0.95,  # Effective advance ratio factor
         effective_efficiency_ls=0.97,  # Effective efficiency in low speed conditions
         effective_efficiency_cruise=0.98,  # Effective efficiency in cruise conditions
         eta_225=0.85,
@@ -1172,15 +1170,15 @@ def test_nested_problem_setup():
         itt_limit=1100.0,
         power_limit=521.99,
         opr_limit=12.0,
-        speed_SL=SPEED,
-        thrust_SL=THRUST_SL,
-        thrust_limit_SL=THRUST_SL_LIMIT,
-        efficiency_SL=EFFICIENCY_SL,
-        speed_CL=SPEED,
-        thrust_CL=THRUST_CL,
-        thrust_limit_CL=THRUST_CL_LIMIT,
-        efficiency_CL=EFFICIENCY_CL,
-        effective_J=0.95,  # Effective advance ratio factor
+        speed_sl=SPEED,
+        thrust_sl=THRUST_SL,
+        thrust_limit_sl=THRUST_SL_LIMIT,
+        efficiency_sl=EFFICIENCY_SL,
+        speed_cl=SPEED,
+        thrust_cl=THRUST_CL,
+        thrust_limit_cl=THRUST_CL_LIMIT,
+        efficiency_cl=EFFICIENCY_CL,
+        effective_j=0.95,  # Effective advance ratio factor
         effective_efficiency_ls=0.97,  # Effective efficiency in low speed conditions
         effective_efficiency_cruise=0.98,  # Effective efficiency in cruise conditions
         eta_225=0.85,
@@ -1275,15 +1273,15 @@ def test_access_to_geometry_parameter():
         itt_limit=1100.0,
         power_limit=521.99,
         opr_limit=12.0,
-        speed_SL=SPEED,
-        thrust_SL=THRUST_SL,
-        thrust_limit_SL=THRUST_SL_LIMIT,
-        efficiency_SL=EFFICIENCY_SL,
-        speed_CL=SPEED,
-        thrust_CL=THRUST_CL,
-        thrust_limit_CL=THRUST_CL_LIMIT,
-        efficiency_CL=EFFICIENCY_CL,
-        effective_J=1.0,  # Effective advance ratio factor
+        speed_sl=SPEED,
+        thrust_sl=THRUST_SL,
+        thrust_limit_sl=THRUST_SL_LIMIT,
+        efficiency_sl=EFFICIENCY_SL,
+        speed_cl=SPEED,
+        thrust_cl=THRUST_CL,
+        thrust_limit_cl=THRUST_CL_LIMIT,
+        efficiency_cl=EFFICIENCY_CL,
+        effective_j=1.0,  # Effective advance ratio factor
         effective_efficiency_ls=1.0,  # Effective efficiency in low speed conditions
         effective_efficiency_cruise=1.0,  # Effective efficiency in cruise conditions
         eta_225=0.85,
@@ -1346,15 +1344,15 @@ def test_geometry_parameter_not_called_until_compute_flight_point():
         itt_limit=1100.0,
         power_limit=521.99,
         opr_limit=12.0,
-        speed_SL=SPEED,
-        thrust_SL=THRUST_SL,
-        thrust_limit_SL=THRUST_SL_LIMIT,
-        efficiency_SL=EFFICIENCY_SL,
-        speed_CL=SPEED,
-        thrust_CL=THRUST_CL,
-        thrust_limit_CL=THRUST_CL_LIMIT,
-        efficiency_CL=EFFICIENCY_CL,
-        effective_J=1.0,  # Effective advance ratio factor
+        speed_sl=SPEED,
+        thrust_sl=THRUST_SL,
+        thrust_limit_sl=THRUST_SL_LIMIT,
+        efficiency_sl=EFFICIENCY_SL,
+        speed_cl=SPEED,
+        thrust_cl=THRUST_CL,
+        thrust_limit_cl=THRUST_CL_LIMIT,
+        efficiency_cl=EFFICIENCY_CL,
+        effective_j=1.0,  # Effective advance ratio factor
         effective_efficiency_ls=1.0,  # Effective efficiency in low speed conditions
         effective_efficiency_cruise=1.0,  # Effective efficiency in cruise conditions
         eta_225=0.85,
@@ -1412,15 +1410,15 @@ def test_max_thrust_all_engine_limits():
         itt_limit=1100.0,
         power_limit=521.99,
         opr_limit=12.0,
-        speed_SL=SPEED,
-        thrust_SL=THRUST_SL,
-        thrust_limit_SL=THRUST_SL_LIMIT,
-        efficiency_SL=EFFICIENCY_SL,
-        speed_CL=SPEED,
-        thrust_CL=THRUST_CL,
-        thrust_limit_CL=THRUST_CL_LIMIT,
-        efficiency_CL=EFFICIENCY_CL,
-        effective_J=1.0,  # Effective advance ratio factor
+        speed_sl=SPEED,
+        thrust_sl=THRUST_SL,
+        thrust_limit_sl=THRUST_SL_LIMIT,
+        efficiency_sl=EFFICIENCY_SL,
+        speed_cl=SPEED,
+        thrust_cl=THRUST_CL,
+        thrust_limit_cl=THRUST_CL_LIMIT,
+        efficiency_cl=EFFICIENCY_CL,
+        effective_j=1.0,  # Effective advance ratio factor
         effective_efficiency_ls=1.0,  # Effective efficiency in low speed conditions
         effective_efficiency_cruise=1.0,  # Effective efficiency in cruise conditions
         eta_225=0.85,
@@ -1515,15 +1513,15 @@ def test_max_thrust_private_func():
         itt_limit=1100.0,
         power_limit=521.99,
         opr_limit=12.0,
-        speed_SL=SPEED,
-        thrust_SL=THRUST_SL,
-        thrust_limit_SL=THRUST_SL_LIMIT,
-        efficiency_SL=EFFICIENCY_SL,
-        speed_CL=SPEED,
-        thrust_CL=THRUST_CL,
-        thrust_limit_CL=THRUST_CL_LIMIT,
-        efficiency_CL=EFFICIENCY_CL,
-        effective_J=1.0,  # Effective advance ratio factor
+        speed_sl=SPEED,
+        thrust_sl=THRUST_SL,
+        thrust_limit_sl=THRUST_SL_LIMIT,
+        efficiency_sl=EFFICIENCY_SL,
+        speed_cl=SPEED,
+        thrust_cl=THRUST_CL,
+        thrust_limit_cl=THRUST_CL_LIMIT,
+        efficiency_cl=EFFICIENCY_CL,
+        effective_j=1.0,  # Effective advance ratio factor
         effective_efficiency_ls=1.0,  # Effective efficiency in low speed conditions
         effective_efficiency_cruise=1.0,  # Effective efficiency in cruise conditions
         eta_225=0.85,
@@ -1608,15 +1606,15 @@ def test_fuel_problem_not_called_in_max_thrust():
         itt_limit=1100.0,
         power_limit=521.99,
         opr_limit=12.0,
-        speed_SL=SPEED,
-        thrust_SL=THRUST_SL,
-        thrust_limit_SL=THRUST_SL_LIMIT,
-        efficiency_SL=EFFICIENCY_SL,
-        speed_CL=SPEED,
-        thrust_CL=THRUST_CL,
-        thrust_limit_CL=THRUST_CL_LIMIT,
-        efficiency_CL=EFFICIENCY_CL,
-        effective_J=1.0,  # Effective advance ratio factor
+        speed_sl=SPEED,
+        thrust_sl=THRUST_SL,
+        thrust_limit_sl=THRUST_SL_LIMIT,
+        efficiency_sl=EFFICIENCY_SL,
+        speed_cl=SPEED,
+        thrust_cl=THRUST_CL,
+        thrust_limit_cl=THRUST_CL_LIMIT,
+        efficiency_cl=EFFICIENCY_CL,
+        effective_j=1.0,  # Effective advance ratio factor
         effective_efficiency_ls=1.0,  # Effective efficiency in low speed conditions
         effective_efficiency_cruise=1.0,  # Effective efficiency in cruise conditions
         eta_225=0.85,
@@ -1670,15 +1668,15 @@ def test_fuel_consumed_private_func():
         itt_limit=1100.0,
         power_limit=521.99,
         opr_limit=12.0,
-        speed_SL=SPEED,
-        thrust_SL=THRUST_SL,
-        thrust_limit_SL=THRUST_SL_LIMIT,
-        efficiency_SL=EFFICIENCY_SL,
-        speed_CL=SPEED,
-        thrust_CL=THRUST_CL,
-        thrust_limit_CL=THRUST_CL_LIMIT,
-        efficiency_CL=EFFICIENCY_CL,
-        effective_J=1.0,  # Effective advance ratio factor
+        speed_sl=SPEED,
+        thrust_sl=THRUST_SL,
+        thrust_limit_sl=THRUST_SL_LIMIT,
+        efficiency_sl=EFFICIENCY_SL,
+        speed_cl=SPEED,
+        thrust_cl=THRUST_CL,
+        thrust_limit_cl=THRUST_CL_LIMIT,
+        efficiency_cl=EFFICIENCY_CL,
+        effective_j=1.0,  # Effective advance ratio factor
         effective_efficiency_ls=1.0,  # Effective efficiency in low speed conditions
         effective_efficiency_cruise=1.0,  # Effective efficiency in cruise conditions
         eta_225=0.85,
@@ -1762,15 +1760,15 @@ def test_max_thrust_cache_saturation():
         itt_limit=1100.0,
         power_limit=521.99,
         opr_limit=12.0,
-        speed_SL=SPEED,
-        thrust_SL=THRUST_SL,
-        thrust_limit_SL=THRUST_SL_LIMIT,
-        efficiency_SL=EFFICIENCY_SL,
-        speed_CL=SPEED,
-        thrust_CL=THRUST_CL,
-        thrust_limit_CL=THRUST_CL_LIMIT,
-        efficiency_CL=EFFICIENCY_CL,
-        effective_J=1.0,  # Effective advance ratio factor
+        speed_sl=SPEED,
+        thrust_sl=THRUST_SL,
+        thrust_limit_sl=THRUST_SL_LIMIT,
+        efficiency_sl=EFFICIENCY_SL,
+        speed_cl=SPEED,
+        thrust_cl=THRUST_CL,
+        thrust_limit_cl=THRUST_CL_LIMIT,
+        efficiency_cl=EFFICIENCY_CL,
+        effective_j=1.0,  # Effective advance ratio factor
         effective_efficiency_ls=1.0,  # Effective efficiency in low speed conditions
         effective_efficiency_cruise=1.0,  # Effective efficiency in cruise conditions
         eta_225=0.85,
@@ -1803,6 +1801,6 @@ def test_max_thrust_cache_saturation():
     # Now properly add one value and check that it has indeed not changed the size
     engine._max_thrust(15000.0, 0.41)
     assert len(engine._cache_max_thrust) == CACHE_MAX_SIZE
-    assert "alt0ft0.3" not in engine._cache_max_thrust.keys()
+    assert "alt0ft0.3" not in engine._cache_max_thrust
     assert list(engine._cache_max_thrust.keys())[-2] == "alt10000ft0.4"
     assert list(engine._cache_max_thrust.keys())[-1] == "alt15000ft0.41"

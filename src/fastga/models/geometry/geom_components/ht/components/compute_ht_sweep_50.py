@@ -26,12 +26,15 @@ class ComputeHTSweep50(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
     def setup(self):
-        self.add_input("data:geometry:horizontal_tail:aspect_ratio", val=np.nan)
-        self.add_input("data:geometry:horizontal_tail:taper_ratio", val=np.nan)
+        self.add_input("data:geometry:horizontal_tail:aspect_ratio", val=np.nan, units="unitless")
+        self.add_input("data:geometry:horizontal_tail:taper_ratio", val=np.nan, units="unitless")
         self.add_input("data:geometry:horizontal_tail:sweep_0", val=np.nan, units="rad")
 
         self.add_output("data:geometry:horizontal_tail:sweep_50", units="rad")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="exact")
 
     # pylint: disable=missing-function-docstring, unused-argument

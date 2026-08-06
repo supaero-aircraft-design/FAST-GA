@@ -23,13 +23,15 @@ class InFlightCGVariation(om.ExplicitComponent):
     """
 
     def setup(self):
-        self.add_input("data:TLAR:NPAX_design", val=np.nan)
+        self.add_input("data:TLAR:NPAX_design", val=np.nan, units="unitless")
         self.add_input("data:TLAR:luggage_mass_design", val=np.nan, units="kg")
         self.add_input("data:weight:payload:rear_fret:CG:x", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:front_length", val=np.nan, units="m")
         self.add_input("data:geometry:cabin:seats:pilot:length", val=np.nan, units="m")
         self.add_input("data:geometry:cabin:seats:passenger:length", val=np.nan, units="m")
-        self.add_input("data:geometry:cabin:seats:passenger:count_by_row", val=np.nan)
+        self.add_input(
+            "data:geometry:cabin:seats:passenger:count_by_row", val=np.nan, units="unitless"
+        )
         self.add_input("data:weight:aircraft_empty:CG:x", val=np.nan, units="m")
         self.add_input("data:weight:aircraft_empty:mass", val=np.nan, units="kg")
         self.add_input("data:weight:aircraft:payload", val=np.nan, units="kg")
@@ -61,7 +63,7 @@ class InFlightCGVariation(om.ExplicitComponent):
 
         l_instr = 0.7
         # Seats and passengers gravity center (hypothesis of 2 pilots)
-        nrows = int(np.ceil(npax / count_by_row))
+        nrows = int(np.ceil(npax / count_by_row).item())
         x_cg_passenger = lav + l_instr + l_pilot_seat * 2.0 / (npax + 2.0)
         for idx in range(nrows):
             length = l_pilot_seat + (idx + 0.5) * l_pass_seat

@@ -14,16 +14,15 @@
 
 import logging
 
-import numpy as np
-
-import openmdao.api as om
-
 import fastoad.api as oad
+import numpy as np
+import openmdao.api as om
 from fastoad.module_management.constants import ModelDomain
 from stdatm import Atmosphere
 
-from fastga.models.aerodynamics.external.xfoil.xfoil_polar import XfoilPolar
 from fastga.models.aerodynamics.external.neuralfoil.neuralfoil_polar import NeuralfoilPolar
+from fastga.models.aerodynamics.external.xfoil.xfoil_polar import XfoilPolar
+
 from .propeller_core import PropellerCoreModule
 
 _LOGGER = logging.getLogger(__name__)
@@ -55,8 +54,12 @@ class ComputePropellerCoefficientMap(om.Group):
 
     def setup(self):
         ivc = om.IndepVarComp()
-        ivc.add_output("data:aerodynamics:propeller:coefficient_map:mach", val=0.0)
-        ivc.add_output("data:aerodynamics:propeller:coefficient_map:reynolds", val=1e6)
+        ivc.add_output(
+            "data:aerodynamics:propeller:coefficient_map:mach", val=0.0, units="unitless"
+        )
+        ivc.add_output(
+            "data:aerodynamics:propeller:coefficient_map:reynolds", val=1e6, units="unitless"
+        )
         self.add_subsystem("propeller_coeff_map_aero_conditions", ivc, promotes=["*"])
         for profile in self.options["sections_profile_name_list"]:
             # Selects the tool for airfoil analysis: uses NeuralFoil if 'use_neuralfoil' is True;
@@ -130,17 +133,24 @@ class _ComputePropellerCoefficientMap(PropellerCoreModule):
         )
 
         self.add_output(
-            "data:aerodynamics:propeller:coefficient_map:advance_ratio", shape=J_POINTS_NUMBER
+            "data:aerodynamics:propeller:coefficient_map:advance_ratio",
+            shape=J_POINTS_NUMBER,
+            units="unitless",
         )
         self.add_output(
             "data:aerodynamics:propeller:coefficient_map:power_coefficient",
             shape=J_POINTS_NUMBER,
+            units="unitless",
         )
         self.add_output(
             "data:aerodynamics:propeller:coefficient_map:thrust_coefficient",
             shape=J_POINTS_NUMBER,
+            units="unitless",
         )
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):

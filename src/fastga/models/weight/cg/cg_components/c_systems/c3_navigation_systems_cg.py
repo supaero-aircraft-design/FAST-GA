@@ -12,9 +12,9 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 
 from ..constants import SUBMODEL_NAVIGATION_SYSTEMS_CG
 
@@ -33,6 +33,9 @@ class ComputeNavigationSystemsCG(om.ExplicitComponent):
 
         self.add_output("data:weight:systems:avionics:CG:x", units="m")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials(of="*", wrt="*", val=1.0)
 
     # pylint: disable=missing-function-docstring, unused-argument

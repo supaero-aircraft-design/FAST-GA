@@ -11,16 +11,15 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import numpy as np
-
-import openmdao.api as om
 import fastoad.api as oad
+import numpy as np
+import openmdao.api as om
 
 from ..constants import (
     SUBMODEL_CY_BETA,
-    SUBMODEL_CY_BETA_WING,
-    SUBMODEL_CY_BETA_VT,
     SUBMODEL_CY_BETA_FUSELAGE,
+    SUBMODEL_CY_BETA_VT,
+    SUBMODEL_CY_BETA_WING,
 )
 
 
@@ -92,7 +91,10 @@ class _SumCYBetaContributions(om.ExplicitComponent):
 
             self.add_output("data:aerodynamics:aircraft:cruise:Cy_beta", units="rad**-1")
 
-        self.declare_partials(of="*", wrt="*", method="exact")
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
+        self.declare_partials(of="*", wrt="*", method="exact", val=1.0)
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         cy_beta_fus = inputs["data:aerodynamics:fuselage:Cy_beta"]
@@ -110,30 +112,3 @@ class _SumCYBetaContributions(om.ExplicitComponent):
                 + cy_beta_fus
                 + inputs["data:aerodynamics:vertical_tail:cruise:Cy_beta"]
             )
-
-    def compute_partials(self, inputs, partials, discrete_inputs=None):
-        if self.options["low_speed_aero"]:
-            partials[
-                "data:aerodynamics:aircraft:low_speed:Cy_beta",
-                "data:aerodynamics:wing:Cy_beta",
-            ] = 1.0
-            partials[
-                "data:aerodynamics:aircraft:low_speed:Cy_beta",
-                "data:aerodynamics:fuselage:Cy_beta",
-            ] = 1.0
-            partials[
-                "data:aerodynamics:aircraft:low_speed:Cy_beta",
-                "data:aerodynamics:vertical_tail:low_speed:Cy_beta",
-            ] = 1.0
-        else:
-            partials[
-                "data:aerodynamics:aircraft:cruise:Cy_beta", "data:aerodynamics:wing:Cy_beta"
-            ] = 1.0
-            partials[
-                "data:aerodynamics:aircraft:cruise:Cy_beta",
-                "data:aerodynamics:fuselage:Cy_beta",
-            ] = 1.0
-            partials[
-                "data:aerodynamics:aircraft:cruise:Cy_beta",
-                "data:aerodynamics:vertical_tail:cruise:Cy_beta",
-            ] = 1.0

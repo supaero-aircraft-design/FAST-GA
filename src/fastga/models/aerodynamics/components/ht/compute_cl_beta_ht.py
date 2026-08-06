@@ -11,9 +11,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import numpy as np
-
 import fastoad.api as oad
+import numpy as np
 
 from ..figure_digitization import FigureDigitization
 from ...constants import SUBMODEL_CL_BETA_HT
@@ -37,8 +36,8 @@ class ComputeClBetaHorizontalTail(FigureDigitization):
         self.options.declare("low_speed_aero", default=False, types=bool)
 
     def setup(self):
-        self.add_input("data:geometry:horizontal_tail:aspect_ratio", val=np.nan)
-        self.add_input("data:geometry:horizontal_tail:taper_ratio", val=np.nan)
+        self.add_input("data:geometry:horizontal_tail:aspect_ratio", val=np.nan, units="unitless")
+        self.add_input("data:geometry:horizontal_tail:taper_ratio", val=np.nan, units="unitless")
         self.add_input("data:geometry:horizontal_tail:sweep_50", val=np.nan, units="rad")
         self.add_input("data:geometry:horizontal_tail:sweep_25", val=np.nan, units="rad")
         self.add_input("data:geometry:horizontal_tail:dihedral", val=0.0, units="deg")
@@ -67,35 +66,40 @@ class ComputeClBetaHorizontalTail(FigureDigitization):
             units="rad",
             val=ref_aoa * np.pi / 180.0,
         )
-        self.add_input("data:aerodynamics:" + ls_tag + ":mach", val=np.nan)
-        self.add_input("data:aerodynamics:horizontal_tail:" + ls_tag + ":CL0", val=np.nan)
+        self.add_input("data:aerodynamics:" + ls_tag + ":mach", val=np.nan, units="unitless")
+        self.add_input(
+            "data:aerodynamics:horizontal_tail:" + ls_tag + ":CL0", val=np.nan, units="unitless"
+        )
         self.add_input(
             "data:aerodynamics:horizontal_tail:" + ls_tag + ":CL_alpha", val=np.nan, units="rad**-1"
         )
 
         self.add_output("data:aerodynamics:horizontal_tail:" + ls_tag + ":Cl_beta", units="rad**-1")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         ht_area = inputs["data:geometry:horizontal_tail:area"]
         wing_area = inputs["data:geometry:wing:area"]
         wing_span = inputs["data:geometry:wing:span"]
-        ht_ar = inputs["data:geometry:horizontal_tail:aspect_ratio"]
-        ht_taper_ratio = inputs["data:geometry:horizontal_tail:taper_ratio"]
-        ht_sweep_50 = inputs["data:geometry:horizontal_tail:sweep_50"]  # In rad !!!
+        ht_ar = inputs["data:geometry:horizontal_tail:aspect_ratio"].item()
+        ht_taper_ratio = inputs["data:geometry:horizontal_tail:taper_ratio"].item()
+        ht_sweep_50 = inputs["data:geometry:horizontal_tail:sweep_50"].item()  # In rad !!!
         ht_sweep_25 = inputs["data:geometry:horizontal_tail:sweep_25"]  # In rad !!!
         ht_dihedral = inputs["data:geometry:horizontal_tail:dihedral"]  # In deg, not specified
         # in the  formula
         ht_twist = inputs["data:geometry:horizontal_tail:twist"]  # In deg, not specified in the
         # formula
-        ht_span = inputs["data:geometry:horizontal_tail:span"]
+        ht_span = inputs["data:geometry:horizontal_tail:span"].item()
 
-        fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
-        lp_ht = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"]
-        x4_ht = inputs["data:geometry:horizontal_tail:tip:chord"]
+        fa_length = inputs["data:geometry:wing:MAC:at25percent:x"].item()
+        lp_ht = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"].item()
+        x4_ht = inputs["data:geometry:horizontal_tail:tip:chord"].item()
 
-        if float(inputs["data:geometry:horizontal_tail:z:from_wingMAC25"]) == 0.0:
+        if inputs["data:geometry:horizontal_tail:z:from_wingMAC25"] == 0.0:
             z2_ht = 0.0  # Aligned with the fuselage centerline
         else:
             z2_ht = (
@@ -109,7 +113,7 @@ class ComputeClBetaHorizontalTail(FigureDigitization):
         ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
 
         aoa_ref = inputs["settings:aerodynamics:reference_flight_conditions:" + ls_tag + ":AOA"]
-        mach = inputs["data:aerodynamics:" + ls_tag + ":mach"]
+        mach = inputs["data:aerodynamics:" + ls_tag + ":mach"].item()
         cl_0_ht = inputs["data:aerodynamics:horizontal_tail:" + ls_tag + ":CL0"]
         cl_alpha_ht = inputs["data:aerodynamics:horizontal_tail:" + ls_tag + ":CL_alpha"]
 

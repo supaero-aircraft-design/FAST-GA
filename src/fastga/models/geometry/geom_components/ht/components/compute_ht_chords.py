@@ -15,11 +15,13 @@ geometry.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 
 from ..constants import SERVICE_HT_CHORD, SUBMODEL_HT_CHORD_LEGACY
+
+MIN_HT_SPAN = 0.1
 
 
 @oad.RegisterSubmodel(SERVICE_HT_CHORD, SUBMODEL_HT_CHORD_LEGACY)
@@ -31,13 +33,16 @@ class ComputeHTChord(om.ExplicitComponent):
     # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:horizontal_tail:area", val=np.nan, units="m**2")
-        self.add_input("data:geometry:horizontal_tail:taper_ratio", val=np.nan)
-        self.add_input("data:geometry:horizontal_tail:aspect_ratio", val=np.nan)
+        self.add_input("data:geometry:horizontal_tail:taper_ratio", val=np.nan, units="unitless")
+        self.add_input("data:geometry:horizontal_tail:aspect_ratio", val=np.nan, units="unitless")
 
         self.add_output("data:geometry:horizontal_tail:span", units="m")
         self.add_output("data:geometry:horizontal_tail:root:chord", units="m")
         self.add_output("data:geometry:horizontal_tail:tip:chord", units="m")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials(
             of="data:geometry:horizontal_tail:span",
             wrt=[
@@ -64,7 +69,7 @@ class ComputeHTChord(om.ExplicitComponent):
         taper_ht = inputs["data:geometry:horizontal_tail:taper_ratio"]
         aspect_ratio_ht = inputs["data:geometry:horizontal_tail:aspect_ratio"]
 
-        b_h = np.sqrt(max(aspect_ratio_ht * s_h, 0.1))
+        b_h = np.sqrt(max(aspect_ratio_ht * s_h, MIN_HT_SPAN))
         # !!!: to avoid 0 division if s_h initialised to 0
         root_chord = s_h * 2.0 / (1.0 + taper_ht) / b_h
         tip_chord = root_chord * taper_ht
@@ -80,7 +85,7 @@ class ComputeHTChord(om.ExplicitComponent):
         taper_ht = inputs["data:geometry:horizontal_tail:taper_ratio"]
         aspect_ratio_ht = inputs["data:geometry:horizontal_tail:aspect_ratio"]
 
-        if aspect_ratio_ht * s_h < 0.1:
+        if aspect_ratio_ht * s_h < MIN_HT_SPAN:
             partials["data:geometry:horizontal_tail:span", "data:geometry:horizontal_tail:area"] = (
                 0.0
             )

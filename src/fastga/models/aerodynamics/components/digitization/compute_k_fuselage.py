@@ -16,9 +16,9 @@ component computation.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+
 import numpy as np
 import openmdao.api as om
-
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -36,10 +36,13 @@ class ComputeFuselagePitchMomentFactor(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
     def setup(self):
-        self.add_input("x0_ratio", val=np.nan)
+        self.add_input("x0_ratio", val=np.nan, units="unitless")
 
         self.add_output("fuselage_pitch_moment_factor", val=0.02, units="deg**-1")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials(of="fuselage_pitch_moment_factor", wrt="x0_ratio", method="exact")
 
     # pylint: disable=missing-function-docstring, unused-argument

@@ -11,10 +11,9 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import numpy as np
-
-import openmdao.api as om
 import fastoad.api as oad
+import numpy as np
+import openmdao.api as om
 
 from fastga.models.aerodynamics.constants import SUBMODEL_CL_Q_WING
 
@@ -40,21 +39,24 @@ class ComputeCLPitchVelocityWing(om.ExplicitComponent):
         self.options.declare("low_speed_aero", default=False, types=bool)
 
     def setup(self):
-        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan, units="unitless")
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="rad")
 
         if self.options["low_speed_aero"]:
             self.add_input("data:aerodynamics:wing:low_speed:CL_alpha", val=np.nan, units="rad**-1")
-            self.add_input("data:aerodynamics:low_speed:mach", val=np.nan)
+            self.add_input("data:aerodynamics:low_speed:mach", val=np.nan, units="unitless")
 
             self.add_output("data:aerodynamics:wing:low_speed:CL_q", units="rad**-1")
 
         else:
             self.add_input("data:aerodynamics:wing:cruise:CL_alpha", val=np.nan, units="rad**-1")
-            self.add_input("data:aerodynamics:cruise:mach", val=np.nan)
+            self.add_input("data:aerodynamics:cruise:mach", val=np.nan, units="unitless")
 
             self.add_output("data:aerodynamics:wing:cruise:CL_q", units="rad**-1")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):

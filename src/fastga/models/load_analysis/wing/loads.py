@@ -11,15 +11,14 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import openmdao.api as om
-
 import fastoad.api as oad
+import openmdao.api as om
 from fastoad.module_management.constants import ModelDomain
 
 from .constants import (
+    SUBMODEL_AERODYNAMIC_LOADS,
     SUBMODEL_AEROSTRUCTURAL_LOADS,
     SUBMODEL_STRUCTURAL_LOADS,
-    SUBMODEL_AERODYNAMIC_LOADS,
 )
 
 

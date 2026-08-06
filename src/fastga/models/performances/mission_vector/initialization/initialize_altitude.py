@@ -22,7 +22,7 @@ from fastga.models.performances.mission.mission_components import (
 
 
 class InitializeAltitude(om.ExplicitComponent):
-    """Intializes the altitude at each time step."""
+    """Initializes the altitude at each time step."""
 
     def initialize(self):
         self.options.declare(

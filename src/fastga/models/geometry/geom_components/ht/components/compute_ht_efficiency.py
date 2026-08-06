@@ -15,9 +15,9 @@ Python module for horizontal tail efficiency calculation, part of the horizontal
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 
 from ..constants import SERVICE_HT_EFFICIENCY, SUBMODEL_HT_EFFICIENCY_LEGACY
 
@@ -30,10 +30,13 @@ class ComputeHTEfficiency(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
     def setup(self):
-        self.add_input("data:geometry:has_T_tail", val=np.nan)
+        self.add_input("data:geometry:has_T_tail", val=np.nan, units="unitless")
 
-        self.add_output("data:aerodynamics:horizontal_tail:efficiency")
+        self.add_output("data:aerodynamics:horizontal_tail:efficiency", units="unitless")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials(
             of="data:aerodynamics:horizontal_tail:efficiency",
             wrt="data:geometry:has_T_tail",

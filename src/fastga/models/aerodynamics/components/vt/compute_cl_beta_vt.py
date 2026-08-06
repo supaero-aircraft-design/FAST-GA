@@ -11,9 +11,9 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 
 from ...constants import SUBMODEL_CL_BETA_VT
 
@@ -66,6 +66,9 @@ class ComputeClBetaVerticalTail(om.ExplicitComponent):
             )
             self.add_output("data:aerodynamics:vertical_tail:cruise:Cl_beta", units="rad**-1")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):

@@ -26,7 +26,10 @@ class ComputeFuelLinesCG(om.ExplicitComponent):
 
         self.add_output("data:weight:propulsion:fuel_lines:CG:x", units="m")
 
-        self.declare_partials("*", "*", method="fd")
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
+        self.declare_partials("*", "*", method="exact", val=0.5)
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         cg_b1 = inputs["data:weight:propulsion:engine:CG:x"]

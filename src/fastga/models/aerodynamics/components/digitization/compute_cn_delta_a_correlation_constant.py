@@ -16,9 +16,9 @@ component computation.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+
 import numpy as np
 import openmdao.api as om
-
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -32,9 +32,9 @@ class ComputeAileronYawCorrelationConstant(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
     def setup(self):
-        self.add_input("data:geometry:wing:aileron:span_ratio", val=np.nan)
-        self.add_input("data:geometry:wing:taper_ratio", val=np.nan)
-        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:aileron:span_ratio", val=np.nan, units="unitless")
+        self.add_input("data:geometry:wing:taper_ratio", val=np.nan, units="unitless")
+        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan, units="unitless")
 
         self.add_output("aileron_correlation_constant", val=0.02, units="unitless")
 

@@ -11,11 +11,10 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import pytest
 
-import fastoad.api as oad
-
-from tests.dummy_plugins.dummy_plugin_1.models.dummy_group import DummyGroup, DUMMY_SERVICE
+from tests.dummy_plugins.dummy_plugin_1.models.dummy_group import DUMMY_SERVICE, DummyGroup
 
 
 def test_fails_when_none_and_required(with_dummy_plugin_1):

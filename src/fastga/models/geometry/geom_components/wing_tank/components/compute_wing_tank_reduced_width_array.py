@@ -61,12 +61,11 @@ class ComputeWingTankReducedWidthArray(om.ExplicitComponent):
 
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
         self.add_input("data:geometry:propulsion:nacelle:width", val=np.nan, units="m")
-        self.add_input("data:geometry:landing_gear:type", val=np.nan)
+        self.add_input("data:geometry:landing_gear:type", val=np.nan, units="unitless")
         self.add_input("data:geometry:landing_gear:y", val=np.nan, units="m")
-        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan, units="unitless")
         self.add_input(
-            "data:geometry:propulsion:engine:y_ratio",
-            shape_by_conn=True,
+            "data:geometry:propulsion:engine:y_ratio", shape_by_conn=True, units="unitless"
         )
 
         self.add_output(
@@ -76,6 +75,11 @@ class ComputeWingTankReducedWidthArray(om.ExplicitComponent):
             val=np.full(nb_point_wing, 0.2),
         )
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
+        nb_point_wing = self.options["number_points_wing_mfw"]
+
         self.declare_partials(
             of="data:geometry:propulsion:tank:reduced_width_array",
             wrt="data:geometry:propulsion:tank:width_array",
@@ -83,30 +87,14 @@ class ComputeWingTankReducedWidthArray(om.ExplicitComponent):
             rows=np.arange(nb_point_wing),
             cols=np.arange(nb_point_wing),
         )
-        # It actually does depend on them as the formula says but for the sake of what we will do
-        # it should not be necessary
-        self.declare_partials(
-            of="data:geometry:propulsion:tank:reduced_width_array",
-            wrt=[
-                "data:geometry:propulsion:tank:y_array",
-                "data:geometry:propulsion:nacelle:width",
-                "data:geometry:landing_gear:type",
-                "data:geometry:landing_gear:y",
-                "data:geometry:propulsion:engine:layout",
-                "data:geometry:propulsion:engine:y_ratio",
-                "data:geometry:wing:span",
-            ],
-            method="exact",
-            val=0.0,
-        )
 
     # pylint: disable=missing-function-docstring, unused-argument
     # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         nb_point_wing = self.options["number_points_wing_mfw"]
 
-        self.in_engine = np.full(nb_point_wing, False)
-        self.in_landing_gear = np.full(nb_point_wing, False)
+        self.in_engine = np.full(nb_point_wing, fill_value=False)
+        self.in_landing_gear = np.full(nb_point_wing, fill_value=False)
 
         lg_type = inputs["data:geometry:landing_gear:type"]
         y_lg = inputs["data:geometry:landing_gear:y"]
@@ -125,14 +113,14 @@ class ComputeWingTankReducedWidthArray(om.ExplicitComponent):
             for y_eng in y_ratio * span / 2.0:
                 self.in_engine = np.where(
                     np.abs(y_array - y_eng) < nacelle_width / 2.0,
-                    np.full_like(self.in_engine, True),
+                    np.full_like(self.in_engine, fill_value=True),
                     self.in_engine,
                 )
 
         if lg_type == 1.0:
             self.in_landing_gear = np.where(
                 y_array < y_lg,
-                np.full_like(self.in_landing_gear, True),
+                np.full_like(self.in_landing_gear, fill_value=True),
                 self.in_landing_gear,
             )
 

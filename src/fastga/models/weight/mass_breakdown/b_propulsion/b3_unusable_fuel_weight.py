@@ -14,9 +14,9 @@ Python module for unsuable fuel weight calculation, part of the propulsion syste
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 from fastoad.constants import EngineSetting
 
 # noinspection PyProtectedMember
@@ -24,6 +24,7 @@ from fastoad.module_management._bundle_loader import BundleLoader
 from scipy.constants import lbf
 
 from fastga.utils.options_checkers import check_propulsion_id
+
 from .constants import SERVICE_UNUSABLE_FUEL_MASS, SUBMODEL_UNUSABLE_FUEL_MASS_LEGACY
 
 oad.RegisterSubmodel.active_models[SERVICE_UNUSABLE_FUEL_MASS] = SUBMODEL_UNUSABLE_FUEL_MASS_LEGACY
@@ -57,6 +58,9 @@ class ComputeUnusableFuelWeight(om.ExplicitComponent):
 
         self.add_output("data:weight:propulsion:unusable_fuel:mass", units="lb")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="fd")
         # Overwrites the derivatives because we know the exact value
         self.declare_partials(
@@ -78,7 +82,7 @@ class ComputeUnusableFuelWeight(om.ExplicitComponent):
         )  # with engine_setting as EngineSetting
         propulsion_model.compute_flight_points(flight_point)
 
-        sl_thrust_newton = float(flight_point.thrust)
+        sl_thrust_newton = flight_point.thrust
         sl_thrust_lbs = sl_thrust_newton / lbf
         sl_thrust_lbs_per_engine = sl_thrust_lbs / n_eng
 
@@ -104,7 +108,7 @@ class ComputeUnusableFuelWeight(om.ExplicitComponent):
         )  # with engine_setting as EngineSetting
         propulsion_model.compute_flight_points(flight_point)
 
-        sl_thrust_newton = float(flight_point.thrust)
+        sl_thrust_newton = flight_point.thrust
         sl_thrust_lbs = sl_thrust_newton / lbf
         sl_thrust_lbs_per_engine = sl_thrust_lbs / n_eng
 

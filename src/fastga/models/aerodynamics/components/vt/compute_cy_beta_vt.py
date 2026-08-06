@@ -11,12 +11,14 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import numpy as np
-
-import openmdao.api as om
 import fastoad.api as oad
+import numpy as np
+import openmdao.api as om
 
 from fastga.models.aerodynamics.constants import SUBMODEL_CY_BETA_VT
+
+CORRELATION_LOWER_BOUND = 2.0
+CORRELATION_UPPER_BOUND = 3.5
 
 
 @oad.RegisterSubmodel(
@@ -34,7 +36,7 @@ class ComputeCyBetaVerticalTail(om.ExplicitComponent):
 
     def setup(self):
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
-        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan, units="unitless")
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="rad")
         self.add_input("data:geometry:wing:root:z", val=np.nan, units="m")
         self.add_input("data:geometry:vertical_tail:area", val=np.nan, units="m**2")
@@ -42,7 +44,7 @@ class ComputeCyBetaVerticalTail(om.ExplicitComponent):
         self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:average_depth", val=np.nan, units="m")
 
-        self.add_input("data:aerodynamics:vertical_tail:efficiency", val=0.95)
+        self.add_input("data:aerodynamics:vertical_tail:efficiency", val=0.95, units="unitless")
 
         if self.options["low_speed_aero"]:
             self.add_input(
@@ -55,6 +57,9 @@ class ComputeCyBetaVerticalTail(om.ExplicitComponent):
             )
             self.add_output("data:aerodynamics:vertical_tail:cruise:Cy_beta", units="rad**-1")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
@@ -74,9 +79,9 @@ class ComputeCyBetaVerticalTail(om.ExplicitComponent):
         else:
             cl_alpha_vt = inputs["data:aerodynamics:vertical_tail:cruise:CL_alpha"]
 
-        if vt_span / avg_fus_depth < 2.0:
+        if vt_span / avg_fus_depth < CORRELATION_LOWER_BOUND:
             k_v = 0.75
-        elif vt_span / avg_fus_depth < 3.5:
+        elif vt_span / avg_fus_depth < CORRELATION_UPPER_BOUND:
             k_v = 0.418 + 0.166 * vt_span / avg_fus_depth
         else:
             k_v = 1.0
@@ -95,7 +100,7 @@ class ComputeCyBetaVerticalTail(om.ExplicitComponent):
         else:
             outputs["data:aerodynamics:vertical_tail:cruise:Cy_beta"] = cy_beta_vt
 
-    def compute_partials(self, inputs, partials, discrete_inputs=None):
+    def compute_partials(self, inputs, partials, discrete_inputs=None):  # noqa: PLR0915
         wing_ar = inputs["data:geometry:wing:aspect_ratio"]
         wing_area = inputs["data:geometry:wing:area"]
         wing_sweep_25 = inputs["data:geometry:wing:sweep_25"]
@@ -112,11 +117,11 @@ class ComputeCyBetaVerticalTail(om.ExplicitComponent):
         else:
             cl_alpha_vt = inputs["data:aerodynamics:vertical_tail:cruise:CL_alpha"]
 
-        if vt_span / avg_fus_depth < 2.0:
+        if vt_span / avg_fus_depth < CORRELATION_LOWER_BOUND:
             k_v = 0.75
             d_k_v_d_span = 0.0
             d_k_v_d_hf = 0.0
-        elif vt_span / avg_fus_depth < 3.5:
+        elif vt_span / avg_fus_depth < CORRELATION_UPPER_BOUND:
             k_v = 0.418 + 0.166 * vt_span / avg_fus_depth
             d_k_v_d_span = 0.166
             d_k_v_d_hf = -0.166 * vt_span / avg_fus_depth**2.0

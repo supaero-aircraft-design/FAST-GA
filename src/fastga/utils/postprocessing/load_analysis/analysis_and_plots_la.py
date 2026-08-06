@@ -14,21 +14,23 @@ Defines the analysis and plotting functions for postprocessing of load analysis.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import pathlib
+
 import numpy as np
 import plotly
 import plotly.graph_objects as go
 from fastoad.io import VariableIO
 
 from fastga.models.load_analysis.wing.constants import (
-    POINT_MASS_SPAN_RATIO,
     NB_POINTS_POINT_MASS,
+    POINT_MASS_SPAN_RATIO,
 )
 
 COLS = plotly.colors.DEFAULT_PLOTLY_COLORS
 
 
 def force_repartition_diagram(
-    aircraft_file_path: str, name="", fig=None, file_formatter=None
+    aircraft_file_path: pathlib.Path, name="", fig=None, file_formatter=None
 ) -> go.FigureWidget:
     """
     Returns a figure plot of the force repartition on the wing.
@@ -110,7 +112,7 @@ def force_repartition_diagram(
 
 
 def shear_diagram(
-    aircraft_file_path: str, name="", fig=None, file_formatter=None
+    aircraft_file_path: pathlib.Path, name="", fig=None, file_formatter=None
 ) -> go.FigureWidget:
     """
     Returns a figure plot of the shear repartition on the wing.
@@ -182,7 +184,9 @@ def shear_diagram(
     return fig
 
 
-def rbm_diagram(aircraft_file_path: str, name="", fig=None, file_formatter=None) -> go.FigureWidget:
+def rbm_diagram(
+    aircraft_file_path: pathlib.Path, name="", fig=None, file_formatter=None
+) -> go.FigureWidget:
     """
     Returns a figure plot of the root bending moment repartition on the wing.
     Different designs can be superposed by providing an existing fig.
@@ -255,7 +259,7 @@ def rbm_diagram(aircraft_file_path: str, name="", fig=None, file_formatter=None)
     return fig
 
 
-def _delete_additional_zeros(array, length: int = None):
+def _delete_additional_zeros(array, length: int | None = None):
     """
     Function that delete the additional zeros we had to add to fit the format imposed by
     OpenMDAO

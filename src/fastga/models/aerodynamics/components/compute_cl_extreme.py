@@ -12,9 +12,9 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 
 from fastga.models.aerodynamics.constants import SUBMODEL_CL_EXTREME
 
@@ -28,13 +28,18 @@ class ComputeAircraftMaxCl(om.ExplicitComponent):
     """
 
     def setup(self):
-        self.add_input("data:aerodynamics:wing:low_speed:CL_max_clean", val=np.nan)
-        self.add_input("data:aerodynamics:flaps:takeoff:CL_max", val=np.nan)
-        self.add_input("data:aerodynamics:flaps:landing:CL_max", val=np.nan)
+        self.add_input(
+            "data:aerodynamics:wing:low_speed:CL_max_clean", val=np.nan, units="unitless"
+        )
+        self.add_input("data:aerodynamics:flaps:takeoff:CL_max", val=np.nan, units="unitless")
+        self.add_input("data:aerodynamics:flaps:landing:CL_max", val=np.nan, units="unitless")
 
-        self.add_output("data:aerodynamics:aircraft:takeoff:CL_max")
-        self.add_output("data:aerodynamics:aircraft:landing:CL_max")
+        self.add_output("data:aerodynamics:aircraft:takeoff:CL_max", units="unitless")
+        self.add_output("data:aerodynamics:aircraft:landing:CL_max", units="unitless")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials(
             "data:aerodynamics:aircraft:takeoff:CL_max",
             "data:aerodynamics:wing:low_speed:CL_max_clean",

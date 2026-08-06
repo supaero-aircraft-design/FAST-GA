@@ -14,24 +14,22 @@
 
 import logging
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-
-import fastoad.api as oad
 from fastoad.module_management.constants import ModelDomain
 
 from fastga.models.performances.mission.takeoff import TakeOffPhase
-
-
 from fastga.models.weight.cg.cg_variation import InFlightCGVariation
+
 from .constants import (
-    SUBMODEL_TAXI,
-    SUBMODEL_CLIMB_SPEED,
     SUBMODEL_CLIMB,
+    SUBMODEL_CLIMB_SPEED,
     SUBMODEL_CRUISE,
     SUBMODEL_DESCENT,
     SUBMODEL_DESCENT_SPEED,
     SUBMODEL_RESERVES,
+    SUBMODEL_TAXI,
 )
 
 MAX_CALCULATION_TIME = 15  # time in seconds
@@ -120,7 +118,10 @@ class UpdateFW(om.ExplicitComponent):
 
         self.add_output("data:mission:sizing:fuel", val=0.0, units="kg")
 
-        self.declare_partials("*", "*", method="fd")
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
+        self.declare_partials("*", "*", method="exact", val=1.0)
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         m_taxi_out = inputs["data:mission:sizing:taxi_out:fuel"]

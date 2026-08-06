@@ -11,16 +11,14 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import os.path as pth
+import pathlib
 from shutil import which
-from typing import Optional
 
 
-def get_xfoil_path() -> Optional[str]:
-    path = pth.join(pth.dirname(__file__), "xfoil")
-    if pth.exists(path):
+def get_xfoil_path() -> pathlib.Path | None:
+    path = pathlib.Path(__file__).parent / "xfoil"
+    if path.exists():
         # If there is a local xfoil, use it
         return path
-    else:
-        # Otherwise, use one that is in PATH, if it exists
-        return which("xfoil")
+    # Otherwise, use one that is in PATH, if it exists
+    return which("xfoil")

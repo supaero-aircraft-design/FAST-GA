@@ -20,8 +20,8 @@ import openmdao.api as om
 
 from .constants import (
     SERVICE_PAINT_MASS,
-    SUBMODEL_PAINT_MASS_NO_PAINT,
     SUBMODEL_PAINT_MASS_BY_WET_AREA,
+    SUBMODEL_PAINT_MASS_NO_PAINT,
 )
 
 oad.RegisterSubmodel.active_models[SERVICE_PAINT_MASS] = SUBMODEL_PAINT_MASS_NO_PAINT
@@ -68,6 +68,9 @@ class ComputePaintWeight(om.ExplicitComponent):
 
         self.add_output("data:weight:airframe:paint:mass", units="kg")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials(of="data:weight:airframe:paint:mass", wrt="*", method="exact")
 
     # pylint: disable=missing-function-docstring, unused-argument

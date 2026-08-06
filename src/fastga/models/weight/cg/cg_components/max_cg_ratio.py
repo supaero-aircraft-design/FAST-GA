@@ -24,32 +24,53 @@ class ComputeMaxMinCGRatio(om.ExplicitComponent):
     """Extrema center of gravity ratio estimation"""
 
     def setup(self):
-        self.add_input("data:weight:aircraft:CG:flight_condition:max:MAC_position", val=np.nan)
-        self.add_input("data:weight:aircraft:CG:flight_condition:min:MAC_position", val=np.nan)
-        self.add_input("data:weight:aircraft:CG:ground_condition:max:MAC_position", val=np.nan)
-        self.add_input("data:weight:aircraft:CG:ground_condition:min:MAC_position", val=np.nan)
+        self.add_input(
+            "data:weight:aircraft:CG:flight_condition:max:MAC_position",
+            val=np.nan,
+            units="unitless",
+        )
+        self.add_input(
+            "data:weight:aircraft:CG:flight_condition:min:MAC_position",
+            val=np.nan,
+            units="unitless",
+        )
+        self.add_input(
+            "data:weight:aircraft:CG:ground_condition:max:MAC_position",
+            val=np.nan,
+            units="unitless",
+        )
+        self.add_input(
+            "data:weight:aircraft:CG:ground_condition:min:MAC_position",
+            val=np.nan,
+            units="unitless",
+        )
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
         self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
-        self.add_input("settings:weight:aircraft:CG:range", val=np.nan)
+        self.add_input("settings:weight:aircraft:CG:range", val=np.nan, units="unitless")
         self.add_input(
             "settings:weight:aircraft:CG:aft:MAC_position:margin",
             val=0.05,
+            units="unitless",
             desc="Added margin for getting most aft CG position, "
             "as ratio of mean aerodynamic chord",
         )
         self.add_input(
             "settings:weight:aircraft:CG:fwd:MAC_position:margin",
             val=0.03,
+            units="unitless",
             desc="Added margin for getting most fwd CG position, "
             "as ratio of mean aerodynamic chord",
         )
 
-        self.add_output("data:weight:aircraft:CG:aft:MAC_position")
-        self.add_output("data:weight:aircraft:CG:fwd:MAC_position")
+        self.add_output("data:weight:aircraft:CG:aft:MAC_position", units="unitless")
+        self.add_output("data:weight:aircraft:CG:fwd:MAC_position", units="unitless")
 
         self.add_output("data:weight:aircraft:CG:aft:x", units="m")
         self.add_output("data:weight:aircraft:CG:fwd:x", units="m")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):

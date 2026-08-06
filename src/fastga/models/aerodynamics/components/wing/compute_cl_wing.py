@@ -35,7 +35,9 @@ class ComputeWingLiftCoefficient(om.ExplicitComponent):
         ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
         aoa = np.deg2rad(5.0) if self.options["low_speed_aero"] else np.deg2rad(1.0)
 
-        self.add_input("data:aerodynamics:wing:" + ls_tag + ":CL0_clean", val=np.nan)
+        self.add_input(
+            "data:aerodynamics:wing:" + ls_tag + ":CL0_clean", val=np.nan, units="unitless"
+        )
         self.add_input(
             "data:aerodynamics:wing:" + ls_tag + ":CL_alpha", val=np.nan, units="rad**-1"
         )

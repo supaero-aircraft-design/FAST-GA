@@ -11,17 +11,17 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
 from fastoad.constants import EngineSetting
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
-import fastoad.api as oad
 from stdatm import Atmosphere
 
-from fastga.utils.options_checkers import check_propulsion_id
 from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
+from fastga.utils.options_checkers import check_propulsion_id
 
 
 class ThrustTaxi(om.ExplicitComponent):
@@ -38,11 +38,11 @@ class ThrustTaxi(om.ExplicitComponent):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
 
-        self.add_input("data:mission:sizing:taxi_out:thrust_rate", np.nan)
+        self.add_input("data:mission:sizing:taxi_out:thrust_rate", np.nan, units="unitless")
         self.add_input("data:mission:sizing:taxi_out:speed", np.nan, units="m/s")
         self.add_output("data:mission:sizing:taxi_out:thrust", 1500, units="N")
 
-        self.add_input("data:mission:sizing:taxi_in:thrust_rate", np.nan)
+        self.add_input("data:mission:sizing:taxi_in:thrust_rate", np.nan, units="unitless")
         self.add_input("data:mission:sizing:taxi_in:speed", np.nan, units="m/s")
         self.add_output("data:mission:sizing:taxi_in:thrust", 1500, units="N")
 

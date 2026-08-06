@@ -15,10 +15,11 @@ Python module for horizontal tail sweep angle calculations, part of the horizont
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import openmdao.api as om
 import fastoad.api as oad
+import openmdao.api as om
 
 from fastga.models.geometry.geom_components.ht.components.compute_ht_sweep_0 import ComputeHTSweep0
+
 from .compute_ht_sweep_50 import ComputeHTSweep50
 from .compute_ht_sweep_100 import ComputeHTSweep100
 from ..constants import SERVICE_HT_SWEEP, SUBMODEL_HT_SWEEP_LEGACY

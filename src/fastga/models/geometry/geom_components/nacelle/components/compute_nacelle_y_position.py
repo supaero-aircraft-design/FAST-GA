@@ -15,8 +15,11 @@ Python module for nacelle Y - position calculation, part of the nacelle position
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import warnings
+
 import numpy as np
 import openmdao.api as om
+
+from fastga.models.constants import PropulsionLayout
 
 
 class ComputeNacelleYPosition(om.ExplicitComponent):
@@ -31,8 +34,9 @@ class ComputeNacelleYPosition(om.ExplicitComponent):
         self.add_input(
             "data:geometry:propulsion:engine:y_ratio",
             shape_by_conn=True,
+            units="unitless",
         )
-        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan, units="unitless")
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
         self.add_input("data:geometry:propulsion:nacelle:width", val=np.nan, units="m")
 
@@ -43,6 +47,9 @@ class ComputeNacelleYPosition(om.ExplicitComponent):
             copy_shape="data:geometry:propulsion:engine:y_ratio",
         )
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials(of="*", wrt="data:geometry:propulsion:engine:layout", method="fd")
 
         self.declare_partials(
@@ -65,17 +72,16 @@ class ComputeNacelleYPosition(om.ExplicitComponent):
         y_ratio = np.array(inputs["data:geometry:propulsion:engine:y_ratio"])
         b_f = inputs["data:geometry:fuselage:maximum_width"]
 
-        if prop_layout == 1.0:
+        if prop_layout == PropulsionLayout.UNDER_THE_WING:
             y_nacelle_array = y_ratio * span / 2.0
-        elif prop_layout == 2.0:
+        elif prop_layout == PropulsionLayout.IN_THE_REAR:
             y_nacelle_array = b_f / 2.0 + 0.8 * nac_width
-        elif prop_layout == 3.0:
+        elif prop_layout == PropulsionLayout.IN_THE_NOSE:
             y_nacelle_array = 0.0
         else:
             y_nacelle_array = 0.0
             warnings.warn(
-                f"Propulsion layout {prop_layout} not implemented in model, "
-                f"replaced by layout 3!",
+                f"Propulsion layout {prop_layout} not implemented in model, replaced by layout 3!",
                 category=UserWarning,
             )
 
@@ -88,7 +94,7 @@ class ComputeNacelleYPosition(om.ExplicitComponent):
         span = inputs["data:geometry:wing:span"]
         y_ratio = np.array(inputs["data:geometry:propulsion:engine:y_ratio"])
 
-        if prop_layout == 1.0:
+        if prop_layout == PropulsionLayout.UNDER_THE_WING:
             partials[
                 "data:geometry:propulsion:nacelle:y", "data:geometry:propulsion:nacelle:width"
             ] = 0.0
@@ -101,7 +107,7 @@ class ComputeNacelleYPosition(om.ExplicitComponent):
             partials[
                 "data:geometry:propulsion:nacelle:y", "data:geometry:fuselage:maximum_width"
             ] = 0.0
-        elif prop_layout == 2.0:
+        elif prop_layout == PropulsionLayout.IN_THE_REAR:
             partials[
                 "data:geometry:propulsion:nacelle:y", "data:geometry:propulsion:nacelle:width"
             ] = 0.8

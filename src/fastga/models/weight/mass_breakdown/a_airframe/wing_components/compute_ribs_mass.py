@@ -18,27 +18,31 @@ in her MAE research project report.
 import numpy as np
 import openmdao.api as om
 
+from .constants import NB_ENGINE_MIN_DEP
+
 
 class ComputeRibsMass(om.ExplicitComponent):
     def setup(self):
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="m")
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:thickness_ratio", val=np.nan)
-        self.add_input("data:geometry:wing:taper_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:thickness_ratio", val=np.nan, units="unitless")
+        self.add_input("data:geometry:wing:taper_ratio", val=np.nan, units="unitless")
         self.add_input("data:geometry:wing:root:chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="rad")
-        self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:count", val=np.nan, units="unitless")
 
         self.add_input(
             "settings:wing:airfoil:skin:ka",
             val=0.92,
+            units="unitless",
             desc="Correction coefficient needed to account for the hypothesis of a rectangular "
             "wingbox",
         )
         self.add_input(
             "settings:wing:airfoil:skin:d_wingbox",
             val=0.4,
+            units="unitless",
             desc="ratio of the wingbox working depth/airfoil chord",
         )
         self.add_input(
@@ -78,7 +82,7 @@ class ComputeRibsMass(om.ExplicitComponent):
             * (25.0 - 35.0)
             / 100.0
         )
-        n_ribs = int((wing_span / 2.0) / (np.cos(sweep_e) * delta_ribs)) + 1.0
+        n_ribs = int(((wing_span / 2.0) / (np.cos(sweep_e) * delta_ribs)).item()) + 1.0
         k = (1.0 - taper_ratio) * root_chord / (wing_span / 2.0)
         xe_root = -root_chord * (0.1 / (wing_span / 2.0 - fus_radius) * wing_span / 2.0 - 0.75)
         f_phi_e = 1.0 / (
@@ -103,7 +107,7 @@ class ComputeRibsMass(om.ExplicitComponent):
             * m_factor
         )
 
-        if inputs["data:geometry:propulsion:engine:count"] > 4:
+        if inputs["data:geometry:propulsion:engine:count"] > NB_ENGINE_MIN_DEP:
             ribs_mass *= 1.1
 
         outputs["data:weight:airframe:wing:ribs:mass"] = ribs_mass

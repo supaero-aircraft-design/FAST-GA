@@ -23,34 +23,34 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 
-import os
+import pathlib
 import sys
+from os import environ
 
-sys.path.insert(0, os.path.abspath("../src"))
+from sphinx.ext import apidoc
 
-# -- Run sphinx-apidoc ------------------------------------------------------
-try:  # for Sphinx >= 1.7
-    from sphinx.ext import apidoc
-except ImportError:
-    from sphinx import apidoc
+# -- Path setup --------------------------------------------------------------
+# If extensions (or modules to document with autodoc) are in another directory,
+# add these directories to sys.path here. If the directory is relative to the
+# documentation root, use os.path.abspath to make it absolute, like shown here.
+
+# For custom directives
+sys.path.insert(0, str(pathlib.Path("./directives").resolve()))
+
+# For autodoc... and custom directives
+sys.path.insert(0, str(pathlib.Path("../src").resolve()))
+
+# Overload apidoc options, to add "inherited-members" (which was deactivated because of a bug
+# in earlier sphinx releases)
+environ["SPHINX_APIDOC_OPTIONS"] = "members,undoc-members,inherited-members,show-inheritance"
 
 
 def run_apidoc(_):
-    sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-    cur_dir = os.path.abspath(os.path.dirname(__file__))
-    output_dir = os.path.join(cur_dir, "api")
-    module = os.path.join(cur_dir, "..", "src", "fastga")
-    apidoc.main(
-        [
-            "-d",
-            "1",
-            "-e",
-            "-o",
-            output_dir,
-            module,
-            "--force",
-        ]
-    )
+    sys.path.append(str(pathlib.Path(__file__).parent.parent))  # Append project root
+    cur_dir = pathlib.Path(__file__).parent.resolve()
+    output_dir = cur_dir / "api"
+    module = cur_dir.parent / "src" / "fastga"
+    apidoc.main(["-d", "1", "-e", "-o", output_dir.as_posix(), module.as_posix(), "--force"])
 
 
 def setup(app):
@@ -60,7 +60,7 @@ def setup(app):
 # -- Project information -----------------------------------------------------
 
 project = "FAST-(OAD)-GA"
-copyright = "2021, ONERA & ISAE-SUPAERO"
+copyright = "2021, ONERA & ISAE-SUPAERO"  # noqa: A001 copyright is a keyword for the sphinx setup
 
 
 # -- General configuration ---------------------------------------------------

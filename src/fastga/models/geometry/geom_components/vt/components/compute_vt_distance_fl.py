@@ -16,9 +16,9 @@ fuselage length, part of the vertical tail geometry.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 
 from ..constants import SERVICE_VT_DISTANCE_FL, SUBMODEL_VT_DISTANCE_FL
 
@@ -45,6 +45,9 @@ class ComputeVTMACDistanceFL(om.ExplicitComponent):
         self.add_output("data:geometry:vertical_tail:tip:x", units="m")
         self.add_output("data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25", units="m")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials(
             "*",
             "data:geometry:vertical_tail:MAC:at25percent:x:absolute",

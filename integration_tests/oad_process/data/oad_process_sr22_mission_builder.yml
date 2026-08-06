@@ -42,7 +42,7 @@ model:
             mission_file_path: ../workdir/sizing_mission_fastga.yml
             is_sizing: True
             adjust_fuel: True
-            use_initializer_iteration: True
+            use_initializer_iteration: False
         hq:
             tail_sizing:
                 id: fastga.handling_qualities.tail_sizing

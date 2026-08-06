@@ -14,9 +14,9 @@ Python module for wing chords of calculations (l1 and l4), part of the wing geom
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 
 from ..constants import SERVICE_WING_L1_L4, SUBMODEL_WING_L1_L4_LEGACY
 
@@ -31,11 +31,14 @@ class ComputeWingL1AndL4(om.ExplicitComponent):
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:root:y", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:y", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:taper_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:taper_ratio", val=np.nan, units="unitless")
 
         self.add_output("data:geometry:wing:root:virtual_chord", units="m")
         self.add_output("data:geometry:wing:tip:chord", units="m")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials(of="data:geometry:wing:root:virtual_chord", wrt="*", method="exact")
         self.declare_partials(of="data:geometry:wing:tip:chord", wrt="*", method="exact")
 

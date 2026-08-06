@@ -11,6 +11,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import os.path as pth
+import pathlib
 
-root_folder_path = pth.dirname(pth.dirname(pth.dirname(__file__)))
+root_folder_path = pathlib.Path(__file__).parent.parent

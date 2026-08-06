@@ -20,7 +20,7 @@ import numpy as np
 import openmdao.api as om
 from scipy.constants import g
 
-from ..constants import SUBMODEL_WING_AREA_AERO_LOOP, SUBMODEL_WING_AREA_AERO_CONS
+from ..constants import SUBMODEL_WING_AREA_AERO_CONS, SUBMODEL_WING_AREA_AERO_LOOP
 
 oad.RegisterSubmodel.active_models[SUBMODEL_WING_AREA_AERO_LOOP] = (
     "fastga.submodel.loop.wing_area.update.aero.simple"
@@ -45,10 +45,13 @@ class UpdateWingAreaLiftSimple(om.ExplicitComponent):
     def setup(self):
         self.add_input("data:TLAR:v_approach", val=np.nan, units="m/s")
         self.add_input("data:weight:aircraft:MLW", val=np.nan, units="kg")
-        self.add_input("data:aerodynamics:aircraft:landing:CL_max", val=np.nan)
+        self.add_input("data:aerodynamics:aircraft:landing:CL_max", val=np.nan, units="unitless")
 
         self.add_output("wing_area", val=10.0, units="m**2")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials(
             "wing_area",
             [
@@ -98,11 +101,14 @@ class ConstraintWingAreaLiftSimple(om.ExplicitComponent):
     def setup(self):
         self.add_input("data:TLAR:v_approach", val=np.nan, units="m/s")
         self.add_input("data:weight:aircraft:MLW", val=np.nan, units="kg")
-        self.add_input("data:aerodynamics:aircraft:landing:CL_max", val=np.nan)
+        self.add_input("data:aerodynamics:aircraft:landing:CL_max", val=np.nan, units="unitless")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
 
-        self.add_output("data:constraints:wing:additional_CL_capacity")
+        self.add_output("data:constraints:wing:additional_CL_capacity", units="unitless")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials(
             "data:constraints:wing:additional_CL_capacity",
             [

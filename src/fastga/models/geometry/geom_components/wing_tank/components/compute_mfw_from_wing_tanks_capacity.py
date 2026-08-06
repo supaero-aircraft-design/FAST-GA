@@ -16,8 +16,11 @@ method.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import warnings
+
 import numpy as np
 import openmdao.api as om
+
+from fastga.models.constants import FuelType
 
 
 class ComputeMFWFromWingTanksCapacity(om.ExplicitComponent):
@@ -36,12 +39,14 @@ class ComputeMFWFromWingTanksCapacity(om.ExplicitComponent):
             val=np.nan,
             desc="Capacity of both tanks on the aircraft",
         )
-        self.add_input("data:propulsion:fuel_type", val=np.nan)
+        self.add_input("data:propulsion:fuel_type", val=np.nan, units="unitless")
 
         self.add_output("data:weight:aircraft:MFW", units="kg", val=500.0)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials(of="*", wrt="data:geometry:propulsion:tank:capacity", method="exact")
-        self.declare_partials("*", "data:propulsion:fuel_type", method="fd")
 
     # pylint: disable=missing-function-docstring, unused-argument
     # Overriding OpenMDAO compute
@@ -49,11 +54,11 @@ class ComputeMFWFromWingTanksCapacity(om.ExplicitComponent):
         fuel_type = inputs["data:propulsion:fuel_type"]
         tank_capacity = inputs["data:geometry:propulsion:tank:capacity"]
 
-        if fuel_type == 1.0:
+        if fuel_type == FuelType.AVGAS:
             self.m_vol_fuel = 718.9  # gasoline volume-mass [kg/m**3], cold worst case, Avgas
-        elif fuel_type == 2.0:
+        elif fuel_type == FuelType.DIESEL:
             self.m_vol_fuel = 860.0  # Diesel volume-mass [kg/m**3], cold worst case
-        elif fuel_type == 3.0:
+        elif fuel_type == FuelType.JET_A1:
             self.m_vol_fuel = 804.0  # Jet-A1 volume mass [kg/m**3], cold worst case
         else:
             self.m_vol_fuel = 718.9

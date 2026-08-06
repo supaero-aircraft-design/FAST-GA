@@ -13,14 +13,14 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
+from fastoad.constants import EngineSetting
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
-import fastoad.api as oad
-from fastoad.constants import EngineSetting
-
 from stdatm import Atmosphere
 
 from fastga.utils.options_checkers import check_propulsion_id
@@ -51,16 +51,19 @@ class ComputeTaxi(om.ExplicitComponent):
         self._engine_wrapper.setup(self)
 
         if self.options["taxi_out"]:
-            self.add_input("data:mission:sizing:taxi_out:thrust_rate", np.nan)
+            self.add_input("data:mission:sizing:taxi_out:thrust_rate", np.nan, units="unitless")
             self.add_input("data:mission:sizing:taxi_out:duration", np.nan, units="s")
             self.add_input("data:mission:sizing:taxi_out:speed", np.nan, units="m/s")
             self.add_output("data:mission:sizing:taxi_out:fuel", units="kg")
         else:
-            self.add_input("data:mission:sizing:taxi_in:thrust_rate", np.nan)
+            self.add_input("data:mission:sizing:taxi_in:thrust_rate", np.nan, units="unitless")
             self.add_input("data:mission:sizing:taxi_in:duration", np.nan, units="s")
             self.add_input("data:mission:sizing:taxi_in:speed", np.nan, units="m/s")
             self.add_output("data:mission:sizing:taxi_in:fuel", units="kg")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):

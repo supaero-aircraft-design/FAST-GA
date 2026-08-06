@@ -56,10 +56,13 @@ class ComputeEngineWeight(om.ExplicitComponent):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
 
-        self.add_input("settings:weight:propulsion:engine:k_factor", val=1.0)
+        self.add_input("settings:weight:propulsion:engine:k_factor", val=1.0, units="unitless")
 
         self.add_output("data:weight:propulsion:engine:mass", units="lb")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="fd")
         # Overwrites the derivatives because we know the exact value
         self.declare_partials(
@@ -118,10 +121,13 @@ class ComputeEngineWeightRaymer(om.ExplicitComponent):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
 
-        self.add_input("settings:weight:propulsion:engine:k_factor", val=1.0)
+        self.add_input("settings:weight:propulsion:engine:k_factor", val=1.0, units="unitless")
 
         self.add_output("data:weight:propulsion:engine:mass", units="lb")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="fd")
         # Overwrites the derivatives because we know the exact value
         self.declare_partials(

@@ -16,26 +16,28 @@ import atexit
 import copy
 import json
 import logging
+import pathlib
 import warnings
-from pathlib import Path
-from typing import Optional, Union
+from typing import ClassVar
 
 import numpy as np
 import openmdao.api as om
 from stdatm import Atmosphere
 
 from fastga.models.geometry.profiles.get_profile import get_profile
+
 from ...constants import (
-    SPAN_MESH_POINT,
-    POLAR_POINT_COUNT,
-    MACH_NB_PTS,
     GEOMETRY_SET_LABELS,
+    MACH_NB_PTS,
+    POLAR_POINT_COUNT,
     RESULT_LABELS,
+    SPAN_MESH_POINT,
 )
 
 DEFAULT_NX = 19
 DEFAULT_NY1 = 3
 DEFAULT_NY2 = 14
+COMPRESSIBILITY_MACH = 0.4
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -55,30 +57,30 @@ class _NumpyJSONEncoder(json.JSONEncoder):
 class VLMSimpleGeometry(om.ExplicitComponent):
     """Computation of the aerodynamics properties using the in-house VLM code."""
 
-    _cache: dict = {}
+    _cache: ClassVar[dict] = {}
 
     # File the cache should be saved to (only set when a `result_file_name` is
     # configured).
-    _cache_file: Optional[str] = None
+    _cache_file: str | None = None
 
     # Folder/file the cache was last loaded from, used only to avoid redundant
     # reloads on repeated component instantiation. Distinct from `_cache_file`:
     # this is set even when no `result_file_name` is configured (folder-only mode).
-    _cache_loaded_from: Optional[str] = None
+    _cache_loaded_from: str | None = None
 
     # Guards against registering the atexit save more than once.
     _atexit_registered: bool = False
 
     @staticmethod
-    def _resolve_cache_path(folder_path: Union[str, Path], file_name: str) -> Path:
+    def _resolve_cache_path(folder_path: str | pathlib.Path, file_name: str) -> pathlib.Path:
         """
         Turns the `result_folder_path`/`result_file_name` options into the full cache
         file path.
         """
-        return (Path(folder_path) / file_name).resolve()
+        return (pathlib.Path(folder_path) / file_name).resolve()
 
     @classmethod
-    def load_cache(cls, folder_path: Union[str, Path]) -> None:
+    def load_cache(cls, folder_path: str | pathlib.Path) -> None:
         """
         Loads a previously saved VLM result cache from disk and merges it into the in-memory cache.
 
@@ -86,13 +88,13 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             which the cache file lives.
         """
 
-        search_folder = Path(folder_path).resolve()
+        search_folder = pathlib.Path(folder_path).resolve()
         cls._cache_loaded_from = str(search_folder)
 
         no_vlm_cache = True
         for file in search_folder.glob("*.json"):
             try:
-                with open(file, "r", encoding="utf-8") as cache_fp:
+                with file.open(encoding="utf-8") as cache_fp:
                     saved_cache = json.load(cache_fp)
             except (json.JSONDecodeError, OSError) as exc:
                 # The result folder may contain JSON files unrelated to the VLM cache.
@@ -129,8 +131,8 @@ class VLMSimpleGeometry(om.ExplicitComponent):
     @classmethod
     def save_cache(
         cls,
-        folder_path: Optional[Union[str, Path]] = None,
-        file_name: Optional[str] = None,
+        folder_path: str | pathlib.Path | None = None,
+        file_name: str | None = None,
     ) -> None:
         """
         Persists the current in-memory VLM result cache to disk so it can be reused
@@ -144,13 +146,13 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         if folder_path and file_name:
             path = cls._resolve_cache_path(folder_path, file_name)
         elif cls._cache_file is not None:
-            path = Path(cls._cache_file)
+            path = pathlib.Path(cls._cache_file)
         else:
             _LOGGER.warning("save_cache() called with no folder_path and none set; skipping.")
             return
 
         path.parent.mkdir(parents=True, exist_ok=True)
-        with open(path, "w", encoding="utf8") as cache_fp:
+        with path.open("w", encoding="utf8") as cache_fp:
             json.dump(cls._cache, cache_fp, cls=_NumpyJSONEncoder, indent=2)
 
         cls._cache_file = str(path)
@@ -170,7 +172,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         resolved = (
             VLMSimpleGeometry._resolve_cache_path(folder_path, file_name).parent
             if file_name
-            else Path(folder_path).resolve()
+            else pathlib.Path(folder_path).resolve()
         )
 
         # Prevent reloading the cache if it's already been loaded from the same path.
@@ -230,20 +232,20 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         self._setup_cache_persistence()
 
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="deg")
-        self.add_input("data:geometry:wing:taper_ratio", val=np.nan)
-        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
-        self.add_input("data:geometry:wing:kink:span_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:taper_ratio", val=np.nan, units="unitless")
+        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan, units="unitless")
+        self.add_input("data:geometry:wing:kink:span_ratio", val=np.nan, units="unitless")
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
         self.add_input("data:geometry:wing:root:y", val=np.nan, units="m")
         self.add_input("data:geometry:wing:root:chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
-        self.add_input("data:geometry:flap:span_ratio", val=np.nan)
-        self.add_input("data:geometry:flap:chord_ratio", val=np.nan)
+        self.add_input("data:geometry:flap:span_ratio", val=np.nan, units="unitless")
+        self.add_input("data:geometry:flap:chord_ratio", val=np.nan, units="unitless")
         self.add_input("data:geometry:horizontal_tail:sweep_25", val=np.nan, units="deg")
-        self.add_input("data:geometry:horizontal_tail:taper_ratio", val=np.nan)
-        self.add_input("data:geometry:horizontal_tail:aspect_ratio", val=np.nan)
+        self.add_input("data:geometry:horizontal_tail:taper_ratio", val=np.nan, units="unitless")
+        self.add_input("data:geometry:horizontal_tail:aspect_ratio", val=np.nan, units="unitless")
         self.add_input("data:geometry:horizontal_tail:span", val=np.nan, units="m")
         self.add_input("data:geometry:horizontal_tail:MAC:length", val=np.nan, units="m")
         self.add_input("data:geometry:horizontal_tail:root:chord", val=np.nan, units="m")
@@ -260,15 +262,23 @@ class VLMSimpleGeometry(om.ExplicitComponent):
 
         nans_array = np.full(POLAR_POINT_COUNT, np.nan)
         if self.options["low_speed_aero"]:
-            self.add_input("data:aerodynamics:wing:low_speed:CL", val=nans_array)
-            self.add_input("data:aerodynamics:wing:low_speed:CDp", val=nans_array)
-            self.add_input("data:aerodynamics:horizontal_tail:low_speed:CL", val=nans_array)
-            self.add_input("data:aerodynamics:horizontal_tail:low_speed:CDp", val=nans_array)
+            self.add_input("data:aerodynamics:wing:low_speed:CL", val=nans_array, units="unitless")
+            self.add_input("data:aerodynamics:wing:low_speed:CDp", val=nans_array, units="unitless")
+            self.add_input(
+                "data:aerodynamics:horizontal_tail:low_speed:CL", val=nans_array, units="unitless"
+            )
+            self.add_input(
+                "data:aerodynamics:horizontal_tail:low_speed:CDp", val=nans_array, units="unitless"
+            )
         else:
-            self.add_input("data:aerodynamics:wing:cruise:CL", val=nans_array)
-            self.add_input("data:aerodynamics:wing:cruise:CDp", val=nans_array)
-            self.add_input("data:aerodynamics:horizontal_tail:cruise:CL", val=nans_array)
-            self.add_input("data:aerodynamics:horizontal_tail:cruise:CDp", val=nans_array)
+            self.add_input("data:aerodynamics:wing:cruise:CL", val=nans_array, units="unitless")
+            self.add_input("data:aerodynamics:wing:cruise:CDp", val=nans_array, units="unitless")
+            self.add_input(
+                "data:aerodynamics:horizontal_tail:cruise:CL", val=nans_array, units="unitless"
+            )
+            self.add_input(
+                "data:aerodynamics:horizontal_tail:cruise:CDp", val=nans_array, units="unitless"
+            )
 
     def compute_cl_alpha_aircraft(self, inputs, altitude, mach, aoa_angle):
         """
@@ -326,7 +336,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
 
         @param inputs: inputs parameters defined within FAST-OAD-GA
         @param altitude: altitude for aerodynamic calculation in meters
-        @param mach: air speed expressed in mach
+        @param mach: air speed expressed in mach, should be a one item array
         @param aoa_angle: air speed angle of attack with respect to aircraft
         @return: cl_0_wing, cl_alpha_wing, cm_0_wing, y_vector_wing, cl_vector_wing, coeff_k_wing,
         cl_0_htp, cl_X_htp, cl_alpha_htp, cl_alpha_htp_isolated, y_vector_htp, cl_vector_htp,
@@ -345,7 +355,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         """
 
         # Fix mach number of digits to consider similar results
-        mach = round(float(mach) * 1e3) / 1e3
+        mach = round(mach.item() * 1e3) / 1e3
 
         # Get inputs necessary to define global geometry
         if self.options["low_speed_aero"]:
@@ -360,17 +370,17 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             cdp_htp_airfoil = inputs["data:aerodynamics:horizontal_tail:cruise:CDp"]
         width_max = inputs["data:geometry:fuselage:maximum_width"]
         span_wing = inputs["data:geometry:wing:span"]
-        sref_wing = float(inputs["data:geometry:wing:area"])
-        sref_htp = float(inputs["data:geometry:horizontal_tail:area"])
+        sref_wing = inputs["data:geometry:wing:area"].item()
+        sref_htp = inputs["data:geometry:horizontal_tail:area"].item()
         area_ratio = sref_htp / sref_wing
-        sweep25_wing = float(inputs["data:geometry:wing:sweep_25"])
-        taper_ratio_wing = float(inputs["data:geometry:wing:taper_ratio"])
-        aspect_ratio_wing = float(inputs["data:geometry:wing:aspect_ratio"])
-        sweep25_htp = float(inputs["data:geometry:horizontal_tail:sweep_25"])
-        aspect_ratio_htp = float(inputs["data:geometry:horizontal_tail:aspect_ratio"])
-        taper_ratio_htp = float(inputs["data:geometry:horizontal_tail:taper_ratio"])
-        dihedral_angle = float(inputs["data:geometry:wing:dihedral"])
-        twist_angle = float(inputs["data:geometry:wing:twist"])
+        sweep25_wing = inputs["data:geometry:wing:sweep_25"].item()
+        taper_ratio_wing = inputs["data:geometry:wing:taper_ratio"].item()
+        aspect_ratio_wing = inputs["data:geometry:wing:aspect_ratio"].item()
+        sweep25_htp = inputs["data:geometry:horizontal_tail:sweep_25"].item()
+        aspect_ratio_htp = inputs["data:geometry:horizontal_tail:aspect_ratio"].item()
+        taper_ratio_htp = inputs["data:geometry:horizontal_tail:taper_ratio"].item()
+        dihedral_angle = inputs["data:geometry:wing:dihedral"].item()
+        twist_angle = inputs["data:geometry:wing:twist"].item()
         geometry_set = np.around(
             np.array(
                 [
@@ -411,8 +421,8 @@ class VLMSimpleGeometry(om.ExplicitComponent):
                 mach,
                 0.0,
                 flaps_angle=0.0,
-                use_airfoil=True,
                 saved_wing_result=self.saved_wing_0,
+                use_airfoil=True,
             )
             self.saved_wing_0 = None
             _, htp_aoa, _ = self.compute_aircraft(
@@ -421,8 +431,8 @@ class VLMSimpleGeometry(om.ExplicitComponent):
                 mach,
                 aoa_angle,
                 flaps_angle=0.0,
-                use_airfoil=True,
                 saved_wing_result=self.saved_wing_aoa,
+                use_airfoil=True,
             )
             self.saved_wing_aoa = None
 
@@ -556,8 +566,9 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         altitude: float,
         mach: float,
         aoa_angle: float,
-        flaps_angle: Optional[float] = 0.0,
-        use_airfoil: Optional[bool] = True,
+        flaps_angle: float | None = 0.0,
+        *,
+        use_airfoil: bool | None = True,
     ):
         """
         VLM computations for the wing alone.
@@ -576,12 +587,12 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         self._run(inputs, run_opt="wing")
 
         # Get inputs
-        aspect_ratio = float(inputs["data:geometry:wing:aspect_ratio"])
+        aspect_ratio = inputs["data:geometry:wing:aspect_ratio"].item()
         l0_wing = inputs["data:geometry:wing:MAC:length"]
 
-        y2_wing = float(inputs["data:geometry:wing:root:y"])
-        semi_span = float(inputs["data:geometry:wing:span"]) / 2.0
-        wing_twist = float(inputs["data:geometry:wing:twist"])
+        y2_wing = inputs["data:geometry:wing:root:y"].item()
+        semi_span = inputs["data:geometry:wing:span"].item() / 2.0
+        wing_twist = inputs["data:geometry:wing:twist"].item()
 
         # Initialization
         x_c = self.wing["x_c"]
@@ -626,7 +637,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             wing_cl_vect.append(cl_span)
 
         # Return values
-        wing = {
+        return {
             "y_vector": wing_y_vect,
             "cl_vector": wing_cl_vect,
             "chord_vector": wing_chord_vect,
@@ -638,15 +649,14 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             "coeff_e": wing_e,
         }
 
-        return wing
-
     def compute_htp(
         self,
         inputs,
         altitude: float,
         mach: float,
         aoa_angle: float,
-        use_airfoil: Optional[bool] = True,
+        *,
+        use_airfoil: bool | None = True,
     ):
         """
         VLM computation for the horizontal tail alone.
@@ -664,7 +674,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         self._run(inputs, run_opt="htp")
 
         # Get inputs
-        aspect_ratio = float(inputs["data:geometry:horizontal_tail:aspect_ratio"])
+        aspect_ratio = inputs["data:geometry:horizontal_tail:aspect_ratio"].item()
         l0_wing = inputs["data:geometry:horizontal_tail:MAC:length"]
 
         # Initialization
@@ -708,7 +718,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             htp_cl_vect.append(cl_span)
 
         # Return values
-        htp = {
+        return {
             "y_vector": htp_y_vect,
             "cl_vector": htp_cl_vect,
             "cd_vector": [],
@@ -719,17 +729,16 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             "coeff_e": htp_e,
         }
 
-        return htp
-
     def compute_aircraft(
         self,
         inputs,
         altitude: float,
         mach: float,
         aoa_angle: float,
-        flaps_angle: Optional[float] = 0.0,
-        use_airfoil: Optional[bool] = True,
-        saved_wing_result: Optional[dict] = None,
+        flaps_angle: float | None = 0.0,
+        saved_wing_result: dict | None = None,
+        *,
+        use_airfoil: bool | None = True,
     ):
         """
         VLM computation for the complete aircraft.
@@ -747,7 +756,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         """
 
         # Get inputs
-        aspect_ratio_wing = float(inputs["data:geometry:wing:aspect_ratio"])
+        aspect_ratio_wing = inputs["data:geometry:wing:aspect_ratio"].item()
 
         # Compute wing
         if saved_wing_result is None:
@@ -772,7 +781,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         return wing, htp, aircraft
 
     def _run(self, inputs, run_opt="wing"):
-        wing_break = float(inputs["data:geometry:wing:kink:span_ratio"])
+        wing_break = inputs["data:geometry:wing:kink:span_ratio"].item()
 
         # Define mesh size
         self.n_x = int(DEFAULT_NX)
@@ -841,13 +850,13 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         """
         Generates the coordinates for VLM calculations and aic matrix of the wing.
            Pi +......> y     Given a trapezoid defined by vertices Pi and Pf
-              | \            and chords 1 and 2 representing a wing segment
-              |  \           that complies with the VLM theory, returns the
-              |   + Pf       points and panels of the mesh:
-        chord1|   |
-              |   |             - Points are given as a list of Np elements,
-              |   |chord2         being Np the number of points of the mesh.
-              +---+
+              || \\            and chords 1 and 2 representing a wing segment
+              ||  \\           that complies with the VLM theory, returns the
+              ||   + Pf       points and panels of the mesh:
+        chord1||   ||
+              ||   ||             - Points are given as a list of Np elements,
+              ||   ||chord2         being Np the number of points of the mesh.
+              +====+
               |                 - Panels are given as a list of list of NP
               x 				      elements, each element composed of 4 points,
                                   where NP is the number of panels of the mesh.
@@ -921,14 +930,14 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         """
         Generates the coordinates for VLM calculations and AIC matrix of the htp.
            Pi +......> y     Given a trapezoid defined by vertices Pi and Pf
-              | \            and chords 1 and 2 representing a wing segment
-              |  \           that complies with the VLM theory, returns the
-              |   + Pf       points and panels of the mesh:
-        chord1|   |
-              |   |             - Points are given as a list of Np elements,
-              |   |chord2         being Np the number of points of the mesh.
-              +---+
-              |                 - Panels are given as a list of list of NP
+              || \\            and chords 1 and 2 representing a wing segment
+              ||  \\           that complies with the VLM theory, returns the
+              ||   + Pf       points and panels of the mesh:
+        chord1||   ||
+              ||   ||             - Points are given as a list of Np elements,
+              ||   ||chord2         being Np the number of points of the mesh.
+              +====+
+              ||                 - Panels are given as a list of list of NP
               x 				      elements, each element composed of 4 points,
                                   where NP is the number of panels of the mesh.
               x - chord wise direction
@@ -1135,7 +1144,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
 
         # Interpolate value if within the interpolation range
         if min(lift_coeff) <= objective <= max(lift_coeff):
-            idx_max = int(float(np.where(lift_coeff == max(lift_coeff))[0]))
+            idx_max = np.argmax(lift_coeff)
             return np.interp(objective, lift_coeff[0 : idx_max + 1], drag_coeff[0 : idx_max + 1])
         if objective < lift_coeff[0]:
             cdp = drag_coeff[0] + (objective - lift_coeff[0]) * (drag_coeff[1] - drag_coeff[0]) / (
@@ -1156,7 +1165,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         """Store VLM results in the in-memory cache."""
         self._cache[key]["vlm"][str(mach)] = dict(zip(RESULT_LABELS, results))
 
-    def post_processing_wing(
+    def post_processing_wing(  # noqa: PLR0913
         self,
         width_max,
         span_wing,
@@ -1186,9 +1195,9 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         """
         k_fus = 1 + 0.025 * width_max / span_wing - 0.025 * (width_max / span_wing) ** 2
         beta = np.sqrt(1 - mach**2)  # Prandtl-Glauert
-        cl_0_wing = float((wing_0["cl"] * k_fus / beta) * np.cos(dihedral_angle) ** 2.0)
-        cl_x_wing = float(wing_aoa["cl"] * k_fus / beta)
-        cm_0_wing = float(wing_0["cm"] * k_fus / beta)
+        cl_0_wing = (wing_0["cl"] * k_fus / beta).item() * np.cos(dihedral_angle) ** 2.0
+        cl_x_wing = (wing_aoa["cl"] * k_fus / beta).item()
+        cm_0_wing = (wing_0["cm"] * k_fus / beta).item()
         cl_alpha_wing = ((cl_x_wing - cl_0_wing) / (aoa_angle * np.pi / 180)) * np.cos(
             dihedral_angle
         ) ** 2.0
@@ -1203,7 +1212,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         chord_vector_wing = wing_aoa["chord_vector"]
         cdp_foil = self._interpolate_cdp(cl_wing_airfoil, cdp_wing_airfoil, cl_x_wing)
         # Mach correction
-        if mach <= 0.4:
+        if mach <= COMPRESSIBILITY_MACH:
             coeff_e = wing_aoa["coeff_e"]
         else:
             coeff_e = wing_aoa["coeff_e"] * (-0.001521 * ((mach - 0.05) / 0.3 - 1) ** 10.82 + 1)
@@ -1211,8 +1220,8 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         coeff_e = wing_aoa["cl"] ** 2 / (np.pi * aspect_ratio_wing * cdi)
         # Fuselage correction
         k_fus = 1 - 2 * (width_max / span_wing) ** 2
-        coeff_e = float(coeff_e * k_fus)
-        coeff_k_wing = float(1.0 / (np.pi * aspect_ratio_wing * coeff_e))
+        coeff_e = (coeff_e * k_fus).item()
+        coeff_k_wing = 1.0 / (np.pi * aspect_ratio_wing * coeff_e)
 
         return (
             beta,
@@ -1226,7 +1235,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             coeff_k_wing,
         )
 
-    def post_processing_htp_ac(
+    def post_processing_htp_ac(  # noqa: PLR0913
         self,
         beta,
         aspect_ratio_htp,
@@ -1258,7 +1267,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         cl_alpha_htp = float((cl_aoa_htp - cl_0_htp) / (aoa_angle * np.pi / 180))
         cdp_foil = self._interpolate_cdp(cl_htp_airfoil, cdp_htp_airfoil, htp_aoa["cl"] / beta)
         # Mach correction
-        if mach <= 0.4:
+        if mach <= COMPRESSIBILITY_MACH:
             coeff_e = htp_aoa["coeff_e"]
         else:
             coeff_e = htp_aoa["coeff_e"] * (-0.001521 * ((mach - 0.05) / 0.3 - 1) ** 10.82 + 1)
@@ -1343,7 +1352,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         resized_vectors = []
 
         # shorter
-        if SPAN_MESH_POINT < len(y_vector):
+        if len(y_vector) > SPAN_MESH_POINT:
             y_interp = np.linspace(y_vector[0], y_vector[-1], SPAN_MESH_POINT)
             warnings.warn("Defined maximum span mesh in fast aerodynamics\\constants.py exceeded!")
 
@@ -1367,7 +1376,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         return resized_vectors
 
     @staticmethod
-    def aic_computation(x_1, y_1, x_2, y_2, x_c, y_c, n_x, n_y):
+    def aic_computation(x_1, y_1, x_2, y_2, x_c, y_c, n_x, n_y):  # noqa: PLR0915
         """
                 ^
               y |                Points defining the panel
@@ -1455,7 +1464,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         return aic, aic_wake
 
     @staticmethod
-    def panel_point_calculation(
+    def panel_point_calculation(  # noqa: PLR0913
         x_panel,
         y_panel,
         x_le,

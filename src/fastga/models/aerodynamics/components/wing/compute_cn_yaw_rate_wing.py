@@ -14,17 +14,16 @@ Python module for wing Cn_r calculation, part of the aerodynamic component compu
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 
 from .compute_cl_wing import ComputeWingLiftCoefficient
-from ..digitization.compute_cn_r_wing_lift_effect import (
-    ComputeWingLiftEffectCnr,
-    ComputeIntermediateParameter,
-)
 from ..digitization.compute_cn_r_wing_drag_effect import ComputeWingDragEffectCnr
-
+from ..digitization.compute_cn_r_wing_lift_effect import (
+    ComputeIntermediateParameter,
+    ComputeWingLiftEffectCnr,
+)
 from ...constants import SUBMODEL_CN_R_WING
 
 
@@ -119,7 +118,7 @@ class ComputeCnrWing(om.ExplicitComponent):
         self.add_input("drag_effect", val=np.nan, units="unitless")
         self.add_input("lift_effect", val=np.nan, units="unitless")
         self.add_input("CL_wing", val=np.nan, units="unitless")
-        self.add_input("data:aerodynamics:wing:" + ls_tag + ":CD0", val=np.nan)
+        self.add_input("data:aerodynamics:wing:" + ls_tag + ":CD0", val=np.nan, units="unitless")
 
         self.add_output("data:aerodynamics:wing:" + ls_tag + ":Cn_r", units="rad**-1")
 

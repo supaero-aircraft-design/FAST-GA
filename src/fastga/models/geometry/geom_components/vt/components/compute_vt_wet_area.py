@@ -14,9 +14,9 @@ Python module for vertical tail wet area calculation, part of the vertical tail 
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 
 from ..constants import SERVICE_VT_WET_AREA, SUBMODEL_VT_WET_AREA_LEGACY
 
@@ -32,6 +32,9 @@ class ComputeVTWetArea(om.ExplicitComponent):
 
         self.add_output("data:geometry:vertical_tail:wet_area", units="m**2")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials("*", "*", val=2.1)
 
     # pylint: disable=missing-function-docstring, unused-argument

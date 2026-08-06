@@ -14,47 +14,47 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-from typing import Union, Sequence, Tuple, Optional
-import numpy as np
-from scipy.interpolate import LinearNDInterpolator
+from collections.abc import Sequence
 
 import fastoad.api as oad
+import numpy as np
+from fastoad._utils.arrays import scalarize
 from fastoad.constants import EngineSetting
 from fastoad.exceptions import FastUnknownEngineSettingError
-
+from scipy.interpolate import LinearNDInterpolator
 from stdatm import Atmosphere
 
+from fastga.models.propulsion.dict import AddKeyAttributes, DynamicAttributeDict
+from fastga.models.propulsion.fuel_propulsion.base import AbstractFuelPropulsion
+from fastga.models.propulsion.fuel_propulsion.basicTurbo_prop.basicTP_engine import BasicTPEngine
 from fastga.models.propulsion.fuel_propulsion.basicTurbo_prop_map.exceptions import (
     FastBasicICEngineInconsistentInputParametersError,
 )
-from fastga.models.propulsion.fuel_propulsion.basicTurbo_prop.basicTP_engine import BasicTPEngine
-from fastga.models.propulsion.fuel_propulsion.base import AbstractFuelPropulsion
-from fastga.models.propulsion.dict import DynamicAttributeDict, AddKeyAttributes
 
 # Logger for this module
 _LOGGER = logging.getLogger(__name__)
 
 # Set of dictionary keys that are mapped to instance attributes.
 ENGINE_LABELS = {
-    "power_SL": dict(doc="power at sea level in watts."),
-    "mass": dict(doc="Mass in kilograms."),
-    "length": dict(doc="Length in meters."),
-    "height": dict(doc="Height in meters."),
-    "width": dict(doc="Width in meters."),
+    "power_SL": {"doc": "Power at sea level in watts."},
+    "mass": {"doc": "Mass in kilograms."},
+    "length": {"doc": "Length in meters."},
+    "height": {"doc": "Height in meters."},
+    "width": {"doc": "Width in meters."},
 }
 # Set of dictionary keys that are mapped to instance attributes.
 NACELLE_LABELS = {
-    "wet_area": dict(doc="Wet area in meters²."),
-    "length": dict(doc="Length in meters."),
-    "height": dict(doc="Height in meters."),
-    "width": dict(doc="Width in meters."),
+    "wet_area": {"doc": "Wet area in meters²."},
+    "length": {"doc": "Length in meters."},
+    "height": {"doc": "Height in meters."},
+    "width": {"doc": "Width in meters."},
 }
 
 
 class BasicTPEngineMapped(AbstractFuelPropulsion):
     """Mapped version of the turboprop, need the constructed table beforehand to work."""
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         power_design: float,  # In kW
         t_41t_design: float,
@@ -67,30 +67,30 @@ class BasicTPEngineMapped(AbstractFuelPropulsion):
         itt_limit: float,
         power_limit: float,
         opr_limit: float,
-        speed_SL,
-        thrust_SL,
-        thrust_limit_SL,
-        efficiency_SL,
-        speed_CL,
-        thrust_CL,
-        thrust_limit_CL,
-        efficiency_CL,
-        effective_J,
+        speed_sl,
+        thrust_sl,
+        thrust_limit_sl,
+        efficiency_sl,
+        speed_cl,
+        thrust_cl,
+        thrust_limit_cl,
+        efficiency_cl,
+        effective_j,
         effective_efficiency_ls,
         effective_efficiency_cruise,
-        turbo_mach_SL,
-        turbo_thrust_SL,
-        turbo_thrust_max_SL,
-        turbo_sfc_SL,
-        turbo_mach_CL,
-        turbo_thrust_CL,
-        turbo_thrust_max_CL,
-        turbo_sfc_CL,
-        turbo_mach_IL,
-        turbo_thrust_IL,
-        turbo_thrust_max_IL,
-        turbo_sfc_IL,
-        level_IL,
+        turbo_mach_sl,
+        turbo_thrust_sl,
+        turbo_thrust_max_sl,
+        turbo_sfc_sl,
+        turbo_mach_cl,
+        turbo_thrust_cl,
+        turbo_thrust_max_cl,
+        turbo_sfc_cl,
+        turbo_mach_il,
+        turbo_thrust_il,
+        turbo_thrust_max_il,
+        turbo_sfc_il,
+        level_il: float,
         eta_225=0.85,
         eta_253=0.86,
         eta_445=0.86,
@@ -122,46 +122,46 @@ class BasicTPEngineMapped(AbstractFuelPropulsion):
         :param itt_limit: temperature limit between the turbines, in K
         :param power_limit: power limit on the gearbox, in kW
         :param opr_limit: opr limit in the compressor
-        :param speed_SL: array with the speed at which the sea level performance of the propeller
+        :param speed_sl: array with the speed at which the sea level performance of the propeller
         were computed
-        :param thrust_SL: array with the required thrust at which the sea level performance of the
+        :param thrust_sl: array with the required thrust at which the sea level performance of the
         propeller were
         computed
-        :param thrust_limit_SL: array with the limit thrust available at the speed in speed_SL
-        :param efficiency_SL: array containing the sea level efficiency computed at speed_SL and
-        thrust_SL
-        :param speed_CL: array with the speed at which the cruise level performance of the propeller
+        :param thrust_limit_sl: array with the limit thrust available at the speed in speed_sl
+        :param efficiency_sl: array containing the sea level efficiency computed at speed_sl and
+        thrust_sl
+        :param speed_cl: array with the speed at which the cruise level performance of the propeller
         were computed
-        :param thrust_CL: array with the required thrust at which the cruise level performance of
+        :param thrust_cl: array with the required thrust at which the cruise level performance of
         the propeller were  computed
-        :param thrust_limit_CL: array with the limit thrust available at the speed in speed_CL
-        :param efficiency_CL: array containing the cruise level efficiency computed at speed_CL and
-        thrust_CL
-        :param turbo_mach_SL: array with the mach at which the sea level performance of the
+        :param thrust_limit_cl: array with the limit thrust available at the speed in speed_cl
+        :param efficiency_cl: array containing the cruise level efficiency computed at speed_cl and
+        thrust_cl
+        :param turbo_mach_sl: array with the mach at which the sea level performance of the
         turboprop were computed
-        :param turbo_thrust_SL: array with the required thrust at which the sea level performance of
+        :param turbo_thrust_sl: array with the required thrust at which the sea level performance of
         the turboprop were computed
-        :param turbo_thrust_max_SL: array with the limit thrust available at the mach in
-        turbo_mach_SL
-        :param turbo_sfc_SL: array containing the sea level sfc computed at turbo_mach_SL and
-        turbo_thrust_SL
-        :param turbo_mach_CL: array with the mach at which the cruise level performance of the
+        :param turbo_thrust_max_sl: array with the limit thrust available at the mach in
+        turbo_mach_sl
+        :param turbo_sfc_sl: array containing the sea level sfc computed at turbo_mach_sl and
+        turbo_thrust_sl
+        :param turbo_mach_cl: array with the mach at which the cruise level performance of the
         turboprop were computed
-        :param turbo_thrust_CL: array with the required thrust at which the cruise level performance
+        :param turbo_thrust_cl: array with the required thrust at which the cruise level performance
         of the turboprop were computed
-        :param turbo_thrust_max_CL: array with the limit thrust available at the mach in
-        turbo_mach_CL
-        :param turbo_sfc_CL: array containing the cruise level sfc computed at turbo_mach_CL and
-        turbo_thrust_CL
-        :param turbo_mach_IL: array with the mach at which the intermediate level performance of the
+        :param turbo_thrust_max_cl: array with the limit thrust available at the mach in
+        turbo_mach_cl
+        :param turbo_sfc_cl: array containing the cruise level sfc computed at turbo_mach_cl and
+        turbo_thrust_cl
+        :param turbo_mach_il: array with the mach at which the intermediate level performance of the
         turboprop were computed
-        :param turbo_thrust_IL: array with the required thrust at which the intermediate level
+        :param turbo_thrust_il: array with the required thrust at which the intermediate level
         performance of the turboprop were computed
-        :param turbo_thrust_max_IL: array with the limit thrust available at the mach in
-        turbo_mach_IL
-        :param turbo_sfc_IL: array containing the intermediate level sfc computed at turbo_mach_IL
-        and turbo_thrust_IL
-        :param level_IL: altitude at which the intermediate level computation were conducted
+        :param turbo_thrust_max_il: array with the limit thrust available at the mach in
+        turbo_mach_il
+        :param turbo_sfc_il: array containing the intermediate level sfc computed at turbo_mach_il
+        and turbo_thrust_il
+        :param level_il: altitude at which the intermediate level computation were conducted
         """
 
         self.turboprop = BasicTPEngine(
@@ -176,15 +176,15 @@ class BasicTPEngineMapped(AbstractFuelPropulsion):
             itt_limit=itt_limit,
             power_limit=power_limit,
             opr_limit=opr_limit,
-            speed_SL=speed_SL,
-            thrust_SL=thrust_SL,
-            thrust_limit_SL=thrust_limit_SL,
-            efficiency_SL=efficiency_SL,
-            speed_CL=speed_CL,
-            thrust_CL=thrust_CL,
-            thrust_limit_CL=thrust_limit_CL,
-            efficiency_CL=efficiency_CL,
-            effective_J=effective_J,
+            speed_sl=speed_sl,
+            thrust_sl=thrust_sl,
+            thrust_limit_sl=thrust_limit_sl,
+            efficiency_sl=efficiency_sl,
+            speed_cl=speed_cl,
+            thrust_cl=thrust_cl,
+            thrust_limit_cl=thrust_limit_cl,
+            efficiency_cl=efficiency_cl,
+            effective_j=effective_j,
             effective_efficiency_ls=effective_efficiency_ls,
             effective_efficiency_cruise=effective_efficiency_cruise,
             eta_225=eta_225,
@@ -203,34 +203,34 @@ class BasicTPEngineMapped(AbstractFuelPropulsion):
             pr_1_ratio_design=pr_1_ratio_design,
         )
 
-        self.speed_SL = speed_SL
-        self.thrust_SL = thrust_SL
-        self.thrust_limit_SL = thrust_limit_SL
-        self.efficiency_SL = efficiency_SL
-        self.speed_CL = speed_CL
-        self.thrust_CL = thrust_CL
-        self.thrust_limit_CL = thrust_limit_CL
-        self.efficiency_CL = efficiency_CL
+        self.speed_sl = speed_sl
+        self.thrust_sl = thrust_sl
+        self.thrust_limit_sl = thrust_limit_sl
+        self.efficiency_sl = efficiency_sl
+        self.speed_cl = speed_cl
+        self.thrust_cl = thrust_cl
+        self.thrust_limit_cl = thrust_limit_cl
+        self.efficiency_cl = efficiency_cl
 
-        formatted_turbo_thrust_SL, formatted_sfc_SL = reformat_table(turbo_thrust_SL, turbo_sfc_SL)
-        self.turbo_mach_SL = turbo_mach_SL
-        self.turbo_thrust_SL = formatted_turbo_thrust_SL
-        self.turbo_thrust_max_SL = turbo_thrust_max_SL
-        self.turbo_sfc_SL = formatted_sfc_SL
+        formatted_turbo_thrust_sl, formatted_sfc_sl = reformat_table(turbo_thrust_sl, turbo_sfc_sl)
+        self.turbo_mach_sl = turbo_mach_sl
+        self.turbo_thrust_sl = formatted_turbo_thrust_sl
+        self.turbo_thrust_max_sl = turbo_thrust_max_sl
+        self.turbo_sfc_sl = formatted_sfc_sl
 
-        formatted_turbo_thrust_CL, formatted_sfc_CL = reformat_table(turbo_thrust_CL, turbo_sfc_CL)
-        self.turbo_mach_CL = turbo_mach_CL
-        self.turbo_thrust_CL = formatted_turbo_thrust_CL
-        self.turbo_thrust_max_CL = turbo_thrust_max_CL
-        self.turbo_sfc_CL = formatted_sfc_CL
-        self.cruise_altitude_propeller = float(cruise_altitude_propeller)
+        formatted_turbo_thrust_cl, formatted_sfc_cl = reformat_table(turbo_thrust_cl, turbo_sfc_cl)
+        self.turbo_mach_cl = turbo_mach_cl
+        self.turbo_thrust_cl = formatted_turbo_thrust_cl
+        self.turbo_thrust_max_cl = turbo_thrust_max_cl
+        self.turbo_sfc_cl = formatted_sfc_cl
+        self.cruise_altitude_propeller = cruise_altitude_propeller
 
-        formatted_turbo_thrust_IL, formatted_sfc_IL = reformat_table(turbo_thrust_IL, turbo_sfc_IL)
-        self.turbo_mach_IL = turbo_mach_IL
-        self.turbo_thrust_IL = formatted_turbo_thrust_IL
-        self.turbo_thrust_max_IL = turbo_thrust_max_IL
-        self.turbo_sfc_IL = formatted_sfc_IL
-        self.intermediate_altitude = float(level_IL)
+        formatted_turbo_thrust_il, formatted_sfc_il = reformat_table(turbo_thrust_il, turbo_sfc_il)
+        self.turbo_mach_il = turbo_mach_il
+        self.turbo_thrust_il = formatted_turbo_thrust_il
+        self.turbo_thrust_max_il = turbo_thrust_max_il
+        self.turbo_sfc_il = formatted_sfc_il
+        self.intermediate_altitude = level_il
 
         self._sfc_interpolator_sl = None
         self._sfc_interpolator_il = None
@@ -253,16 +253,16 @@ class BasicTPEngineMapped(AbstractFuelPropulsion):
         }
 
         # ... so check that all EngineSetting values are in dict
-        unknown_keys = [key for key in EngineSetting if key not in self.mixture_values.keys()]
+        unknown_keys = [key for key in EngineSetting if key not in self.mixture_values]
         if unknown_keys:
             raise FastUnknownEngineSettingError("Unknown flight phases: %s", unknown_keys)
 
     @property
     def sfc_interpolator_sl(self):
         if self._sfc_interpolator_sl is None:
-            thrust_sl_grid, mach_sl_grid = np.meshgrid(self.turbo_thrust_SL, self.turbo_mach_SL)
+            thrust_sl_grid, mach_sl_grid = np.meshgrid(self.turbo_thrust_sl, self.turbo_mach_sl)
             self._sfc_interpolator_sl = LinearNDInterpolator(
-                (thrust_sl_grid.flatten(), mach_sl_grid.flatten()), self.turbo_sfc_SL.flatten()
+                (thrust_sl_grid.flatten(), mach_sl_grid.flatten()), self.turbo_sfc_sl.flatten()
             )
 
         return self._sfc_interpolator_sl
@@ -274,9 +274,9 @@ class BasicTPEngineMapped(AbstractFuelPropulsion):
     @property
     def sfc_interpolator_il(self):
         if self._sfc_interpolator_il is None:
-            thrust_il_grid, mach_il_grid = np.meshgrid(self.turbo_thrust_IL, self.turbo_mach_IL)
+            thrust_il_grid, mach_il_grid = np.meshgrid(self.turbo_thrust_il, self.turbo_mach_il)
             self._sfc_interpolator_il = LinearNDInterpolator(
-                (thrust_il_grid.flatten(), mach_il_grid.flatten()), self.turbo_sfc_IL.flatten()
+                (thrust_il_grid.flatten(), mach_il_grid.flatten()), self.turbo_sfc_il.flatten()
             )
 
         return self._sfc_interpolator_il
@@ -288,9 +288,9 @@ class BasicTPEngineMapped(AbstractFuelPropulsion):
     @property
     def sfc_interpolator_cl(self):
         if self._sfc_interpolator_cl is None:
-            thrust_cl_grid, mach_cl_grid = np.meshgrid(self.turbo_thrust_CL, self.turbo_mach_CL)
+            thrust_cl_grid, mach_cl_grid = np.meshgrid(self.turbo_thrust_cl, self.turbo_mach_cl)
             self._sfc_interpolator_cl = LinearNDInterpolator(
-                (thrust_cl_grid.flatten(), mach_cl_grid.flatten()), self.turbo_sfc_CL.flatten()
+                (thrust_cl_grid.flatten(), mach_cl_grid.flatten()), self.turbo_sfc_cl.flatten()
             )
 
         return self._sfc_interpolator_cl
@@ -351,12 +351,12 @@ class BasicTPEngineMapped(AbstractFuelPropulsion):
 
     def _compute_flight_points(
         self,
-        mach: Union[float, Sequence],
-        altitude: Union[float, Sequence],
-        thrust_is_regulated: Optional[Union[bool, Sequence]] = None,
-        thrust_rate: Optional[Union[float, Sequence]] = None,
-        thrust: Optional[Union[float, Sequence]] = None,
-    ) -> Tuple[Union[float, Sequence], Union[float, Sequence], Union[float, Sequence]]:
+        mach: float | Sequence,
+        altitude: float | Sequence,
+        thrust_is_regulated: bool | Sequence | None = None,  # noqa: FBT001
+        thrust_rate: float | Sequence | None = None,
+        thrust: float | Sequence | None = None,
+    ) -> tuple[float | Sequence, float | Sequence, float | Sequence]:
         """
         Same as :meth:`compute_flight_points`.
 
@@ -421,11 +421,11 @@ class BasicTPEngineMapped(AbstractFuelPropulsion):
         return sfc_thrust, out_thrust_rate, out_thrust
 
     @staticmethod
-    def _check_thrust_inputs(
-        thrust_is_regulated: Optional[Union[float, Sequence]],
-        thrust_rate: Optional[Union[float, Sequence]],
-        thrust: Optional[Union[float, Sequence]],
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    def _check_thrust_inputs(  # noqa: PLR0912
+        thrust_is_regulated: float | Sequence | None,
+        thrust_rate: float | Sequence | None,
+        thrust: float | Sequence | None,
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         Checks that inputs are consistent and return them in proper shape.
         Some of the inputs can be None, but outputs will be proper numpy arrays.
@@ -493,7 +493,7 @@ class BasicTPEngineMapped(AbstractFuelPropulsion):
 
         return thrust_is_regulated, thrust_rate, thrust
 
-    def compute_max_power(self, flight_points: oad.FlightPoint) -> Union[float, Sequence]:
+    def compute_max_power(self, flight_points: oad.FlightPoint) -> float | Sequence:
         """
         Compute the turboprop maximum power @ given flight-point. Uses the original method
 
@@ -507,47 +507,45 @@ class BasicTPEngineMapped(AbstractFuelPropulsion):
         """Reads the turboprop table and gives corresponding sfc."""
         altitude = atmosphere.get_altitude(altitude_in_feet=False)
         if altitude > self.intermediate_altitude:
-            mach_il = np.clip(atmosphere.mach, min(self.turbo_mach_IL), max(self.turbo_mach_IL))
-            mach_cl = np.clip(atmosphere.mach, min(self.turbo_mach_CL), max(self.turbo_mach_CL))
-            thrust_interp_IL = np.clip(
+            mach_il = np.clip(atmosphere.mach, min(self.turbo_mach_il), max(self.turbo_mach_il))
+            mach_cl = np.clip(atmosphere.mach, min(self.turbo_mach_cl), max(self.turbo_mach_cl))
+            thrust_interp_il = np.clip(
                 thrust,
-                min(self.turbo_thrust_IL),
-                np.interp(mach_il, self.turbo_mach_IL, self.turbo_thrust_max_IL),
+                min(self.turbo_thrust_il),
+                np.interp(mach_il, self.turbo_mach_il, self.turbo_thrust_max_il),
             )
-            thrust_interp_CL = np.clip(
+            thrust_interp_cl = np.clip(
                 thrust,
-                min(self.turbo_thrust_CL),
-                np.interp(mach_cl, self.turbo_mach_CL, self.turbo_thrust_max_CL),
+                min(self.turbo_thrust_cl),
+                np.interp(mach_cl, self.turbo_mach_cl, self.turbo_thrust_max_cl),
             )
-            # lower_bound = float(sfc_interp_IL(thrust_interp_IL, mach_il))
-            lower_bound = float(self.sfc_interpolator_il((thrust_interp_IL, mach_il)))
-            # upper_bound = float(sfc_interp_CL(thrust_interp_CL, mach_cl))
-            upper_bound = float(self.sfc_interpolator_cl((thrust_interp_CL, mach_cl)))
-            sfc = float(
+            lower_bound = scalarize(self.sfc_interpolator_il((thrust_interp_il, mach_il)))
+            upper_bound = scalarize(self.sfc_interpolator_cl((thrust_interp_cl, mach_cl)))
+            sfc = scalarize(
                 np.interp(
-                    max(float(altitude), 0.0),
+                    max(scalarize(altitude), 0.0),
                     [self.intermediate_altitude, self.cruise_altitude_propeller],
                     [lower_bound, upper_bound],
                 )
             )
         else:
-            mach_sl = np.clip(atmosphere.mach, min(self.turbo_mach_SL), max(self.turbo_mach_SL))
-            mach_il = np.clip(atmosphere.mach, min(self.turbo_mach_IL), max(self.turbo_mach_IL))
-            thrust_interp_SL = np.clip(
+            mach_sl = np.clip(atmosphere.mach, min(self.turbo_mach_sl), max(self.turbo_mach_sl))
+            mach_il = np.clip(atmosphere.mach, min(self.turbo_mach_il), max(self.turbo_mach_il))
+            thrust_interp_sl = np.clip(
                 thrust,
-                min(self.turbo_thrust_SL),
-                np.interp(mach_sl, self.turbo_mach_SL, self.turbo_thrust_max_SL),
+                min(self.turbo_thrust_sl),
+                np.interp(mach_sl, self.turbo_mach_sl, self.turbo_thrust_max_sl),
             )
-            thrust_interp_IL = np.clip(
+            thrust_interp_il = np.clip(
                 thrust,
-                min(self.turbo_thrust_IL),
-                np.interp(mach_il, self.turbo_mach_IL, self.turbo_thrust_max_IL),
+                min(self.turbo_thrust_il),
+                np.interp(mach_il, self.turbo_mach_il, self.turbo_thrust_max_il),
             )
-            lower_bound = float(self.sfc_interpolator_sl((thrust_interp_SL, mach_sl)))
-            upper_bound = float(self.sfc_interpolator_il((thrust_interp_IL, mach_il)))
-            sfc = float(
+            lower_bound = scalarize(self.sfc_interpolator_sl((thrust_interp_sl, mach_sl)))
+            upper_bound = scalarize(self.sfc_interpolator_il((thrust_interp_il, mach_il)))
+            sfc = scalarize(
                 np.interp(
-                    max(float(altitude), 0.0),
+                    max(scalarize(altitude), 0.0),
                     [0.0, self.intermediate_altitude],
                     [lower_bound, upper_bound],
                 )
@@ -557,9 +555,9 @@ class BasicTPEngineMapped(AbstractFuelPropulsion):
 
     def sfc(
         self,
-        thrust: Union[float, Sequence[float]],
+        thrust: float | Sequence[float],
         atmosphere: Atmosphere,
-    ) -> Union[float, np.ndarray]:
+    ) -> float | np.ndarray:
         """
         Computation of the SFC.
 
@@ -610,55 +608,55 @@ class BasicTPEngineMapped(AbstractFuelPropulsion):
 
     def _max_thrust(self, altitude: float, mach: float) -> float:
         if altitude > self.intermediate_altitude:
-            max_thrust_IL = float(
+            max_thrust_il = scalarize(
                 np.interp(
-                    np.clip(mach, min(self.turbo_mach_IL), max(self.turbo_mach_IL)),
-                    self.turbo_mach_IL,
-                    self.turbo_thrust_max_IL,
+                    np.clip(mach, min(self.turbo_mach_il), max(self.turbo_mach_il)),
+                    self.turbo_mach_il,
+                    self.turbo_thrust_max_il,
                 )
             )
-            max_thrust_CL = float(
+            max_thrust_cl = scalarize(
                 np.interp(
-                    np.clip(mach, min(self.turbo_mach_CL), max(self.turbo_mach_CL)),
-                    self.turbo_mach_CL,
-                    self.turbo_thrust_max_CL,
+                    np.clip(mach, min(self.turbo_mach_cl), max(self.turbo_mach_cl)),
+                    self.turbo_mach_cl,
+                    self.turbo_thrust_max_cl,
                 )
             )
-            max_thrust = float(
+            max_thrust = scalarize(
                 np.interp(
-                    max(float(altitude), 0.0),
+                    max(scalarize(altitude), 0.0),
                     [self.intermediate_altitude, self.cruise_altitude_propeller],
-                    [max_thrust_IL, max_thrust_CL],
+                    [max_thrust_il, max_thrust_cl],
                 )
             )
         else:
-            max_thrust_SL = float(
+            max_thrust_sl = scalarize(
                 np.interp(
-                    np.clip(mach, min(self.turbo_mach_SL), max(self.turbo_mach_SL)),
-                    self.turbo_mach_SL,
-                    self.turbo_thrust_max_SL,
+                    np.clip(mach, min(self.turbo_mach_sl), max(self.turbo_mach_sl)),
+                    self.turbo_mach_sl,
+                    self.turbo_thrust_max_sl,
                 )
             )
-            max_thrust_IL = float(
+            max_thrust_il = scalarize(
                 np.interp(
-                    np.clip(mach, min(self.turbo_mach_IL), max(self.turbo_mach_IL)),
-                    self.turbo_mach_IL,
-                    self.turbo_thrust_max_IL,
+                    np.clip(mach, min(self.turbo_mach_il), max(self.turbo_mach_il)),
+                    self.turbo_mach_il,
+                    self.turbo_thrust_max_il,
                 )
             )
-            max_thrust = float(
+            max_thrust = scalarize(
                 np.interp(
-                    max(float(altitude), 0.0),
+                    max(scalarize(altitude), 0.0),
                     [0.0, self.intermediate_altitude],
-                    [max_thrust_SL, max_thrust_IL],
+                    [max_thrust_sl, max_thrust_il],
                 )
             )
 
         return max_thrust
 
     def propeller_efficiency(
-        self, thrust: Union[float, Sequence[float]], atmosphere: Atmosphere
-    ) -> Union[float, Sequence]:
+        self, thrust: float | Sequence[float], atmosphere: Atmosphere
+    ) -> float | Sequence:
         """
         Compute the propeller efficiency. Should only take the thrust of one propeller.
 

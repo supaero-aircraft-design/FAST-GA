@@ -12,12 +12,35 @@ class ExhaustEquilibrium(om.ImplicitComponent):
         self.add_input("total_pressure_45", units="Pa", shape=n, val=np.nan)
         self.add_input("total_pressure_5", units="Pa", shape=n, val=np.nan)
         self.add_input("total_temperature_45", units="K", shape=n, val=np.nan)
-        self.add_input("gamma_45", shape=n, val=np.nan)
-        self.add_input("eta_455", shape=1, val=1.0)
+        self.add_input("gamma_45", shape=n, val=np.nan, units="unitless")
+        self.add_input("eta_455", shape=1, val=1.0, units="unitless")
 
         self.add_output("total_temperature_5", units="K", shape=n, val=0.75e3)
 
-        self.declare_partials(of="*", wrt="*", method="exact")
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
+        n = self.options["number_of_points"]
+        self.declare_partials(
+            of="total_temperature_5",
+            wrt=[
+                "total_pressure_45",
+                "total_pressure_5",
+                "total_temperature_45",
+                "gamma_45",
+                "total_temperature_5",
+            ],
+            rows=np.arange(n),
+            cols=np.arange(n),
+            method="exact",
+        )
+        self.declare_partials(
+            of="*",
+            wrt="eta_455",
+            rows=np.arange(n),
+            cols=np.zeros(n),
+            method="exact",
+        )
 
     def apply_nonlinear(
         self, inputs, outputs, residuals, discrete_inputs=None, discrete_outputs=None
@@ -42,16 +65,16 @@ class ExhaustEquilibrium(om.ImplicitComponent):
         gamma_45 = inputs["gamma_45"]
         eta_455 = inputs["eta_455"]
 
-        jacobian["total_temperature_5", "total_temperature_5"] = np.diag(
+        jacobian["total_temperature_5", "total_temperature_5"] = (
             total_temperature_45
             / total_temperature_5**2.0
             * (total_pressure_5 / total_pressure_45) ** ((gamma_45 - 1.0) / gamma_45 * eta_455)
         )
-        jacobian["total_temperature_5", "total_temperature_45"] = -np.diag(
+        jacobian["total_temperature_5", "total_temperature_45"] = -(
             (total_pressure_5 / total_pressure_45) ** ((gamma_45 - 1.0) / gamma_45 * eta_455)
             / total_temperature_5
         )
-        jacobian["total_temperature_5", "total_pressure_5"] = np.diag(
+        jacobian["total_temperature_5", "total_pressure_5"] = (
             -total_temperature_45
             / total_temperature_5
             * (gamma_45 - 1.0)
@@ -61,7 +84,7 @@ class ExhaustEquilibrium(om.ImplicitComponent):
             ** ((gamma_45 - 1.0) / gamma_45 * eta_455 - 1.0)
             / total_pressure_45
         )
-        jacobian["total_temperature_5", "total_pressure_45"] = -np.diag(
+        jacobian["total_temperature_5", "total_pressure_45"] = -(
             -total_temperature_45
             / total_temperature_5
             * (gamma_45 - 1.0)
@@ -72,7 +95,7 @@ class ExhaustEquilibrium(om.ImplicitComponent):
             * total_pressure_5
             / total_pressure_45**2.0
         )
-        jacobian["total_temperature_5", "gamma_45"] = np.diag(
+        jacobian["total_temperature_5", "gamma_45"] = (
             -total_temperature_45
             / total_temperature_5
             * np.log(total_pressure_5 / total_pressure_45)

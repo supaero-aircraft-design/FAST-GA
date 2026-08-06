@@ -15,9 +15,9 @@ Python module for horizontal tail wet area calculation, part of the horizontal t
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 
 from ..constants import SERVICE_HT_WET_AREA, SUBMODEL_HT_WET_AREA_LEGACY
 
@@ -31,10 +31,13 @@ class ComputeHTWetArea(om.ExplicitComponent):
     # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:horizontal_tail:area", val=np.nan, units="m**2")
-        self.add_input("data:geometry:has_T_tail", val=np.nan)
+        self.add_input("data:geometry:has_T_tail", val=np.nan, units="unitless")
 
         self.add_output("data:geometry:horizontal_tail:wet_area", units="m**2")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials("*", "*", method="exact")
 
     # pylint: disable=missing-function-docstring, unused-argument

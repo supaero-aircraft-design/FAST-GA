@@ -12,8 +12,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import numpy as np
 import fastoad.api as oad
+import numpy as np
 
 from ..figure_digitization import FigureDigitization
 from ...constants import SUBMODEL_CL_ALPHA_VT
@@ -37,16 +37,16 @@ class ComputeClAlphaVerticalTail(FigureDigitization):
 
     def setup(self):
         if self.options["low_speed_aero"]:
-            self.add_input("data:aerodynamics:low_speed:mach", val=np.nan)
+            self.add_input("data:aerodynamics:low_speed:mach", val=np.nan, units="unitless")
         else:
-            self.add_input("data:aerodynamics:cruise:mach", val=np.nan)
+            self.add_input("data:aerodynamics:cruise:mach", val=np.nan, units="unitless")
 
         self.add_input(
             "data:aerodynamics:vertical_tail:airfoil:CL_alpha", val=np.nan, units="rad**-1"
         )
-        self.add_input("data:geometry:has_T_tail", val=np.nan)
-        self.add_input("data:geometry:vertical_tail:aspect_ratio", val=np.nan)
-        self.add_input("data:geometry:vertical_tail:taper_ratio", val=np.nan)
+        self.add_input("data:geometry:has_T_tail", val=np.nan, units="unitless")
+        self.add_input("data:geometry:vertical_tail:aspect_ratio", val=np.nan, units="unitless")
+        self.add_input("data:geometry:vertical_tail:taper_ratio", val=np.nan, units="unitless")
         self.add_input("data:geometry:vertical_tail:sweep_25", val=np.nan, units="deg")
         self.add_input("data:geometry:vertical_tail:span", val=np.nan, units="m")
         self.add_input("data:geometry:vertical_tail:area", val=np.nan, units="m**2")
@@ -55,7 +55,7 @@ class ComputeClAlphaVerticalTail(FigureDigitization):
 
         if self.options["low_speed_aero"]:
             self.add_output("data:aerodynamics:vertical_tail:low_speed:CL_alpha", units="rad**-1")
-            self.add_output("data:aerodynamics:vertical_tail:k_ar_effective")
+            self.add_output("data:aerodynamics:vertical_tail:k_ar_effective", units="unitless")
         else:
             self.add_output("data:aerodynamics:vertical_tail:cruise:CL_alpha", units="rad**-1")
 
@@ -71,12 +71,12 @@ class ComputeClAlphaVerticalTail(FigureDigitization):
 
         tail_type = np.round(inputs["data:geometry:has_T_tail"])
         sweep_25_vt = inputs["data:geometry:vertical_tail:sweep_25"]
-        span_vt = inputs["data:geometry:vertical_tail:span"]
-        area_vt = inputs["data:geometry:vertical_tail:area"]
-        taper_ratio_vt = inputs["data:geometry:vertical_tail:taper_ratio"]
-        area_ht = inputs["data:geometry:horizontal_tail:area"]
+        span_vt = inputs["data:geometry:vertical_tail:span"].item()
+        area_vt = inputs["data:geometry:vertical_tail:area"].item()
+        taper_ratio_vt = inputs["data:geometry:vertical_tail:taper_ratio"].item()
+        area_ht = inputs["data:geometry:horizontal_tail:area"].item()
 
-        avg_fus_depth = inputs["data:geometry:fuselage:average_depth"]
+        avg_fus_depth = inputs["data:geometry:fuselage:average_depth"].item()
 
         # Compute the effect of fuselage and HTP as end plates which gives a different effective
         # aspect ratio
@@ -84,18 +84,13 @@ class ComputeClAlphaVerticalTail(FigureDigitization):
 
         k_ar_fuselage_ht = 1.7 if tail_type == 1.0 else 1.2
 
-        k_vh = self.k_vh(float(area_ht / area_vt))
+        k_vh = self.k_vh(area_ht / area_vt)
 
         k_ar_effective = k_ar_fuselage * (1.0 + k_vh * (k_ar_fuselage_ht - 1.0))
 
         lambda_vt = inputs["data:geometry:vertical_tail:aspect_ratio"] * k_ar_effective
 
-        if span_vt / avg_fus_depth < 2.0:
-            kv = 0.75
-        elif span_vt / avg_fus_depth < 3.5:
-            kv = np.interp(float(span_vt / avg_fus_depth), [2.0, 3.5], [0.75, 1.0])
-        else:
-            kv = 1.0
+        kv = np.interp(span_vt / avg_fus_depth, [2.0, 3.5], [0.75, 1.0])
 
         cl_alpha_vt = (
             kv

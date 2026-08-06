@@ -12,9 +12,9 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 
 from ..constants import SUBMODEL_SEATS_CG
 
@@ -25,14 +25,19 @@ class ComputePassengerSeatsCG(om.ExplicitComponent):
     """Passenger seats center of gravity estimation"""
 
     def setup(self):
-        self.add_input("data:geometry:cabin:seats:passenger:NPAX_max", val=np.nan)
+        self.add_input("data:geometry:cabin:seats:passenger:NPAX_max", val=np.nan, units="unitless")
         self.add_input("data:geometry:fuselage:front_length", val=np.nan, units="m")
-        self.add_input("data:geometry:cabin:seats:passenger:count_by_row", val=np.nan)
+        self.add_input(
+            "data:geometry:cabin:seats:passenger:count_by_row", val=np.nan, units="unitless"
+        )
         self.add_input("data:geometry:cabin:seats:pilot:length", val=np.nan, units="m")
         self.add_input("data:geometry:cabin:seats:passenger:length", val=np.nan, units="m")
 
         self.add_output("data:weight:furniture:passenger_seats:CG:x", units="m")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
@@ -45,7 +50,7 @@ class ComputePassengerSeatsCG(om.ExplicitComponent):
         # Instruments length
         l_instr = 0.7
         # Seats and passengers gravity center (hypothesis of 2 pilots)
-        nrows = int(np.ceil(npax_max / count_by_row))
+        nrows = int(np.ceil(npax_max / count_by_row).item())
         x_cg_d2 = lav + l_instr + l_pilot_seat * 2.0 / (npax_max + 2.0)
         for idx in range(nrows):
             length = l_pilot_seat + (idx + 0.5) * l_pass_seat

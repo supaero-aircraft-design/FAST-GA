@@ -13,39 +13,55 @@ class OverallPressureRatio(om.ExplicitComponent):
         self.add_input("total_pressure_25", units="Pa", shape=n, val=np.nan)
         self.add_input("total_pressure_3", units="Pa", shape=n, val=np.nan)
 
-        self.add_output("opr_1", shape=n)
-        self.add_output("opr_2", shape=n)
-        self.add_output("opr", shape=n, upper=12.0)
+        self.add_output("opr_1", shape=n, units="unitless")
+        self.add_output("opr_2", shape=n, units="unitless")
+        self.add_output("opr", shape=n, upper=12.0, units="unitless")
+
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
+        n = self.options["number_of_points"]
 
         self.declare_partials(
-            of="opr_1", wrt=["total_pressure_25", "total_pressure_2"], method="exact"
+            of="opr_1",
+            wrt=["total_pressure_25", "total_pressure_2"],
+            method="exact",
+            rows=np.arange(n),
+            cols=np.arange(n),
         )
         self.declare_partials(
-            of="opr_2", wrt=["total_pressure_3", "total_pressure_25"], method="exact"
+            of="opr_2",
+            wrt=["total_pressure_3", "total_pressure_25"],
+            method="exact",
+            rows=np.arange(n),
+            cols=np.arange(n),
         )
         self.declare_partials(
-            of="opr", wrt=["total_pressure_3", "total_pressure_2"], method="exact"
+            of="opr",
+            wrt=["total_pressure_3", "total_pressure_2"],
+            method="exact",
+            rows=np.arange(n),
+            cols=np.arange(n),
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         outputs["opr_1"] = inputs["total_pressure_25"] / inputs["total_pressure_2"]
         outputs["opr_2"] = inputs["total_pressure_3"] / inputs["total_pressure_25"]
         outputs["opr"] = inputs["total_pressure_3"] / inputs["total_pressure_2"]
-        # print("OPR", outputs["opr"])
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-        partials["opr_1", "total_pressure_25"] = np.diag(1.0 / inputs["total_pressure_2"])
-        partials["opr_1", "total_pressure_2"] = -np.diag(
+        partials["opr_1", "total_pressure_25"] = 1.0 / inputs["total_pressure_2"]
+        partials["opr_1", "total_pressure_2"] = -(
             inputs["total_pressure_25"] / inputs["total_pressure_2"] ** 2.0
         )
 
-        partials["opr_2", "total_pressure_3"] = np.diag(1.0 / inputs["total_pressure_25"])
-        partials["opr_2", "total_pressure_25"] = -np.diag(
+        partials["opr_2", "total_pressure_3"] = 1.0 / inputs["total_pressure_25"]
+        partials["opr_2", "total_pressure_25"] = -(
             inputs["total_pressure_3"] / inputs["total_pressure_25"] ** 2.0
         )
 
-        partials["opr", "total_pressure_3"] = np.diag(1.0 / inputs["total_pressure_2"])
-        partials["opr", "total_pressure_2"] = -np.diag(
+        partials["opr", "total_pressure_3"] = 1.0 / inputs["total_pressure_2"]
+        partials["opr", "total_pressure_2"] = -(
             inputs["total_pressure_3"] / inputs["total_pressure_2"] ** 2.0
         )
 
@@ -60,21 +76,43 @@ class OverallPressureRatioDesignPoint(om.ExplicitComponent):
         self.add_input(
             "settings:propulsion:turboprop:design_point:first_stage_pressure_ratio",
             val=0.25,
+            units="unitless",
         )
         self.add_input(
             "data:propulsion:turboprop:design_point:OPR",
             shape=n,
             val=np.full(n, np.nan),
+            units="unitless",
         )
 
-        self.add_output("opr_1", shape=n)
-        self.add_output("opr_2", shape=n)
+        self.add_output("opr_1", shape=n, units="unitless")
+        self.add_output("opr_2", shape=n, units="unitless")
 
-        self.declare_partials(of="opr_1", wrt="*", method="exact")
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
+        n = self.options["number_of_points"]
+
+        self.declare_partials(
+            of="opr_1",
+            wrt="settings:propulsion:turboprop:design_point:first_stage_pressure_ratio",
+            method="exact",
+            rows=np.arange(n),
+            cols=np.zeros(n),
+        )
+        self.declare_partials(
+            of="opr_1",
+            wrt="data:propulsion:turboprop:design_point:OPR",
+            method="exact",
+            rows=np.arange(n),
+            cols=np.arange(n),
+        )
         self.declare_partials(
             of="opr_2",
             wrt="settings:propulsion:turboprop:design_point:first_stage_pressure_ratio",
             method="exact",
+            rows=np.arange(n),
+            cols=np.zeros(n),
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
@@ -95,7 +133,7 @@ class OverallPressureRatioDesignPoint(om.ExplicitComponent):
         ]
 
         partials["opr_1", "data:propulsion:turboprop:design_point:OPR"] = (
-            np.eye(n) * opr_ratio_design
+            np.ones(n) * opr_ratio_design
         )
         partials[
             "opr_1",

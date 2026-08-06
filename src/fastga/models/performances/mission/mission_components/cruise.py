@@ -14,19 +14,19 @@
 
 import logging
 import time
+
+import fastoad.api as oad
 import numpy as np
+from fastoad.constants import EngineSetting
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
-import fastoad.api as oad
-from fastoad.constants import EngineSetting
-
 from stdatm import Atmosphere
 
 from fastga.utils.options_checkers import check_propulsion_id
 
-from ..dynamic_equilibrium import DynamicEquilibrium
 from ..constants import SUBMODEL_CRUISE
+from ..dynamic_equilibrium import DynamicEquilibrium
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -60,9 +60,15 @@ class ComputeCruise(DynamicEquilibrium):
 
         self.add_input("data:TLAR:range", np.nan, units="m")
         self.add_input("data:TLAR:v_cruise", val=np.nan, units="m/s")
-        self.add_input("data:aerodynamics:aircraft:cruise:CD0", np.nan)
-        self.add_input("data:aerodynamics:wing:cruise:induced_drag_coefficient", np.nan)
-        self.add_input("data:aerodynamics:horizontal_tail:cruise:induced_drag_coefficient", np.nan)
+        self.add_input("data:aerodynamics:aircraft:cruise:CD0", np.nan, units="unitless")
+        self.add_input(
+            "data:aerodynamics:wing:cruise:induced_drag_coefficient", np.nan, units="unitless"
+        )
+        self.add_input(
+            "data:aerodynamics:horizontal_tail:cruise:induced_drag_coefficient",
+            np.nan,
+            units="unitless",
+        )
         self.add_input("data:weight:aircraft:MTOW", np.nan, units="kg")
         self.add_input("data:mission:sizing:taxi_out:fuel", np.nan, units="kg")
         self.add_input("data:mission:sizing:takeoff:fuel", np.nan, units="kg")
@@ -76,6 +82,9 @@ class ComputeCruise(DynamicEquilibrium):
         self.add_output("data:mission:sizing:main_route:cruise:distance", units="m")
         self.add_output("data:mission:sizing:main_route:cruise:duration", units="s")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
@@ -163,8 +172,8 @@ class ComputeCruise(DynamicEquilibrium):
             # Check calculation duration
             if (time.time() - t_start) > MAX_CALCULATION_TIME:
                 raise Exception(
-                    "Time calculation duration for cruise phase [%f s] exceeded!"
-                    % MAX_CALCULATION_TIME
+                    f"Time calculation duration for cruise phase [{MAX_CALCULATION_TIME} s] "
+                    f"exceeded!"
                 )
 
         # Save results

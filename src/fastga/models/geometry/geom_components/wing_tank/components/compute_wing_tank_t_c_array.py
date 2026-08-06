@@ -41,8 +41,8 @@ class ComputeWingTankRelativeThicknessArray(om.ExplicitComponent):
     def setup(self):
         nb_point_wing = self.options["number_points_wing_mfw"]
 
-        self.add_input("data:geometry:wing:root:thickness_ratio", val=np.nan)
-        self.add_input("data:geometry:wing:tip:thickness_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:root:thickness_ratio", val=np.nan, units="unitless")
+        self.add_input("data:geometry:wing:tip:thickness_ratio", val=np.nan, units="unitless")
         self.add_input("data:geometry:wing:root:y", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:y", val=np.nan, units="m")
         self.add_input(
@@ -56,7 +56,13 @@ class ComputeWingTankRelativeThicknessArray(om.ExplicitComponent):
             "data:geometry:propulsion:tank:relative_thickness_array",
             shape=nb_point_wing,
             val=np.full(nb_point_wing, 0.15),
+            units="unitless",
         )
+
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
+        nb_point_wing = self.options["number_points_wing_mfw"]
 
         self.declare_partials(
             of="data:geometry:propulsion:tank:relative_thickness_array",

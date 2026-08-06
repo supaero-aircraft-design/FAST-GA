@@ -20,14 +20,14 @@ import openmdao.api as om
 
 from .compute_aircraft_length import ComputeAircraftLength
 from .compute_fuselage_cabin_length import ComputeFuselageCabinLength
+from .compute_fuselage_length_fd import ComputeFuselageLengthFD
+from .compute_fuselage_length_fl import ComputeFuselageLengthFL
 from .compute_fuselage_luggage_length import ComputeFuselageLuggageLength
 from .compute_fuselage_max_height import ComputeFuselageMaxHeight
 from .compute_fuselage_max_width import ComputeFuselageMaxWidth
+from .compute_fuselage_nose_length import ComputeFuselageNoseLength
 from .compute_fuselage_npax import ComputeFuselageNPAX
 from .compute_fuselage_pax_length import ComputeFuselagePAXLength
-from .compute_fuselage_length_fd import ComputeFuselageLengthFD
-from .compute_fuselage_length_fl import ComputeFuselageLengthFL
-from .compute_fuselage_nose_length import ComputeFuselageNoseLength
 from .compute_fuselage_rear_length import ComputeFuselageRearLength
 
 
@@ -45,6 +45,9 @@ class ComputeFuselageGeometryBasic(om.ExplicitComponent):
 
         self.add_output("data:geometry:cabin:length", units="m")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials("*", "data:geometry:fuselage:length", val=1.0)
         self.declare_partials(
             "*",

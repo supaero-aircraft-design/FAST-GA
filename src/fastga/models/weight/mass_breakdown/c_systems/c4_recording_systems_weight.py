@@ -14,15 +14,17 @@ Python module for recording systems weight calculation, part of the systems mass
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 
 from .constants import SERVICE_RECORDING_SYSTEM_MASS, SUBMODEL_RECORDING_SYSTEM_MASS_MINIMUM
 
 oad.RegisterSubmodel.active_models[SERVICE_RECORDING_SYSTEM_MASS] = (
     SUBMODEL_RECORDING_SYSTEM_MASS_MINIMUM
 )
+
+NON_COMMUTER_MASS_LIMIT = 5600.0  # In kg
 
 
 @oad.RegisterSubmodel(
@@ -43,6 +45,9 @@ class ComputeRecordingSystemsWeight(om.ExplicitComponent):
 
         self.add_output("data:weight:systems:recording:mass", units="kg")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials(
             "data:weight:systems:recording:mass", "data:weight:aircraft:MTOW", method="fd"
         )
@@ -52,7 +57,7 @@ class ComputeRecordingSystemsWeight(om.ExplicitComponent):
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         mtow = inputs["data:weight:aircraft:MTOW"]
 
-        if mtow > 5600:
+        if mtow > NON_COMMUTER_MASS_LIMIT:
             fdr_weight = 4.8
             cvr_weight = 4.5
             misc_weight = 10.0

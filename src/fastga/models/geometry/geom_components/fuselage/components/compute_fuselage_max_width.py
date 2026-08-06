@@ -32,11 +32,16 @@ class ComputeFuselageMaxWidth(om.ExplicitComponent):
     def setup(self):
         self.add_input("data:geometry:cabin:seats:pilot:width", val=np.nan, units="m")
         self.add_input("data:geometry:cabin:seats:passenger:width", val=np.nan, units="m")
-        self.add_input("data:geometry:cabin:seats:passenger:count_by_row", val=np.nan)
+        self.add_input(
+            "data:geometry:cabin:seats:passenger:count_by_row", val=np.nan, units="unitless"
+        )
         self.add_input("data:geometry:cabin:aisle_width", val=np.nan, units="m")
 
         self.add_output("data:geometry:fuselage:maximum_width", units="m")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="exact")
 
     # pylint: disable=missing-function-docstring, unused-argument

@@ -11,16 +11,16 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
-import fastoad.api as oad
 from stdatm import Atmosphere
 
-from fastga.utils.options_checkers import check_propulsion_id
 from fastga.models.performances.mission_vector.constants import SUBMODEL_ENERGY_CONSUMPTION
+from fastga.utils.options_checkers import check_propulsion_id
 
 oad.RegisterSubmodel.active_models[SUBMODEL_ENERGY_CONSUMPTION] = (
     "fastga.submodel.performances.energy_consumption.ICE"
@@ -74,7 +74,10 @@ class FuelConsumed(om.ExplicitComponent):
             units="m/s",
         )
         self.add_input(
-            "engine_setting_econ", shape=number_of_points + 2, val=np.full(number_of_points + 2, 1)
+            "engine_setting_econ",
+            shape=number_of_points + 2,
+            val=np.full(number_of_points + 2, 1),
+            units="unitless",
         )
 
         self.add_output(
@@ -92,6 +95,7 @@ class FuelConsumed(om.ExplicitComponent):
         self.add_output(
             "thrust_rate_t_econ",
             val=np.full(number_of_points + 2, 0.5),
+            units="unitless",
             desc="thrust ratio at each time step",
         )
 
@@ -109,9 +113,9 @@ class FuelConsumed(om.ExplicitComponent):
             mach=atm.mach,
             altitude=inputs["altitude_econ"],
             engine_setting=engine_setting,
-            thrust_is_regulated=np.full_like(inputs["altitude_econ"], True),
+            thrust_is_regulated=np.full_like(inputs["altitude_econ"], fill_value=True),
             thrust=inputs["thrust_econ"],
-            thrust_rate=np.full_like(inputs["altitude_econ"], 0.0),
+            thrust_rate=np.full_like(inputs["altitude_econ"], fill_value=0.0),
         )
         propulsion_model.compute_flight_points(flight_point)
 

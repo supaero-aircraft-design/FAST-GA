@@ -15,9 +15,9 @@ part of the wing geometry.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 
 from ..constants import SERVICE_WING_X_ABSOLUTE, SUBMODEL_WING_X_ABSOLUTE_LEGACY
 
@@ -40,6 +40,9 @@ class ComputeWingXAbsolute(om.ExplicitComponent):
         self.add_output("data:geometry:wing:tip:leading_edge:x:absolute", units="m")
         self.add_output("data:geometry:wing:MAC:leading_edge:x:absolute", units="m")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials("*", "data:geometry:wing:MAC:at25percent:x", val=1.0)
         self.declare_partials("*", "data:geometry:wing:MAC:length", val=-0.25)
         self.declare_partials(

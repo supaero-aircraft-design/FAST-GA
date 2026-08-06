@@ -14,14 +14,14 @@ Python module for navigation systems weight calculation, part of the systems mas
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 
 from .constants import (
     SERVICE_AVIONICS_SYSTEM_MASS,
-    SUBMODEL_AVIONICS_SYSTEM_MASS_LEGACY,
     SUBMODEL_AVIONICS_SYSTEM_MASS_FROM_UNINSTALLED,
+    SUBMODEL_AVIONICS_SYSTEM_MASS_LEGACY,
 )
 
 oad.RegisterSubmodel.active_models[SERVICE_AVIONICS_SYSTEM_MASS] = (
@@ -48,11 +48,14 @@ class ComputeAvionicsSystemsWeight(om.ExplicitComponent):
     # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="lbm")
-        self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
-        self.add_input("data:geometry:cabin:seats:passenger:NPAX_max", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:count", val=np.nan, units="unitless")
+        self.add_input("data:geometry:cabin:seats:passenger:NPAX_max", val=np.nan, units="unitless")
 
         self.add_output("data:weight:systems:avionics:mass", units="lbm")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials(
             of="data:weight:systems:avionics:mass",
             wrt=["data:weight:aircraft:MTOW", "data:geometry:cabin:seats:passenger:NPAX_max"],
@@ -69,11 +72,7 @@ class ComputeAvionicsSystemsWeight(om.ExplicitComponent):
         n_occ = n_pax + 2.0
         # The formula differs depending on the number of propeller on the engine
 
-        if n_eng == 1.0:
-            c3 = 33.0 * n_occ
-
-        else:
-            c3 = 40 + 0.008 * mtow  # mass formula in lb
+        c3 = 33.0 * n_occ if n_eng == 1.0 else 40 + 0.008 * mtow  # mass formula in lb
 
         outputs["data:weight:systems:avionics:mass"] = c3
 
@@ -121,6 +120,9 @@ class ComputeAvionicsSystemsWeightFromUninstalled(om.ExplicitComponent):
 
         self.add_output("data:weight:systems:avionics:mass", units="lbm")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials("*", "*", method="exact")
 
     # pylint: disable=missing-function-docstring, unused-argument

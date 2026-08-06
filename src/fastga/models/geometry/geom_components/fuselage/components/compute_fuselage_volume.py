@@ -14,9 +14,9 @@ Python module for fuselage volume calculation, part of the fuselage geometry.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 
 from ..constants import SERVICE_FUSELAGE_VOLUME, SUBMODEL_FUSELAGE_VOLUME_LEGACY
 
@@ -45,6 +45,9 @@ class ComputeFuselageVolume(om.ExplicitComponent):
             desc="Volume of the fuselage",
         )
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials("*", "*", method="exact")
 
     # pylint: disable=missing-function-docstring, unused-argument

@@ -11,10 +11,10 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import openmdao.api as om
 import fastoad.api as oad
+import openmdao.api as om
 
-from ..constants import SUBMODEL_DEP_EFFECT, SUBMODEL_EQUILIBRIUM, SUBMODEL_ENERGY_CONSUMPTION
+from ..constants import SUBMODEL_DEP_EFFECT, SUBMODEL_ENERGY_CONSUMPTION, SUBMODEL_EQUILIBRIUM
 from ..mission.energy_consumption_preparation import PrepareForEnergyConsumption
 from ..mission.equilibrium import Equilibrium
 

@@ -15,8 +15,11 @@ Python module for nacelle X - position calculation, part of the nacelle position
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import warnings
+
 import numpy as np
 import openmdao.api as om
+
+from fastga.models.constants import PropulsionLayout
 
 
 class ComputeNacelleXPosition(om.ExplicitComponent):
@@ -33,7 +36,7 @@ class ComputeNacelleXPosition(om.ExplicitComponent):
         self.add_input("data:geometry:wing:MAC:leading_edge:x:local", val=np.nan, units="m")
         self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
-        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan, units="unitless")
         self.add_input("data:geometry:fuselage:length", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:rear_length", val=np.nan, units="m")
         self.add_input("data:geometry:propulsion:nacelle:length", val=np.nan, units="m")
@@ -51,6 +54,9 @@ class ComputeNacelleXPosition(om.ExplicitComponent):
             copy_shape="data:geometry:propulsion:nacelle:y",
         )
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials(
             of="*",
             wrt=[
@@ -84,7 +90,7 @@ class ComputeNacelleXPosition(om.ExplicitComponent):
         x4_wing = inputs["data:geometry:wing:tip:leading_edge:x:local"]
         y4_wing = inputs["data:geometry:wing:tip:y"]
 
-        if prop_layout == 1.0:
+        if prop_layout == PropulsionLayout.UNDER_THE_WING:
             y_nacelle_array = inputs["data:geometry:propulsion:nacelle:y"]
             tapered_mask = y_nacelle_array > y2_wing
             # Nacelle in the tapered part of the wing
@@ -97,15 +103,14 @@ class ComputeNacelleXPosition(om.ExplicitComponent):
                 + delta_x_nacelle
             )
 
-        elif prop_layout == 2.0:
+        elif prop_layout == PropulsionLayout.IN_THE_REAR:
             x_nacelle_array = fus_length - 0.1 * rear_length
-        elif prop_layout == 3.0:
+        elif prop_layout == PropulsionLayout.IN_THE_NOSE:
             x_nacelle_array = nac_length
         else:
             x_nacelle_array = nac_length
             warnings.warn(
-                f"Propulsion layout {prop_layout} not implemented in model, "
-                f"replaced by layout 3!",
+                f"Propulsion layout {prop_layout} not implemented in model, replaced by layout 3!",
                 category=UserWarning,
             )
 
@@ -119,7 +124,7 @@ class ComputeNacelleXPosition(om.ExplicitComponent):
         x4_wing = inputs["data:geometry:wing:tip:leading_edge:x:local"]
         y4_wing = inputs["data:geometry:wing:tip:y"]
 
-        if prop_layout == 1.0:
+        if prop_layout == PropulsionLayout.UNDER_THE_WING:
             y_nacelle_array = inputs["data:geometry:propulsion:nacelle:y"]
             tapered_mask = y_nacelle_array > y2_wing
             # Nacelle in the tapered part of the wing
@@ -169,7 +174,7 @@ class ComputeNacelleXPosition(om.ExplicitComponent):
                 partial_y_nacelle
             )
 
-        elif prop_layout == 2.0:
+        elif prop_layout == PropulsionLayout.IN_THE_REAR:
             partials[
                 "data:geometry:propulsion:nacelle:x", "data:geometry:propulsion:nacelle:length"
             ] = 0.0

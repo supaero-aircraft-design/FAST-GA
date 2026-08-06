@@ -11,10 +11,9 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import numpy as np
-
-import openmdao.api as om
 import fastoad.api as oad
+import numpy as np
+import openmdao.api as om
 
 from fastga.models.aerodynamics.constants import SUBMODEL_CY_BETA_FUSELAGE
 
@@ -37,6 +36,9 @@ class ComputeCyBetaFuselage(om.ExplicitComponent):
 
         self.add_output("data:aerodynamics:fuselage:Cy_beta", units="rad**-1")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
@@ -49,10 +51,7 @@ class ComputeCyBetaFuselage(om.ExplicitComponent):
 
         z2_ratio = 2.0 * z2_wing / ave_fuse_diameter
 
-        if z2_ratio >= 0:
-            k_i = 1 + 0.49 * z2_ratio
-        else:
-            k_i = 1 - 0.85 * z2_ratio
+        k_i = 1 + 0.49 * z2_ratio if z2_ratio >= 0 else 1 - 0.85 * z2_ratio
 
         # Station x0 is assumed to be in the cylindrical part of the fuselage
         s_0_fus = np.pi * (ave_fuse_diameter / 2) ** 2

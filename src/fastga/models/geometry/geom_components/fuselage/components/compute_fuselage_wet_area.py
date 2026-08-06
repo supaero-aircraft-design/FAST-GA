@@ -14,14 +14,14 @@ Python module for fuselage wet area calculation, part of the fuselage geometry.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 
 from ..constants import (
     SERVICE_FUSELAGE_WET_AREA,
-    SUBMODEL_FUSELAGE_WET_AREA_LEGACY,
     SUBMODEL_FUSELAGE_WET_AREA_FLOPS,
+    SUBMODEL_FUSELAGE_WET_AREA_LEGACY,
 )
 
 oad.RegisterSubmodel.active_models[SERVICE_FUSELAGE_WET_AREA] = SUBMODEL_FUSELAGE_WET_AREA_LEGACY
@@ -46,6 +46,9 @@ class ComputeFuselageWetArea(om.ExplicitComponent):
 
         self.add_output("data:geometry:fuselage:wet_area", units="m**2")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials("data:geometry:fuselage:wet_area", "*", method="exact")
 
     # pylint: disable=missing-function-docstring, unused-argument
@@ -106,6 +109,9 @@ class ComputeFuselageWetAreaFLOPS(om.ExplicitComponent):
 
         self.add_output("data:geometry:fuselage:wet_area", units="m**2")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials("data:geometry:fuselage:wet_area", "*", method="exact")
 
     # pylint: disable=missing-function-docstring, unused-argument

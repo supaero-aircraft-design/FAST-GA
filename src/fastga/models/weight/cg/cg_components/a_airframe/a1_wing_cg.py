@@ -12,11 +12,13 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 
 from ..constants import SUBMODEL_WING_CG
+
+MAX_SWEEP_STRAIGHT_WING = 5.0  # In deg
 
 
 @oad.RegisterSubmodel(SUBMODEL_WING_CG, "fastga.submodel.weight.cg.airframe.wing.legacy")
@@ -33,7 +35,7 @@ class ComputeWingCG(om.ExplicitComponent):
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="deg")
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
-        self.add_input("data:geometry:flap:chord_ratio", val=0.2)
+        self.add_input("data:geometry:flap:chord_ratio", val=0.2, units="unitless")
         self.add_input("data:geometry:wing:root:virtual_chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:root:y", val=np.nan, units="m")
@@ -41,6 +43,9 @@ class ComputeWingCG(om.ExplicitComponent):
 
         self.add_output("data:weight:airframe:wing:CG:x", units="m")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
@@ -54,7 +59,7 @@ class ComputeWingCG(om.ExplicitComponent):
         l4_wing = inputs["data:geometry:wing:tip:chord"]
         y4_wing = inputs["data:geometry:wing:tip:y"]
 
-        if sweep_25 < 5.0:
+        if sweep_25 < MAX_SWEEP_STRAIGHT_WING:
             y_cg = 0.40 * span / 2.0
 
             if y_cg < y2_wing:

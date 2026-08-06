@@ -12,20 +12,20 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import os.path as pth
+import pathlib
 
 from ..propeller.analysis_and_plots_propeller import (
     propeller_coeff_map_plot,
     propeller_efficiency_map_plot,
 )
 
-DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
+DATA_FOLDER_PATH = pathlib.Path(__file__).parent / "data"
 
 
 def test_efficiency_map_plot():
     """Basic tests for testing the plotting."""
 
-    filename = pth.join(DATA_FOLDER_PATH, "problem_outputs_propeller.xml")
+    filename = DATA_FOLDER_PATH / "problem_outputs_propeller.xml"
 
     # First plot
     # This is a rudimentary test as plot are difficult to verify
@@ -41,7 +41,7 @@ def test_efficiency_map_plot():
 def test_coefficient_map_plot():
     """Basic tests for testing the plotting."""
 
-    filename = pth.join(DATA_FOLDER_PATH, "problem_outputs_propeller.xml")
+    filename = DATA_FOLDER_PATH / "problem_outputs_propeller.xml"
 
     # First plot
     # This is a rudimentary test as plot are difficult to verify

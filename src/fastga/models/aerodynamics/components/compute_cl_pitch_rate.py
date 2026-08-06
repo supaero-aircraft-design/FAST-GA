@@ -11,12 +11,11 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import numpy as np
-
-import openmdao.api as om
 import fastoad.api as oad
+import numpy as np
+import openmdao.api as om
 
-from ..constants import SUBMODEL_CL_Q, SUBMODEL_CL_Q_WING, SUBMODEL_CL_Q_HT
+from ..constants import SUBMODEL_CL_Q, SUBMODEL_CL_Q_HT, SUBMODEL_CL_Q_WING
 
 
 @oad.RegisterSubmodel(SUBMODEL_CL_Q, "submodel.aerodynamics.aircraft.cl_pitch_velocity.legacy")
@@ -83,7 +82,10 @@ class _SumCLPitchVelocityContributions(om.ExplicitComponent):
 
             self.add_output("data:aerodynamics:aircraft:cruise:CL_q", units="rad**-1")
 
-        self.declare_partials(of="*", wrt="*", method="exact")
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
+        self.declare_partials(of="*", wrt="*", method="exact", val=1.0)
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         if self.options["low_speed_aero"]:
@@ -96,21 +98,3 @@ class _SumCLPitchVelocityContributions(om.ExplicitComponent):
                 inputs["data:aerodynamics:wing:cruise:CL_q"]
                 + inputs["data:aerodynamics:horizontal_tail:cruise:CL_q"]
             )
-
-    def compute_partials(self, inputs, partials, discrete_inputs=None):
-        if self.options["low_speed_aero"]:
-            partials[
-                "data:aerodynamics:aircraft:low_speed:CL_q", "data:aerodynamics:wing:low_speed:CL_q"
-            ] = 1.0
-            partials[
-                "data:aerodynamics:aircraft:low_speed:CL_q",
-                "data:aerodynamics:horizontal_tail:low_speed:CL_q",
-            ] = 1.0
-        else:
-            partials[
-                "data:aerodynamics:aircraft:cruise:CL_q", "data:aerodynamics:wing:cruise:CL_q"
-            ] = 1.0
-            partials[
-                "data:aerodynamics:aircraft:cruise:CL_q",
-                "data:aerodynamics:horizontal_tail:cruise:CL_q",
-            ] = 1.0

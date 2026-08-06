@@ -41,6 +41,8 @@ class UpdateMass(om.ExplicitComponent):
             "mass", shape=number_of_points, val=np.full(number_of_points, 1500.0), units="kg"
         )
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials("*", "*", method="exact")
 

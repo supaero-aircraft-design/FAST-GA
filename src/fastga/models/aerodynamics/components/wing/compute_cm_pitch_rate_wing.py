@@ -11,12 +11,11 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 
-import fastoad.api as oad
-
 from ..figure_digitization import FigureDigitization
-from ...constants import SUBMODEL_CM_Q_WING
+from ...constants import LIMIT_MACH_COMPRESSIBILITY_EFFECT, SUBMODEL_CM_Q_WING
 
 
 @oad.RegisterSubmodel(
@@ -38,22 +37,25 @@ class ComputeCMPitchVelocityWing(FigureDigitization):
         self.options.declare("low_speed_aero", default=False, types=bool)
 
     def setup(self):
-        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan, units="unitless")
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="rad")
         self.add_input("data:geometry:wing:root:z", units="m", val=np.nan)
 
         if self.options["low_speed_aero"]:
-            self.add_input("data:aerodynamics:low_speed:mach", val=np.nan)
+            self.add_input("data:aerodynamics:low_speed:mach", val=np.nan, units="unitless")
             self.add_input("data:aerodynamics:wing:low_speed:CL_alpha", val=np.nan, units="rad**-1")
 
             self.add_output("data:aerodynamics:wing:low_speed:Cm_q", units="rad**-1")
 
         else:
-            self.add_input("data:aerodynamics:cruise:mach", val=np.nan)
+            self.add_input("data:aerodynamics:cruise:mach", val=np.nan, units="unitless")
             self.add_input("data:aerodynamics:wing:cruise:CL_alpha", val=np.nan, units="rad**-1")
 
             self.add_output("data:aerodynamics:wing:cruise:Cm_q", units="rad**-1")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
@@ -85,7 +87,7 @@ class ComputeCMPitchVelocityWing(FigureDigitization):
             )
         )
 
-        if mach > 0.2:
+        if mach > LIMIT_MACH_COMPRESSIBILITY_EFFECT:
             a1_coeff = (wing_ar**3.0 * np.tan(wing_sweep_25) ** 2.0) / (
                 wing_ar * np.sqrt(1.0 - (mach * np.cos(wing_sweep_25)) ** 2.0)
                 + 6.0 * np.cos(wing_sweep_25)

@@ -14,19 +14,19 @@ Estimation of slipstream effects using OPENVSP.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-from stdatm import Atmosphere
-
-import fastoad.api as oad
+from fastoad._utils.arrays import scalarize
+from fastoad.constants import EngineSetting
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
-from fastoad.constants import EngineSetting
+from stdatm import Atmosphere
 
 from fastga.utils.options_checkers import check_propulsion_id
 
-from .openvsp import OpenVSPSimpleGeometryDP, DEFAULT_WING_AIRFOIL
+from .openvsp import DEFAULT_WING_AIRFOIL, OpenVSPSimpleGeometryDP
 from ...components.compute_reynolds import ComputeUnitReynolds
 from ...constants import SPAN_MESH_POINT, SUBMODEL_THRUST_POWER_SLIPSTREAM
 
@@ -150,15 +150,17 @@ class _ComputeSlipstreamOpenvsp(OpenVSPSimpleGeometryDP):
     def setup(self):
         super().setup()
         if self.options["low_speed_aero"]:
-            self.add_input("data:aerodynamics:low_speed:mach", val=np.nan)
-            self.add_input("data:aerodynamics:wing:low_speed:CL0_clean", val=np.nan)
+            self.add_input("data:aerodynamics:low_speed:mach", val=np.nan, units="unitless")
+            self.add_input(
+                "data:aerodynamics:wing:low_speed:CL0_clean", val=np.nan, units="unitless"
+            )
             self.add_input("data:aerodynamics:wing:low_speed:CL_alpha", val=np.nan, units="deg**-1")
         else:
-            self.add_input("data:aerodynamics:cruise:mach", val=np.nan)
-            self.add_input("data:aerodynamics:wing:cruise:CL0_clean", val=np.nan)
+            self.add_input("data:aerodynamics:cruise:mach", val=np.nan, units="unitless")
+            self.add_input("data:aerodynamics:wing:cruise:CL0_clean", val=np.nan, units="unitless")
             self.add_input("data:aerodynamics:wing:cruise:CL_alpha", val=np.nan, units="deg**-1")
 
-        self.add_input("data:aerodynamics:wing:low_speed:CL_max_clean")
+        self.add_input("data:aerodynamics:wing:low_speed:CL_max_clean", units="unitless")
         self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="m")
 
         self.add_input("thrust", val=np.nan, units="N")
@@ -173,9 +175,14 @@ class _ComputeSlipstreamOpenvsp(OpenVSPSimpleGeometryDP):
             self.add_output(
                 "data:aerodynamics:slipstream:wing:low_speed:prop_on:CL_vector",
                 shape=SPAN_MESH_POINT,
+                units="unitless",
             )
-            self.add_output("data:aerodynamics:slipstream:wing:low_speed:prop_on:CT_ref")
-            self.add_output("data:aerodynamics:slipstream:wing:low_speed:prop_on:CL")
+            self.add_output(
+                "data:aerodynamics:slipstream:wing:low_speed:prop_on:CT_ref", units="unitless"
+            )
+            self.add_output(
+                "data:aerodynamics:slipstream:wing:low_speed:prop_on:CL", units="unitless"
+            )
             self.add_output(
                 "data:aerodynamics:slipstream:wing:low_speed:prop_on:velocity", units="m/s"
             )
@@ -187,11 +194,15 @@ class _ComputeSlipstreamOpenvsp(OpenVSPSimpleGeometryDP):
             self.add_output(
                 "data:aerodynamics:slipstream:wing:low_speed:prop_off:CL_vector",
                 shape=SPAN_MESH_POINT,
+                units="unitless",
             )
-            self.add_output("data:aerodynamics:slipstream:wing:low_speed:prop_off:CL")
+            self.add_output(
+                "data:aerodynamics:slipstream:wing:low_speed:prop_off:CL", units="unitless"
+            )
             self.add_output(
                 "data:aerodynamics:slipstream:wing:low_speed:only_prop:CL_vector",
                 shape=SPAN_MESH_POINT,
+                units="unitless",
             )
         else:
             self.add_output(
@@ -200,10 +211,14 @@ class _ComputeSlipstreamOpenvsp(OpenVSPSimpleGeometryDP):
                 units="m",
             )
             self.add_output(
-                "data:aerodynamics:slipstream:wing:cruise:prop_on:CL_vector", shape=SPAN_MESH_POINT
+                "data:aerodynamics:slipstream:wing:cruise:prop_on:CL_vector",
+                shape=SPAN_MESH_POINT,
+                units="unitless",
             )
-            self.add_output("data:aerodynamics:slipstream:wing:cruise:prop_on:CT_ref")
-            self.add_output("data:aerodynamics:slipstream:wing:cruise:prop_on:CL")
+            self.add_output(
+                "data:aerodynamics:slipstream:wing:cruise:prop_on:CT_ref", units="unitless"
+            )
+            self.add_output("data:aerodynamics:slipstream:wing:cruise:prop_on:CL", units="unitless")
             self.add_output(
                 "data:aerodynamics:slipstream:wing:cruise:prop_on:velocity", units="m/s"
             )
@@ -213,12 +228,17 @@ class _ComputeSlipstreamOpenvsp(OpenVSPSimpleGeometryDP):
                 units="m",
             )
             self.add_output(
-                "data:aerodynamics:slipstream:wing:cruise:prop_off:CL_vector", shape=SPAN_MESH_POINT
+                "data:aerodynamics:slipstream:wing:cruise:prop_off:CL_vector",
+                units="unitless",
+                shape=SPAN_MESH_POINT,
             )
-            self.add_output("data:aerodynamics:slipstream:wing:cruise:prop_off:CL")
+            self.add_output(
+                "data:aerodynamics:slipstream:wing:cruise:prop_off:CL", units="unitless"
+            )
             self.add_output(
                 "data:aerodynamics:slipstream:wing:cruise:only_prop:CL_vector",
                 shape=SPAN_MESH_POINT,
+                units="unitless",
             )
 
     def check_config(self, logger):
@@ -324,13 +344,24 @@ class FlightConditionsForDPComputation(om.ExplicitComponent):
 
     def setup(self):
         if self.options["low_speed_aero"]:
-            self.add_input("data:aerodynamics:low_speed:mach", val=np.nan)
+            self.add_input("data:aerodynamics:low_speed:mach", val=np.nan, units="unitless")
         else:
-            self.add_input("data:aerodynamics:cruise:mach", val=np.nan)
+            self.add_input("data:aerodynamics:cruise:mach", val=np.nan, units="unitless")
             self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="m")
 
-        self.add_output("mach")
+        self.add_output("mach", units="unitless")
         self.add_output("altitude", units="m")
+
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
+        if self.options["low_speed_aero"]:
+            self.declare_partials("mach", "data:aerodynamics:low_speed:mach", val=1.0)
+        else:
+            self.declare_partials("mach", "data:aerodynamics:cruise:mach", val=1.0)
+            self.declare_partials(
+                "altitude", "data:mission:sizing:main_route:cruise:altitude", val=1.0
+            )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         if self.options["low_speed_aero"]:
@@ -361,7 +392,7 @@ class PropulsionForDPComputation(om.ExplicitComponent):
     def setup(self):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
-        self.add_input("mach", val=np.nan)
+        self.add_input("mach", val=np.nan, units="unitless")
         self.add_input("altitude", val=np.nan, units="m")
 
         self.add_output("thrust", val=0, units="N")
@@ -376,13 +407,13 @@ class PropulsionForDPComputation(om.ExplicitComponent):
             thrust_rate=1.0,
         )
         propulsion_model.compute_flight_points(flight_point)
-        thrust = float(flight_point.thrust)
+        thrust = flight_point.thrust
 
         thrust_one_prop = thrust / inputs["data:geometry:propulsion:engine:count"]
         atm = Atmosphere(inputs["altitude"], altitude_in_feet=False)
         atm.mach = inputs["mach"]
 
-        propeller_efficiency = float(
+        propeller_efficiency = scalarize(
             propulsion_model.engine.propeller_efficiency(thrust_one_prop, atm)
         )
 

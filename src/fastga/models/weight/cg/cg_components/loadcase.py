@@ -15,19 +15,20 @@ New estimation method of center of gravity for all load cases.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import numpy as np
-import scipy.optimize as optimize
-import openmdao.api as om
 import fastoad.api as oad
+import numpy as np
+import openmdao.api as om
 from fastoad.constants import EngineSetting
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
+from scipy import optimize
 from scipy.constants import g
 from stdatm import Atmosphere
 
 from fastga.utils.options_checkers import check_propulsion_id
-from .constants import SUBMODEL_LOADCASE_GROUND_X, SUBMODEL_LOADCASE_FLIGHT_X
+
+from .constants import SUBMODEL_LOADCASE_FLIGHT_X, SUBMODEL_LOADCASE_GROUND_X
 
 
 @oad.RegisterSubmodel(
@@ -50,11 +51,15 @@ class ComputeGroundCGCase(om.ExplicitComponent):
         self.add_input("data:weight:propulsion:unusable_fuel:mass", val=np.nan, units="kg")
         self.add_input("data:weight:propulsion:tank:CG:x", val=np.nan, units="m")
 
-        self.add_output("data:weight:aircraft:CG:ground_condition:max:MAC_position")
-        self.add_output("data:weight:aircraft:CG:ground_condition:min:MAC_position")
+        self.add_output(
+            "data:weight:aircraft:CG:ground_condition:max:MAC_position", units="unitless"
+        )
+        self.add_output(
+            "data:weight:aircraft:CG:ground_condition:min:MAC_position", units="unitless"
+        )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        luggage_mass_max = float(inputs["data:geometry:cabin:luggage:mass_max"])
+        luggage_mass_max = inputs["data:geometry:cabin:luggage:mass_max"].item()
         l0_wing = inputs["data:geometry:wing:MAC:length"]
         fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
         cg_pax = inputs["data:weight:furniture:passenger_seats:CG:x"]
@@ -120,15 +125,19 @@ class ComputeFlightCGCase(om.ExplicitComponent):
 
         self.add_input("data:geometry:cabin:luggage:mass_max", val=np.nan, units="kg")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
-        self.add_input("data:aerodynamics:aircraft:cruise:CD0", val=np.nan)
-        self.add_input("data:aerodynamics:wing:cruise:induced_drag_coefficient", val=np.nan)
-        self.add_input("data:geometry:cabin:seats:passenger:NPAX_max", val=np.nan)
+        self.add_input("data:aerodynamics:aircraft:cruise:CD0", val=np.nan, units="unitless")
+        self.add_input(
+            "data:aerodynamics:wing:cruise:induced_drag_coefficient", val=np.nan, units="unitless"
+        )
+        self.add_input("data:geometry:cabin:seats:passenger:NPAX_max", val=np.nan, units="unitless")
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
         self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:front_length", val=np.nan, units="m")
         self.add_input("data:geometry:cabin:seats:pilot:length", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:PAX_length", val=np.nan, units="m")
-        self.add_input("data:geometry:cabin:seats:passenger:count_by_row", val=np.nan)
+        self.add_input(
+            "data:geometry:cabin:seats:passenger:count_by_row", val=np.nan, units="unitless"
+        )
         self.add_input("data:geometry:cabin:seats:passenger:length", val=np.nan, units="m")
         self.add_input("data:weight:payload:rear_fret:CG:x", val=np.nan, units="m")
         self.add_input("data:weight:aircraft_empty:CG:x", val=np.nan, units="m")
@@ -138,12 +147,16 @@ class ComputeFlightCGCase(om.ExplicitComponent):
         self.add_input("data:weight:propulsion:tank:CG:x", val=np.nan, units="m")
         self.add_input("data:weight:aircraft:MFW", val=np.nan, units="kg")
 
-        self.add_output("data:weight:aircraft:CG:flight_condition:max:MAC_position")
-        self.add_output("data:weight:aircraft:CG:flight_condition:min:MAC_position")
+        self.add_output(
+            "data:weight:aircraft:CG:flight_condition:max:MAC_position", units="unitless"
+        )
+        self.add_output(
+            "data:weight:aircraft:CG:flight_condition:min:MAC_position", units="unitless"
+        )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        luggage_mass_max = float(inputs["data:geometry:cabin:luggage:mass_max"])
-        n_pax_max = inputs["data:geometry:cabin:seats:passenger:NPAX_max"]
+        luggage_mass_max = inputs["data:geometry:cabin:luggage:mass_max"].item()
+        n_pax_max = int(inputs["data:geometry:cabin:seats:passenger:NPAX_max"].item())
         l0_wing = inputs["data:geometry:wing:MAC:length"]
         fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
         lav = inputs["data:geometry:fuselage:front_length"]
@@ -161,7 +174,7 @@ class ComputeFlightCGCase(om.ExplicitComponent):
         l_instr = 0.7
         cg_pilot = lav + l_instr + l_pilot_seat / 2.0
 
-        n_pax_array = np.linspace(0.0, n_pax_max, int(n_pax_max) + 1)
+        n_pax_array = np.linspace(0.0, n_pax_max, n_pax_max + 1)
 
         m_pilot_single = 77.0
         m_pilot_array = np.array([2.0 * m_pilot_single])  # Without the pilots and with the 2 pilots
@@ -178,7 +191,7 @@ class ComputeFlightCGCase(om.ExplicitComponent):
             for m_fuel in m_fuel_array:
                 for m_lug in m_lug_array:
                     for n_pax in n_pax_array:
-                        n_row = np.ceil(n_pax / count_by_row)
+                        n_row = np.ceil(n_pax / count_by_row).item()
 
                         x_cg_pax_fwd = 0.0
                         for idx in range(int(n_row)):
@@ -239,10 +252,8 @@ class ComputeFlightCGCase(om.ExplicitComponent):
         )
 
         propulsion_model.compute_flight_points(flight_point)
-        m_fuel = propulsion_model.get_consumed_mass(flight_point, 30.0 * 60.0)
         # Fuel necessary for a half-hour at max continuous power
-
-        return m_fuel
+        return propulsion_model.get_consumed_mass(flight_point, 30.0 * 60.0)
 
     def max_speed(self, inputs, altitude, mass):
         # noinspection PyTypeChecker
@@ -265,7 +276,7 @@ class ComputeFlightCGCase(om.ExplicitComponent):
             thrust_rate=1.0,
         )
         propulsion_model.compute_flight_points(flight_point)
-        thrust = float(flight_point.thrust)
+        thrust = flight_point.thrust
 
         # Get the necessary thrust to overcome
         cl = (mass * g) / (0.5 * atm.density * wing_area * air_speed**2.0)

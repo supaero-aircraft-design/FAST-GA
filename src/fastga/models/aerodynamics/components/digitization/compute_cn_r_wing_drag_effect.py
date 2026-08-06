@@ -16,9 +16,9 @@ component computation.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+
 import numpy as np
 import openmdao.api as om
-
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -32,9 +32,11 @@ class ComputeWingDragEffectCnr(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
     def setup(self):
-        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan, units="unitless")
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="deg")
-        self.add_input("data:handling_qualities:stick_fixed_static_margin", val=np.nan)
+        self.add_input(
+            "data:handling_qualities:stick_fixed_static_margin", val=np.nan, units="unitless"
+        )
 
         self.add_output("drag_effect", val=0.02, units="unitless")
 

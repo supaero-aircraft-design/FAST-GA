@@ -12,9 +12,9 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 
 from ..constants import SUBMODEL_RECORDING_SYSTEMS_CG
 
@@ -36,6 +36,9 @@ class ComputeRecordingSystemsCG(om.ExplicitComponent):
 
         self.add_output("data:weight:systems:recording:CG:x", units="m")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials(of="*", wrt="data:geometry:fuselage:length", val=1.0)
         self.declare_partials(of="*", wrt="data:geometry:fuselage:rear_length", val=-0.5)
 

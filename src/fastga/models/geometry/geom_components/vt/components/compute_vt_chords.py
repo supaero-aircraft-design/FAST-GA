@@ -14,11 +14,13 @@ Python module for vertical tail chords and span calculations, part of the vertic
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 
 from ..constants import SERVICE_VT_CHORD, SUBMODEL_VT_CHORD_LEGACY
+
+MIN_VT_SPAN = 0.1
 
 
 @oad.RegisterSubmodel(SERVICE_VT_CHORD, SUBMODEL_VT_CHORD_LEGACY)
@@ -28,14 +30,17 @@ class ComputeVTChords(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
     def setup(self):
-        self.add_input("data:geometry:vertical_tail:aspect_ratio", val=np.nan)
+        self.add_input("data:geometry:vertical_tail:aspect_ratio", val=np.nan, units="unitless")
         self.add_input("data:geometry:vertical_tail:area", val=np.nan, units="m**2")
-        self.add_input("data:geometry:vertical_tail:taper_ratio", val=np.nan)
+        self.add_input("data:geometry:vertical_tail:taper_ratio", val=np.nan, units="unitless")
 
         self.add_output("data:geometry:vertical_tail:span", units="m")
         self.add_output("data:geometry:vertical_tail:root:chord", units="m")
         self.add_output("data:geometry:vertical_tail:tip:chord", units="m")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials(
             "data:geometry:vertical_tail:span",
             ["data:geometry:vertical_tail:aspect_ratio", "data:geometry:vertical_tail:area"],
@@ -51,7 +56,7 @@ class ComputeVTChords(om.ExplicitComponent):
         s_v = inputs["data:geometry:vertical_tail:area"]
         taper_vt = inputs["data:geometry:vertical_tail:taper_ratio"]
 
-        b_v = np.sqrt(max(aspect_ratio_vt * s_v, 0.1))
+        b_v = np.sqrt(max(aspect_ratio_vt * s_v, MIN_VT_SPAN))
         # !!!: to avoid 0 division if s_v initialised to 0
         root_chord = s_v * 2.0 / (1.0 + taper_vt) / b_v
         tip_chord = root_chord * taper_vt
@@ -67,7 +72,7 @@ class ComputeVTChords(om.ExplicitComponent):
         taper_vt = inputs["data:geometry:vertical_tail:taper_ratio"]
         aspect_ratio_vt = inputs["data:geometry:vertical_tail:aspect_ratio"]
 
-        if aspect_ratio_vt * s_v < 0.1:
+        if aspect_ratio_vt * s_v < MIN_VT_SPAN:
             partials["data:geometry:vertical_tail:span", "data:geometry:vertical_tail:area"] = 0.0
             partials[
                 "data:geometry:vertical_tail:span", "data:geometry:vertical_tail:aspect_ratio"

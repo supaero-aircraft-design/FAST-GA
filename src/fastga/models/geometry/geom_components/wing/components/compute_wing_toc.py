@@ -15,9 +15,9 @@ geometry.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 
 from ..constants import SERVICE_WING_THICKNESS_RATIO, SUBMODEL_WING_THICKNESS_RATIO_LEGACY
 
@@ -29,15 +29,28 @@ class ComputeWingToc(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
     def setup(self):
-        self.add_input("data:geometry:wing:thickness_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:thickness_ratio", val=np.nan, units="unitless")
 
-        self.add_output("data:geometry:wing:root:thickness_ratio")
-        self.add_output("data:geometry:wing:kink:thickness_ratio")
-        self.add_output("data:geometry:wing:tip:thickness_ratio")
+        self.add_output("data:geometry:wing:root:thickness_ratio", units="unitless")
+        self.add_output("data:geometry:wing:kink:thickness_ratio", units="unitless")
+        self.add_output("data:geometry:wing:tip:thickness_ratio", units="unitless")
 
-        self.declare_partials("data:geometry:wing:root:thickness_ratio", "*", val=1.24)
-        self.declare_partials("data:geometry:wing:kink:thickness_ratio", "*", val=0.94)
-        self.declare_partials("data:geometry:wing:tip:thickness_ratio", "*", val=0.86)
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
+        self.declare_partials(
+            "data:geometry:wing:root:thickness_ratio",
+            "data:geometry:wing:thickness_ratio",
+            val=1.24,
+        )
+        self.declare_partials(
+            "data:geometry:wing:kink:thickness_ratio",
+            "data:geometry:wing:thickness_ratio",
+            val=0.94,
+        )
+        self.declare_partials(
+            "data:geometry:wing:tip:thickness_ratio", "data:geometry:wing:thickness_ratio", val=0.86
+        )
 
     # pylint: disable=missing-function-docstring, unused-argument
     # Overriding OpenMDAO compute, not all arguments are used

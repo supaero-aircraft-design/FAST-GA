@@ -14,8 +14,8 @@ Python module for oil weight calculation, part of the propulsion system mass com
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import openmdao.api as om
 import fastoad.api as oad
+import openmdao.api as om
 from fastoad.constants import EngineSetting
 
 # noinspection PyProtectedMember
@@ -49,6 +49,9 @@ class ComputeOilWeight(om.ExplicitComponent):
 
         self.add_output("data:weight:propulsion:engine_oil:mass", units="lb")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="fd")
 
     # pylint: disable=missing-function-docstring, unused-argument
@@ -64,7 +67,7 @@ class ComputeOilWeight(om.ExplicitComponent):
         propulsion_model.compute_flight_points(flight_point)
 
         # This should give the UNINSTALLED weight
-        sl_thrust_newton = float(flight_point.thrust)
+        sl_thrust_newton = flight_point.thrust
         sl_thrust_lbs = sl_thrust_newton / lbf
 
         b1_2 = 0.082 * n_eng * sl_thrust_lbs**0.65

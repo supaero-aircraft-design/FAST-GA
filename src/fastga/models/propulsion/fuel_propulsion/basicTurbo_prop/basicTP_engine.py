@@ -15,57 +15,59 @@
 
 import logging
 from collections import OrderedDict
-from typing import Union, Sequence, Tuple, Optional
-from scipy.interpolate import RectBivariateSpline
-import numpy as np
-
-import openmdao.api as om
+from collections.abc import Sequence
 
 import fastoad.api as oad
+import numpy as np
+import openmdao.api as om
+from fastoad._utils.arrays import scalarize
 from fastoad.constants import EngineSetting
 from fastoad.exceptions import FastUnknownEngineSettingError
+from scipy.interpolate import RectBivariateSpline
 from stdatm import Atmosphere
 
+from fastga.models.constants import PropulsionLayout
+from fastga.models.propulsion.dict import AddKeyAttributes, DynamicAttributeDict
+from fastga.models.propulsion.fuel_propulsion.base import AbstractFuelPropulsion
 from fastga.models.propulsion.fuel_propulsion.basicTurbo_prop.exceptions import (
     FastBasicICEngineInconsistentInputParametersError,
 )
-from fastga.models.propulsion.fuel_propulsion.base import AbstractFuelPropulsion
-from fastga.models.propulsion.dict import DynamicAttributeDict, AddKeyAttributes
 
 from .turboprop_components.turboshaft_geometry_computation import DesignPointCalculation
+from .turboprop_components.turboshaft_off_design_fuel import Turboshaft
 from .turboprop_components.turboshaft_off_design_max_power import (
-    TurboshaftMaxThrustPowerLimit,
-    TurboshaftMaxThrustOPRLimit,
     TurboshaftMaxThrustITTLimit,
+    TurboshaftMaxThrustOPRLimit,
+    TurboshaftMaxThrustPowerLimit,
     TurboshaftMaxThrustPropellerThrustLimit,
 )
-from .turboprop_components.turboshaft_off_design_fuel import Turboshaft
 
 # Logger for this module
 _LOGGER = logging.getLogger(__name__)
 
 # Set of dictionary keys that are mapped to instance attributes.
 ENGINE_LABELS = {
-    "power_SL": dict(doc="power at sea level in watts."),
-    "mass": dict(doc="Mass in kilograms."),
-    "length": dict(doc="Length in meters."),
-    "height": dict(doc="Height in meters."),
-    "width": dict(doc="Width in meters."),
+    "power_SL": {"doc": "Power at sea level in watts."},
+    "mass": {"doc": "Mass in kilograms."},
+    "length": {"doc": "Length in meters."},
+    "height": {"doc": "Height in meters."},
+    "width": {"doc": "Width in meters."},
 }
 # Set of dictionary keys that are mapped to instance attributes.
 NACELLE_LABELS = {
-    "wet_area": dict(doc="Wet area in meters²."),
-    "length": dict(doc="Length in meters."),
-    "height": dict(doc="Height in meters."),
-    "width": dict(doc="Width in meters."),
+    "wet_area": {"doc": "Wet area in meters²."},
+    "length": {"doc": "Length in meters."},
+    "height": {"doc": "Height in meters."},
+    "width": {"doc": "Width in meters."},
 }
 
 CACHE_MAX_SIZE = 128
 MAX_ITER_NO_LS_PROBLEM = 10
+UPPER_POWER_LIMIT_DIMENSION_REGRESSION = 850.0
 
 
 class BasicTPEngine(AbstractFuelPropulsion):
-    def __init__(
+    def __init__(  # noqa: PLR0913, PLR0915
         self,
         power_design: float,  # In kW
         t_41t_design: float,
@@ -78,17 +80,17 @@ class BasicTPEngine(AbstractFuelPropulsion):
         itt_limit: float,
         power_limit: float,
         opr_limit: float,
-        speed_SL,
-        thrust_SL,
-        thrust_limit_SL,
-        efficiency_SL,
-        speed_CL,
-        thrust_CL,
-        thrust_limit_CL,
-        efficiency_CL,
-        effective_J,
-        effective_efficiency_ls,
-        effective_efficiency_cruise,
+        speed_sl,
+        thrust_sl,
+        thrust_limit_sl,
+        efficiency_sl,
+        speed_cl,
+        thrust_cl,
+        thrust_limit_cl,
+        efficiency_cl,
+        effective_j: float,
+        effective_efficiency_ls: float,
+        effective_efficiency_cruise: float,
         eta_225=0.85,
         eta_253=0.86,
         eta_445=0.86,
@@ -121,22 +123,22 @@ class BasicTPEngine(AbstractFuelPropulsion):
         :param itt_limit: temperature limit between the turbines, in K
         :param power_limit: power limit on the gearbox, in kW
         :param opr_limit: opr limit in the compressor
-        :param speed_SL: array with the speed at which the sea level performance of the propeller
+        :param speed_sl: array with the speed at which the sea level performance of the propeller
         were computed
-        :param thrust_SL: array with the required thrust at which the sea level performance of the
+        :param thrust_sl: array with the required thrust at which the sea level performance of the
         propeller were
         computed
-        :param thrust_limit_SL: array with the limit thrust available at the speed in speed_SL
-        :param efficiency_SL: array containing the sea level efficiency computed at speed_SL and
-        thrust_SL
-        :param speed_CL: array with the speed at which the cruise level performance of the propeller
+        :param thrust_limit_sl: array with the limit thrust available at the speed in speed_sl
+        :param efficiency_sl: array containing the sea level efficiency computed at speed_sl and
+        thrust_sl
+        :param speed_cl: array with the speed at which the cruise level performance of the propeller
         were computed
-        :param thrust_CL: array with the required thrust at which the cruise level performance of
+        :param thrust_cl: array with the required thrust at which the cruise level performance of
         the propeller were
         computed
-        :param thrust_limit_CL: array with the limit thrust available at the speed in speed_CL
-        :param efficiency_CL: array containing the cruise level efficiency computed at speed_CL and
-        thrust_CL
+        :param thrust_limit_cl: array with the limit thrust available at the speed in speed_cl
+        :param efficiency_cl: array containing the cruise level efficiency computed at speed_cl and
+        thrust_cl
         :param eta_225: first compressor stage polytropic efficiency
         :param eta_253: second compressor stage polytropic efficiency
         :param eta_445: high pressure turbine  polytropic efficiency
@@ -210,17 +212,17 @@ class BasicTPEngine(AbstractFuelPropulsion):
         self.design_mach = np.array(design_mach).item()
         self.fuel_type = 3.0  # Turboprops only use JetFuel
         self.idle_thrust_rate = 0.01
-        self.speed_SL = speed_SL
-        self.thrust_SL = thrust_SL
-        self.thrust_limit_SL = thrust_limit_SL
-        self.efficiency_SL = efficiency_SL
-        self.speed_CL = speed_CL
-        self.thrust_CL = thrust_CL
-        self.thrust_limit_CL = thrust_limit_CL
-        self.efficiency_CL = efficiency_CL
-        self.effective_J = float(effective_J)
-        self.effective_efficiency_ls = float(effective_efficiency_ls)
-        self.effective_efficiency_cruise = float(effective_efficiency_cruise)
+        self.speed_sl = speed_sl
+        self.thrust_sl = thrust_sl
+        self.thrust_limit_sl = thrust_limit_sl
+        self.efficiency_sl = efficiency_sl
+        self.speed_cl = speed_cl
+        self.thrust_cl = thrust_cl
+        self.thrust_limit_cl = thrust_limit_cl
+        self.efficiency_cl = efficiency_cl
+        self.effective_j = effective_j
+        self.effective_efficiency_ls = effective_efficiency_ls
+        self.effective_efficiency_cruise = effective_efficiency_cruise
         self.specific_shape = None
 
         # Declare sub-components attribute
@@ -242,7 +244,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
         }
 
         # ... so check that all EngineSetting values are in dict
-        unknown_keys = [key for key in EngineSetting if key not in self.mixture_values.keys()]
+        unknown_keys = [key for key in EngineSetting if key not in self.mixture_values]
         if unknown_keys:
             raise FastUnknownEngineSettingError("Unknown flight phases: %s", unknown_keys)
 
@@ -293,19 +295,19 @@ class BasicTPEngine(AbstractFuelPropulsion):
             ivc.add_output(
                 "compressor_bleed_mass_flow", val=self.inter_compressor_bleed, units="kg/s"
             )
-            ivc.add_output("cooling_bleed_ratio", val=self.cooling_ratio)
+            ivc.add_output("cooling_bleed_ratio", val=self.cooling_ratio, units="unitless")
             # Some parameters were hard-coded in previous version of the code, we'll leave them
             # like that for now
             ivc.add_output("cabin_air_renewal_time", val=2.0, units="min")
             ivc.add_output("data:geometry:cabin:volume", val=5.0, units="m**3")
-            ivc.add_output("bleed_control", val=1.0)  # Hard-coded at 1.0
+            ivc.add_output("bleed_control", val=1.0, units="unitless")  # Hard-coded at 1.0
 
-            ivc.add_output("eta_225", val=self.eta_225)
-            ivc.add_output("eta_253", val=self.eta_253)
-            ivc.add_output("eta_445", val=self.eta_445)
-            ivc.add_output("eta_455", val=self.eta_455)
-            ivc.add_output("total_pressure_loss_02", val=self.pi_02)
-            ivc.add_output("pressure_loss_34", val=self.pi_cc)
+            ivc.add_output("eta_225", val=self.eta_225, units="unitless")
+            ivc.add_output("eta_253", val=self.eta_253, units="unitless")
+            ivc.add_output("eta_445", val=self.eta_445, units="unitless")
+            ivc.add_output("eta_455", val=self.eta_455, units="unitless")
+            ivc.add_output("total_pressure_loss_02", val=self.pi_02, units="unitless")
+            ivc.add_output("pressure_loss_34", val=self.pi_cc, units="unitless")
             ivc.add_output("combustion_energy", val=self.eta_q, units="J/kg")
 
             ivc.add_output("electric_power", val=self.hp_shaft_power_out / 745.7, units="hp")
@@ -313,18 +315,22 @@ class BasicTPEngine(AbstractFuelPropulsion):
             ivc.add_output(
                 "settings:propulsion:turboprop:design_point:first_stage_pressure_ratio",
                 val=self.pr_1_ratio_design,
+                units="unitless",
             )
             ivc.add_output(
                 "settings:propulsion:turboprop:efficiency:high_pressure_axe",
                 val=self.eta_axe,
+                units="unitless",
             )
             ivc.add_output(
                 "settings:propulsion:turboprop:efficiency:gearbox",
                 val=self.gearbox_efficiency,
+                units="unitless",
             )
             ivc.add_output(
                 "settings:propulsion:turboprop:design_point:mach_exhaust",
                 val=self.exhaust_mach_design,
+                units="unitless",
             )
 
             ivc.add_output(
@@ -333,7 +339,9 @@ class BasicTPEngine(AbstractFuelPropulsion):
                 units="m",
             )
             ivc.add_output(
-                "data:propulsion:turboprop:design_point:mach", val=self.design_point_mach
+                "data:propulsion:turboprop:design_point:mach",
+                val=self.design_point_mach,
+                units="unitless",
             )
             ivc.add_output(
                 "data:propulsion:turboprop:design_point:power",
@@ -348,6 +356,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
             ivc.add_output(
                 "data:propulsion:turboprop:design_point:OPR",
                 val=self.opr_d,
+                units="unitless",
             )
 
             prob = om.Problem(reports=False)
@@ -394,81 +403,100 @@ class BasicTPEngine(AbstractFuelPropulsion):
             units="m",
         )
         ivc.add_output(
-            "data:aerodynamics:propeller:sea_level:speed", val=self.speed_SL, units="m/s"
+            "data:aerodynamics:propeller:sea_level:speed", val=self.speed_sl, units="m/s"
         )
         ivc.add_output(
-            "data:aerodynamics:propeller:cruise_level:speed", val=self.speed_CL, units="m/s"
+            "data:aerodynamics:propeller:cruise_level:speed", val=self.speed_cl, units="m/s"
         )
         ivc.add_output(
-            "data:aerodynamics:propeller:sea_level:thrust", val=self.thrust_SL, units="N"
+            "data:aerodynamics:propeller:sea_level:thrust", val=self.thrust_sl, units="N"
         )
         ivc.add_output(
-            "data:aerodynamics:propeller:cruise_level:thrust", val=self.thrust_CL, units="N"
+            "data:aerodynamics:propeller:cruise_level:thrust", val=self.thrust_cl, units="N"
         )
         ivc.add_output(
             "data:aerodynamics:propeller:sea_level:thrust_limit",
-            val=self.thrust_limit_SL,
+            val=self.thrust_limit_sl,
             units="N",
         )
         ivc.add_output(
             "data:aerodynamics:propeller:cruise_level:thrust_limit",
-            val=self.thrust_limit_CL,
+            val=self.thrust_limit_cl,
             units="N",
         )
-        ivc.add_output("data:aerodynamics:propeller:sea_level:efficiency", val=self.efficiency_SL)
         ivc.add_output(
-            "data:aerodynamics:propeller:cruise_level:efficiency", val=self.efficiency_CL
+            "data:aerodynamics:propeller:sea_level:efficiency",
+            val=self.efficiency_sl,
+            units="unitless",
+        )
+        ivc.add_output(
+            "data:aerodynamics:propeller:cruise_level:efficiency",
+            val=self.efficiency_cl,
+            units="unitless",
         )
 
-        ivc.add_output("eta_225", val=self.eta_225)
-        ivc.add_output("eta_253", val=self.eta_253)
-        ivc.add_output("eta_455", val=self.eta_455)
-        ivc.add_output("total_pressure_loss_02", val=self.pi_02)
-        ivc.add_output("pressure_loss_34", val=self.pi_cc)
+        ivc.add_output("eta_225", val=self.eta_225, units="unitless")
+        ivc.add_output("eta_253", val=self.eta_253, units="unitless")
+        ivc.add_output("eta_455", val=self.eta_455, units="unitless")
+        ivc.add_output("total_pressure_loss_02", val=self.pi_02, units="unitless")
+        ivc.add_output("pressure_loss_34", val=self.pi_cc, units="unitless")
         ivc.add_output("combustion_energy", val=self.eta_q, units="J/kg")
 
         ivc.add_output("electric_power", val=self.hp_shaft_power_out / 745.7, units="hp")
 
-        ivc.add_output("cooling_bleed_ratio", val=self.cooling_ratio)
+        ivc.add_output("cooling_bleed_ratio", val=self.cooling_ratio, units="unitless")
         ivc.add_output("compressor_bleed_mass_flow", val=self.inter_compressor_bleed, units="kg/s")
         # Some parameters were hard-coded in previous version of the code, we'll leave them
         # like that for now
         ivc.add_output("cabin_air_renewal_time", val=2.0, units="min")
         ivc.add_output("data:geometry:cabin:volume", val=5.0, units="m**3")
-        ivc.add_output("bleed_control", val=self.bleed_control)
+        ivc.add_output("bleed_control", val=self.bleed_control, units="unitless")
 
         ivc.add_output(
             "settings:propulsion:turboprop:efficiency:high_pressure_axe",
             val=self.eta_axe,
+            units="unitless",
         )
         ivc.add_output(
             "settings:propulsion:turboprop:efficiency:gearbox",
             val=self.gearbox_efficiency,
+            units="unitless",
         )
 
         ivc.add_output("data:propulsion:turboprop:section:41", val=self.a_41, units="m**2")
         ivc.add_output("data:propulsion:turboprop:section:45", val=self.a_45, units="m**2")
         ivc.add_output("data:propulsion:turboprop:section:8", val=self.a_8, units="m**2")
-        ivc.add_output("data:propulsion:turboprop:design_point:alpha", val=self.alpha)
-        ivc.add_output("data:propulsion:turboprop:design_point:alpha_p", val=self.alpha_p)
-        ivc.add_output("data:propulsion:turboprop:design_point:opr_2_opr_1", val=self.opr_2_opr_1)
+        ivc.add_output(
+            "data:propulsion:turboprop:design_point:alpha", val=self.alpha, units="unitless"
+        )
+        ivc.add_output(
+            "data:propulsion:turboprop:design_point:alpha_p", val=self.alpha_p, units="unitless"
+        )
+        ivc.add_output(
+            "data:propulsion:turboprop:design_point:opr_2_opr_1",
+            val=self.opr_2_opr_1,
+            units="unitless",
+        )
 
         ivc.add_output(
             "data:aerodynamics:propeller:installation_effect:effective_efficiency:low_speed",
             val=self.effective_efficiency_ls,
+            units="unitless",
         )
         ivc.add_output(
             "data:aerodynamics:propeller:installation_effect:effective_efficiency:cruise",
             val=self.effective_efficiency_cruise,
+            units="unitless",
         )
         ivc.add_output(
             "data:aerodynamics:propeller:installation_effect:effective_advance_ratio",
-            val=self.effective_J,
+            val=self.effective_j,
+            units="unitless",
         )
 
         ivc.add_output("itt_limit", val=self.itt_limit, units="degK")
         ivc.add_output("shaft_power_limit", val=self.max_power_avail, units="kW")
-        ivc.add_output("opr_limit", val=self.opr_limit)
+        ivc.add_output("opr_limit", val=self.opr_limit, units="unitless")
 
         return ivc
 
@@ -913,12 +941,12 @@ class BasicTPEngine(AbstractFuelPropulsion):
 
     def _compute_flight_points(
         self,
-        mach: Union[float, Sequence],
-        altitude: Union[float, Sequence],
-        thrust_is_regulated: Optional[Union[bool, Sequence]] = None,
-        thrust_rate: Optional[Union[float, Sequence]] = None,
-        thrust: Optional[Union[float, Sequence]] = None,
-    ) -> Tuple[Union[float, Sequence], Union[float, Sequence], Union[float, Sequence]]:
+        mach: float | Sequence,
+        altitude: float | Sequence,
+        thrust_is_regulated: bool | Sequence | None = None,  # noqa: FBT001
+        thrust_rate: float | Sequence | None = None,
+        thrust: float | Sequence | None = None,
+    ) -> tuple[float | Sequence, float | Sequence, float | Sequence]:
         """
         Same as :meth:`compute_flight_points`.
 
@@ -985,11 +1013,11 @@ class BasicTPEngine(AbstractFuelPropulsion):
         return sfc_thrust, out_thrust_rate, out_thrust
 
     @staticmethod
-    def _check_thrust_inputs(
-        thrust_is_regulated: Optional[Union[float, Sequence]],
-        thrust_rate: Optional[Union[float, Sequence]],
-        thrust: Optional[Union[float, Sequence]],
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    def _check_thrust_inputs(  # noqa: PLR0912
+        thrust_is_regulated: float | Sequence | None,
+        thrust_rate: float | Sequence | None,
+        thrust: float | Sequence | None,
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         Checks that inputs are consistent and return them in proper shape.
         Some of the inputs can be None, but outputs will be proper numpy arrays.
@@ -1073,7 +1101,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
         prob_max_thrust_power_limit = self.turboprop_max_thrust_power_limit_problem
 
         prob_max_thrust_power_limit.set_val("altitude", val=altitude, units="ft")
-        prob_max_thrust_power_limit.set_val("mach_0", val=mach)
+        prob_max_thrust_power_limit.set_val("mach_0", val=mach, units="unitless")
 
         prob_max_thrust_power_limit.run_model()
 
@@ -1081,13 +1109,12 @@ class BasicTPEngine(AbstractFuelPropulsion):
         if prob_max_thrust_power_limit.get_val("opr") < prob_max_thrust_power_limit.get_val(
             "opr_limit"
         ):
-            max_power = prob_max_thrust_power_limit.get_val("shaft_power", units="kW")
-            return max_power
+            return prob_max_thrust_power_limit.get_val("shaft_power", units="kW")
 
         prob_max_thrust_opr_limit = self.turboprop_max_thrust_opr_limit_problem
 
         prob_max_thrust_opr_limit.set_val("altitude", val=altitude, units="ft")
-        prob_max_thrust_opr_limit.set_val("mach_0", val=mach)
+        prob_max_thrust_opr_limit.set_val("mach_0", val=mach, units="unitless")
 
         prob_max_thrust_opr_limit.run_model()
 
@@ -1096,13 +1123,12 @@ class BasicTPEngine(AbstractFuelPropulsion):
         if prob_max_thrust_opr_limit.get_val(
             "total_temperature_45", units="degK"
         ) < prob_max_thrust_opr_limit.get_val("itt_limit", units="degK"):
-            max_power = prob_max_thrust_opr_limit.get_val("shaft_power", units="kW")
-            return max_power
+            return prob_max_thrust_opr_limit.get_val("shaft_power", units="kW")
 
         prob_max_thrust_itt_limit = self.turboprop_max_thrust_itt_limit_problem
 
         prob_max_thrust_itt_limit.set_val("altitude", val=altitude, units="ft")
-        prob_max_thrust_itt_limit.set_val("mach_0", val=mach)
+        prob_max_thrust_itt_limit.set_val("mach_0", val=mach, units="unitless")
 
         prob_max_thrust_itt_limit.run_model()
 
@@ -1111,22 +1137,20 @@ class BasicTPEngine(AbstractFuelPropulsion):
         if prob_max_thrust_itt_limit.get_val(
             "propeller_thrust", units="N"
         ) < prob_max_thrust_itt_limit.get_val("propeller_max_thrust", units="N"):
-            max_power = prob_max_thrust_itt_limit.get_val("shaft_power", units="kW")
-            return max_power
+            return prob_max_thrust_itt_limit.get_val("shaft_power", units="kW")
 
         prob_max_thrust_propeller_thrust_limit = (
             self.turboprop_max_thrust_propeller_thrust_limit_problem
         )
 
         prob_max_thrust_propeller_thrust_limit.set_val("altitude", val=altitude, units="ft")
-        prob_max_thrust_propeller_thrust_limit.set_val("mach_0", val=mach)
+        prob_max_thrust_propeller_thrust_limit.set_val("mach_0", val=mach, units="unitless")
 
         prob_max_thrust_propeller_thrust_limit.run_model()
 
-        max_power = prob_max_thrust_propeller_thrust_limit.get_val("shaft_power", units="kW")
-        return max_power
+        return prob_max_thrust_propeller_thrust_limit.get_val("shaft_power", units="kW")
 
-    def compute_max_power(self, flight_points: oad.FlightPoint) -> Union[float, Sequence]:
+    def compute_max_power(self, flight_points: oad.FlightPoint) -> float | Sequence:
         """
         Compute the turboprop maximum power @ given flight-point. We'll assume the max power
         happens when the max_thrust does so we'll use the same OpenMDAO problem.
@@ -1138,15 +1162,13 @@ class BasicTPEngine(AbstractFuelPropulsion):
         altitude_feet = flight_points.altitude / 0.3048
         mach = flight_points.mach
 
-        power_out = self._max_power(altitude_feet, mach)
-
-        return power_out
+        return self._max_power(altitude_feet, mach)
 
     def sfc(
         self,
-        thrust: Union[float, Sequence[float]],
+        thrust: float | Sequence[float],
         atmosphere: Atmosphere,
-    ) -> Tuple[np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray]:
         """
         Computation of the SFC.
 
@@ -1189,7 +1211,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
 
         self._cache_max_thrust[key] = value
 
-    def _max_thrust(self, altitude: float, mach: float):
+    def _max_thrust(self, altitude: float, mach: float) -> float:
         """
         Computation of maximum thrust either due to propeller thrust limit or turboprop max
         power. Assumes the limits are reached in this order: Power limit, OPR limit, ITT limit,
@@ -1210,7 +1232,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
         prob_max_thrust_power_limit = self.turboprop_max_thrust_power_limit_problem
 
         prob_max_thrust_power_limit.set_val("altitude", val=altitude, units="ft")
-        prob_max_thrust_power_limit.set_val("mach_0", val=mach)
+        prob_max_thrust_power_limit.set_val("mach_0", val=mach, units="unitless")
 
         prob_max_thrust_power_limit.run_model()
 
@@ -1218,14 +1240,14 @@ class BasicTPEngine(AbstractFuelPropulsion):
         if prob_max_thrust_power_limit.get_val("opr") < prob_max_thrust_power_limit.get_val(
             "opr_limit"
         ):
-            max_thrust = prob_max_thrust_power_limit.get_val("required_thrust", units="N")
-            self._add_to_max_thrust_cache(cache_key, max_thrust[0])
+            max_thrust = prob_max_thrust_power_limit.get_val("required_thrust", units="N")[0]
+            self._add_to_max_thrust_cache(cache_key, max_thrust)
             return max_thrust
 
         prob_max_thrust_opr_limit = self.turboprop_max_thrust_opr_limit_problem
 
         prob_max_thrust_opr_limit.set_val("altitude", val=altitude, units="ft")
-        prob_max_thrust_opr_limit.set_val("mach_0", val=mach)
+        prob_max_thrust_opr_limit.set_val("mach_0", val=mach, units="unitless")
 
         prob_max_thrust_opr_limit.run_model()
 
@@ -1234,14 +1256,14 @@ class BasicTPEngine(AbstractFuelPropulsion):
         if prob_max_thrust_opr_limit.get_val(
             "total_temperature_45", units="degK"
         ) < prob_max_thrust_opr_limit.get_val("itt_limit", units="degK"):
-            max_thrust = prob_max_thrust_opr_limit.get_val("required_thrust", units="N")
-            self._add_to_max_thrust_cache(cache_key, max_thrust[0])
+            max_thrust = prob_max_thrust_opr_limit.get_val("required_thrust", units="N")[0]
+            self._add_to_max_thrust_cache(cache_key, max_thrust)
             return max_thrust
 
         prob_max_thrust_itt_limit = self.turboprop_max_thrust_itt_limit_problem
 
         prob_max_thrust_itt_limit.set_val("altitude", val=altitude, units="ft")
-        prob_max_thrust_itt_limit.set_val("mach_0", val=mach)
+        prob_max_thrust_itt_limit.set_val("mach_0", val=mach, units="unitless")
 
         prob_max_thrust_itt_limit.run_model()
 
@@ -1250,8 +1272,8 @@ class BasicTPEngine(AbstractFuelPropulsion):
         if prob_max_thrust_itt_limit.get_val(
             "propeller_thrust", units="N"
         ) < prob_max_thrust_itt_limit.get_val("propeller_max_thrust", units="N"):
-            max_thrust = prob_max_thrust_itt_limit.get_val("required_thrust", units="N")
-            self._add_to_max_thrust_cache(cache_key, max_thrust[0])
+            max_thrust = prob_max_thrust_itt_limit.get_val("required_thrust", units="N")[0]
+            self._add_to_max_thrust_cache(cache_key, max_thrust)
             return max_thrust
 
         prob_max_thrust_propeller_thrust_limit = (
@@ -1259,12 +1281,12 @@ class BasicTPEngine(AbstractFuelPropulsion):
         )
 
         prob_max_thrust_propeller_thrust_limit.set_val("altitude", val=altitude, units="ft")
-        prob_max_thrust_propeller_thrust_limit.set_val("mach_0", val=mach)
+        prob_max_thrust_propeller_thrust_limit.set_val("mach_0", val=mach, units="unitless")
 
         prob_max_thrust_propeller_thrust_limit.run_model()
 
-        max_thrust = prob_max_thrust_propeller_thrust_limit.get_val("required_thrust", units="N")
-        self._add_to_max_thrust_cache(cache_key, max_thrust[0])
+        max_thrust = prob_max_thrust_propeller_thrust_limit.get_val("required_thrust", units="N")[0]
+        self._add_to_max_thrust_cache(cache_key, max_thrust)
         return max_thrust
 
     def max_thrust(
@@ -1293,7 +1315,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
 
     def _fuel_consumed(
         self, altitude: float, mach: float, thrust_required: float
-    ) -> Tuple[float, float]:
+    ) -> tuple[float, float]:
         """
         Computes the fuel consumed at the current flight point. Will first attempt to use the no
         ls problem because it is quicker, if it doesn't converge, compute using the ls problem.
@@ -1311,7 +1333,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
         prob_fuel_consumed = self.turboprop_fuel_problem
 
         prob_fuel_consumed.set_val("altitude", val=altitude, units="ft")
-        prob_fuel_consumed.set_val("mach_0", val=mach)
+        prob_fuel_consumed.set_val("mach_0", val=mach, units="unitless")
         prob_fuel_consumed.set_val("required_thrust", val=thrust_required, units="N")
 
         prob_fuel_consumed.run_model()
@@ -1326,7 +1348,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
         prob_fuel_consumed_ls = self.turboprop_fuel_problem_ls
 
         prob_fuel_consumed_ls.set_val("altitude", val=altitude, units="ft")
-        prob_fuel_consumed_ls.set_val("mach_0", val=mach)
+        prob_fuel_consumed_ls.set_val("mach_0", val=mach, units="unitless")
         prob_fuel_consumed_ls.set_val("required_thrust", val=thrust_required, units="N")
 
         prob_fuel_consumed_ls.run_model()
@@ -1337,8 +1359,8 @@ class BasicTPEngine(AbstractFuelPropulsion):
         )
 
     def propeller_efficiency(
-        self, thrust: Union[float, Sequence[float]], atmosphere: Atmosphere
-    ) -> Union[float, Sequence]:
+        self, thrust: float | Sequence[float], atmosphere: Atmosphere
+    ) -> float | Sequence:
         """
         Compute the propeller efficiency.
 
@@ -1348,41 +1370,41 @@ class BasicTPEngine(AbstractFuelPropulsion):
         """
         # Include advance ratio loss in here, we will assume that since we work at constant RPM
         # the change in advance ration is equal to a change in velocity
-        installed_airspeed = atmosphere.true_airspeed * self.effective_J
+        installed_airspeed = atmosphere.true_airspeed * self.effective_j
 
-        propeller_efficiency_SL = RectBivariateSpline(
-            self.thrust_SL,
-            self.speed_SL,
-            self.efficiency_SL.T * self.effective_efficiency_ls,  # Include the efficiency loss
+        propeller_efficiency_sl = RectBivariateSpline(
+            self.thrust_sl,
+            self.speed_sl,
+            self.efficiency_sl.T * self.effective_efficiency_ls,  # Include the efficiency loss
             # in here
         )
-        propeller_efficiency_CL = RectBivariateSpline(
-            self.thrust_CL,
-            self.speed_CL,
-            self.efficiency_CL.T * self.effective_efficiency_cruise,  # Include the efficiency loss
+        propeller_efficiency_cl = RectBivariateSpline(
+            self.thrust_cl,
+            self.speed_cl,
+            self.efficiency_cl.T * self.effective_efficiency_cruise,  # Include the efficiency loss
             # in here
         )
         if isinstance(atmosphere.true_airspeed, float):
-            thrust_interp_SL = np.minimum(
-                np.maximum(np.min(self.thrust_SL), thrust),
-                np.interp(installed_airspeed, self.speed_SL, self.thrust_limit_SL),
+            thrust_interp_sl = np.minimum(
+                np.maximum(np.min(self.thrust_sl), thrust),
+                np.interp(installed_airspeed, self.speed_sl, self.thrust_limit_sl),
             )
-            thrust_interp_CL = np.minimum(
-                np.maximum(np.min(self.thrust_CL), thrust),
-                np.interp(installed_airspeed, self.speed_CL, self.thrust_limit_CL),
+            thrust_interp_cl = np.minimum(
+                np.maximum(np.min(self.thrust_cl), thrust),
+                np.interp(installed_airspeed, self.speed_cl, self.thrust_limit_cl),
             )
         else:
-            thrust_interp_SL = np.minimum(
-                np.maximum(np.min(self.thrust_SL), thrust),
-                np.interp(list(installed_airspeed), self.speed_SL, self.thrust_limit_SL),
+            thrust_interp_sl = np.minimum(
+                np.maximum(np.min(self.thrust_sl), thrust),
+                np.interp(list(installed_airspeed), self.speed_sl, self.thrust_limit_sl),
             )
-            thrust_interp_CL = np.minimum(
-                np.maximum(np.min(self.thrust_CL), thrust),
-                np.interp(list(installed_airspeed), self.speed_CL, self.thrust_limit_CL),
+            thrust_interp_cl = np.minimum(
+                np.maximum(np.min(self.thrust_cl), thrust),
+                np.interp(list(installed_airspeed), self.speed_cl, self.thrust_limit_cl),
             )
         if np.size(thrust) == 1:  # calculate for float
-            lower_bound = float(propeller_efficiency_SL(thrust_interp_SL, installed_airspeed))
-            upper_bound = float(propeller_efficiency_CL(thrust_interp_CL, installed_airspeed))
+            lower_bound = scalarize(propeller_efficiency_sl(thrust_interp_sl, installed_airspeed))
+            upper_bound = scalarize(propeller_efficiency_cl(thrust_interp_cl, installed_airspeed))
             altitude = atmosphere.get_altitude(altitude_in_feet=False)
             propeller_efficiency = np.interp(
                 altitude, [0.0, self.cruise_altitude_propeller], [lower_bound, upper_bound]
@@ -1390,11 +1412,11 @@ class BasicTPEngine(AbstractFuelPropulsion):
         else:  # calculate for array
             propeller_efficiency = np.zeros(np.size(thrust))
             for idx in range(np.size(thrust)):
-                lower_bound = propeller_efficiency_SL(
-                    thrust_interp_SL[idx], installed_airspeed[idx]
+                lower_bound = propeller_efficiency_sl(
+                    thrust_interp_sl[idx], installed_airspeed[idx]
                 )
-                upper_bound = propeller_efficiency_CL(
-                    thrust_interp_CL[idx], installed_airspeed[idx]
+                upper_bound = propeller_efficiency_cl(
+                    thrust_interp_cl[idx], installed_airspeed[idx]
                 )
                 altitude = atmosphere.get_altitude(altitude_in_feet=False)[idx]
                 propeller_efficiency[idx] = (
@@ -1429,7 +1451,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
         max_thermal_power_in_kw = self.design_point_power * 1.34102
 
         # Compute engine dimensions
-        if max_thermal_power_in_kw < 850.0:
+        if max_thermal_power_in_kw < UPPER_POWER_LIMIT_DIMENSION_REGRESSION:
             self.engine.height = (
                 np.interp(max_thermal_power_in_kw, [500.0, 850.0], [21.0, 25.0]) * 0.0254
             )
@@ -1440,7 +1462,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
 
         self.engine.length = (1241.0 + 61.0 * self.opr_d) / 1000.0
 
-        if self.prop_layout == 3.0:
+        if self.prop_layout == PropulsionLayout.IN_THE_NOSE:
             nacelle_length = 1.30 * self.engine.length
             # Based on the length between nose and firewall for TB20 and SR22
         else:
@@ -1481,9 +1503,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
         )
         ff_nac = 1.0 + 0.35 / fineness  # Raymer (seen in Gudmundsson)
         if_nac = 1.2  # Jenkinson (seen in Gudmundsson)
-        drag_force = cf_nac * ff_nac * self.nacelle.wet_area * if_nac
-
-        return drag_force
+        return cf_nac * ff_nac * self.nacelle.wet_area * if_nac
 
 
 @AddKeyAttributes(ENGINE_LABELS)

@@ -12,18 +12,17 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 from openmdao.core.component import Component
 
-import fastoad.api as oad
-
-from fastga.models.propulsion.propulsion import IPropulsion, BaseOMPropulsionComponent
-from fastga.models.propulsion.fuel_propulsion.basicIC_engine.basicIC_engine import BasicICEngine
-from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
 from fastga.models.aerodynamics.external.propeller_code.compute_propeller_aero import (
-    THRUST_PTS_NB,
     SPEED_PTS_NB,
+    THRUST_PTS_NB,
 )
+from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
+from fastga.models.propulsion.fuel_propulsion.basicIC_engine.basicIC_engine import BasicICEngine
+from fastga.models.propulsion.propulsion import BaseOMPropulsionComponent, IPropulsion
 
 
 @oad.RegisterPropulsion("fastga.wrapper.propulsion.basicIC_engine")
@@ -63,14 +62,15 @@ class OMBasicICEngineWrapper(oad.IOMPropulsionWrapper):
 
     def setup(self, component: Component):
         component.add_input("data:propulsion:IC_engine:max_power", np.nan, units="W")
-        component.add_input("data:propulsion:fuel_type", np.nan)
-        component.add_input("data:propulsion:IC_engine:strokes_nb", np.nan)
-        component.add_input("data:geometry:propulsion:engine:layout", np.nan)
+        component.add_input("data:propulsion:fuel_type", np.nan, units="unitless")
+        component.add_input("data:propulsion:IC_engine:strokes_nb", np.nan, units="unitless")
+        component.add_input("data:geometry:propulsion:engine:layout", np.nan, units="unitless")
         component.add_input(
             "settings:propulsion:IC_engine:k_factor_sfc",
             1.0,
             desc="k_factor that can be used to adjust the consumption on engine level to the "
             "aircraft level",
+            units="unitless",
         )
         component.add_input(
             "data:aerodynamics:propeller:sea_level:speed",
@@ -90,6 +90,7 @@ class OMBasicICEngineWrapper(oad.IOMPropulsionWrapper):
         component.add_input(
             "data:aerodynamics:propeller:sea_level:efficiency",
             np.full((SPEED_PTS_NB, THRUST_PTS_NB), np.nan),
+            units="unitless",
         )
         component.add_input(
             "data:aerodynamics:propeller:cruise_level:speed",
@@ -109,22 +110,26 @@ class OMBasicICEngineWrapper(oad.IOMPropulsionWrapper):
         component.add_input(
             "data:aerodynamics:propeller:cruise_level:efficiency",
             np.full((SPEED_PTS_NB, THRUST_PTS_NB), np.nan),
+            units="unitless",
         )
         component.add_input(
             "data:aerodynamics:propeller:cruise_level:altitude", units="m", val=np.nan
         )
-        component.add_input("data:geometry:propulsion:engine:count", val=np.nan)
+        component.add_input("data:geometry:propulsion:engine:count", val=np.nan, units="unitless")
         component.add_input(
             "data:aerodynamics:propeller:installation_effect:effective_efficiency:low_speed",
             val=1.0,
+            units="unitless",
         )
         component.add_input(
             "data:aerodynamics:propeller:installation_effect:effective_efficiency:cruise",
             val=1.0,
+            units="unitless",
         )
         component.add_input(
             "data:aerodynamics:propeller:installation_effect:effective_advance_ratio",
             val=1.0,
+            units="unitless",
         )
 
     @staticmethod
@@ -141,24 +146,24 @@ class OMBasicICEngineWrapper(oad.IOMPropulsionWrapper):
             "fuel_type": inputs["data:propulsion:fuel_type"],
             "strokes_nb": inputs["data:propulsion:IC_engine:strokes_nb"],
             "prop_layout": inputs["data:geometry:propulsion:engine:layout"],
-            "k_factor_sfc": inputs["settings:propulsion:IC_engine:k_factor_sfc"],
-            "speed_SL": inputs["data:aerodynamics:propeller:sea_level:speed"],
-            "thrust_SL": inputs["data:aerodynamics:propeller:sea_level:thrust"],
-            "thrust_limit_SL": inputs["data:aerodynamics:propeller:sea_level:thrust_limit"],
-            "efficiency_SL": inputs["data:aerodynamics:propeller:sea_level:efficiency"],
-            "speed_CL": inputs["data:aerodynamics:propeller:cruise_level:speed"],
-            "thrust_CL": inputs["data:aerodynamics:propeller:cruise_level:thrust"],
-            "thrust_limit_CL": inputs["data:aerodynamics:propeller:cruise_level:thrust_limit"],
-            "efficiency_CL": inputs["data:aerodynamics:propeller:cruise_level:efficiency"],
-            "effective_J": inputs[
+            "k_factor_sfc": inputs["settings:propulsion:IC_engine:k_factor_sfc"].item(),
+            "speed_sl": inputs["data:aerodynamics:propeller:sea_level:speed"],
+            "thrust_sl": inputs["data:aerodynamics:propeller:sea_level:thrust"],
+            "thrust_limit_sl": inputs["data:aerodynamics:propeller:sea_level:thrust_limit"],
+            "efficiency_sl": inputs["data:aerodynamics:propeller:sea_level:efficiency"],
+            "speed_cl": inputs["data:aerodynamics:propeller:cruise_level:speed"],
+            "thrust_cl": inputs["data:aerodynamics:propeller:cruise_level:thrust"],
+            "thrust_limit_cl": inputs["data:aerodynamics:propeller:cruise_level:thrust_limit"],
+            "efficiency_cl": inputs["data:aerodynamics:propeller:cruise_level:efficiency"],
+            "effective_j": inputs[
                 "data:aerodynamics:propeller:installation_effect:effective_advance_ratio"
-            ],
+            ].item(),
             "effective_efficiency_ls": inputs[
                 "data:aerodynamics:propeller:installation_effect:effective_efficiency:low_speed"
-            ],
+            ].item(),
             "effective_efficiency_cruise": inputs[
                 "data:aerodynamics:propeller:installation_effect:effective_efficiency:cruise"
-            ],
+            ].item(),
         }
 
         return FuelEngineSet(

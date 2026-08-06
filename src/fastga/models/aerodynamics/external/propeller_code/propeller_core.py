@@ -15,10 +15,9 @@
 import logging
 
 import numpy as np
-from scipy.optimize import root
-
 import openmdao.api as om
-
+from fastoad._utils.arrays import scalarize
+from scipy.optimize import root
 from stdatm import Atmosphere
 
 from fastga.models.aerodynamics.external.xfoil.xfoil_polar import POLAR_POINT_COUNT
@@ -52,10 +51,10 @@ class PropellerCoreModule(om.ExplicitComponent):
         self.options.declare("elements_number", default=20, types=int)
 
     def setup(self):
-        self.add_input("reference_reynolds", val=1e6)
+        self.add_input("reference_reynolds", val=1e6, units="unitless")
         self.add_input("data:geometry:propeller:diameter", val=np.nan, units="m")
         self.add_input("data:geometry:propeller:hub_diameter", val=np.nan, units="m")
-        self.add_input("data:geometry:propeller:blades_number", val=np.nan)
+        self.add_input("data:geometry:propeller:blades_number", val=np.nan, units="unitless")
         self.add_input(
             "data:geometry:propeller:average_rpm",
             val=2500,
@@ -82,15 +81,27 @@ class PropellerCoreModule(om.ExplicitComponent):
             shape_by_conn=True,
             copy_shape="data:geometry:propeller:radius_ratio_vect",
         )
-        self.add_input("data:geometry:propeller:radius_ratio_vect", val=np.nan, shape_by_conn=True)
+        self.add_input(
+            "data:geometry:propeller:radius_ratio_vect",
+            val=np.nan,
+            shape_by_conn=True,
+            units="unitless",
+        )
 
         for profile in self.options["sections_profile_name_list"]:
             self.add_input(
                 profile + "_polar:alpha", val=np.nan, units="deg", shape=POLAR_POINT_COUNT
             )
-            self.add_input(profile + "_polar:CL", val=np.nan, shape=POLAR_POINT_COUNT)
-            self.add_input(profile + "_polar:CD", val=np.nan, shape=POLAR_POINT_COUNT)
+            self.add_input(
+                profile + "_polar:CL", val=np.nan, shape=POLAR_POINT_COUNT, units="unitless"
+            )
+            self.add_input(
+                profile + "_polar:CD", val=np.nan, shape=POLAR_POINT_COUNT, units="unitless"
+            )
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="fd")
 
     def compute_extreme_pitch(self, inputs, v_inf):
@@ -106,7 +117,7 @@ class PropellerCoreModule(om.ExplicitComponent):
         self.theta_min = phi_75 - 10.0
         self.theta_max = phi_75 + 25.0
 
-    def compute_pitch_performance(
+    def compute_pitch_performance(  # noqa: PLR0913
         self,
         inputs,
         theta_75,
@@ -163,7 +174,7 @@ class PropellerCoreModule(om.ExplicitComponent):
         thrust_element_vector = np.zeros_like(radius)
         torque_element_vector = np.zeros_like(radius)
         alpha_vect = np.zeros_like(radius)
-        speed_vect = np.array([0.1 * float(v_inf), 1.0])
+        speed_vect = np.array([0.1 * scalarize(v_inf), 1.0])
 
         chord = np.interp(radius / radius_max, radius_ratio_vect, chord_vect)
 
@@ -219,19 +230,19 @@ class PropellerCoreModule(om.ExplicitComponent):
                 thrust_element_vector[idx] = 0.0
                 torque_element_vector[idx] = 0.0
             else:
-                thrust_element_vector[idx] = results[0] * element_length * atm.density
-                torque_element_vector[idx] = results[1] * element_length * atm.density
+                thrust_element_vector[idx] = scalarize(results[0] * element_length * atm.density)
+                torque_element_vector[idx] = scalarize(results[1] * element_length * atm.density)
             alpha_vect[idx] = results[2]
 
         torque = np.sum(torque_element_vector)
-        thrust = float(np.sum(thrust_element_vector))
-        power = float(torque * omega)
-        eta = float(v_inf * thrust / power)
+        thrust = np.sum(thrust_element_vector)
+        power = torque * scalarize(omega)
+        eta = scalarize(v_inf) * thrust / power
 
         return thrust, eta, torque
 
     @staticmethod
-    def bem_theory(
+    def bem_theory(  # noqa: PLR0913
         speed_vect: np.array,
         radius: float,
         chord: float,
@@ -322,9 +333,9 @@ class PropellerCoreModule(om.ExplicitComponent):
 
         # Store results
         output = np.empty(4)
-        output[0] = thrust_element
-        output[1] = torque_element
-        output[2] = alpha
+        output[0] = scalarize(thrust_element)
+        output[1] = scalarize(torque_element)
+        output[2] = scalarize(alpha)
         output[3] = out_of_polars
 
         return output
@@ -364,10 +375,8 @@ class PropellerCoreModule(om.ExplicitComponent):
 
         # Calculate speed composition and relative air angle (in deg.)
         v_ax = v_inf + v_i
-        # Needed for the computation of the hub lost factor
-        # phi = np.atan(v_ax / (omega * radius - v_t) * np.cos(sweep * np.pi / 180.0))
 
-        # f_tip is the tip loose factor
+        # f_tip is the tip loss factor
         f_tip = (
             2
             / np.pi
@@ -384,20 +393,6 @@ class PropellerCoreModule(om.ExplicitComponent):
             )
         )
 
-        # f_hub is the hub loose factor FIXME: to be activated in future versions
-        # if phi > 0.0:
-        #     f_hub = min(
-        #         1.0,
-        #         2
-        #         / np.pi
-        #         * np.acos(
-        #             np.exp(
-        #                  -blades_number / 2 * (radius - radius_min) / (radius * np.sin(phi))
-        #             )
-        #         ),
-        #     )
-        # else:
-        #     f_hub = 1.0
         f_hub = 1.0
 
         # Calculate force and momentum
@@ -406,12 +401,12 @@ class PropellerCoreModule(om.ExplicitComponent):
 
         # Store results
         output = np.empty(2)
-        output[0] = thrust_element
-        output[1] = torque_element
+        output[0] = scalarize(thrust_element)
+        output[1] = scalarize(torque_element)
 
         return output
 
-    def delta(
+    def delta(  # noqa: PLR0913
         self,
         speed_vect: np.array,
         radius: float,

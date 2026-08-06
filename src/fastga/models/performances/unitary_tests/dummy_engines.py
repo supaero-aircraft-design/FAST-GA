@@ -14,18 +14,14 @@ Test module for geometry functions of cg components.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
+import numpy as np
 import pandas as pd
 from openmdao.core.component import Component
-from typing import Union
-import numpy as np
-
 from stdatm import Atmosphere
 
-import fastoad.api as oad
-
-from fastga.models.propulsion.fuel_propulsion.base import AbstractFuelPropulsion
+from fastga.models.propulsion.fuel_propulsion.base import AbstractFuelPropulsion, FuelEngineSet
 from fastga.models.propulsion.propulsion import IPropulsion
-from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
 
 ENGINE_WRAPPER_BE76 = "test.wrapper.performances.beechcraft.dummy_engine"
 ENGINE_WRAPPER_SR22 = "test.wrapper.performances.cirrus.dummy_engine"
@@ -58,7 +54,7 @@ class DummyEngineBE76(AbstractFuelPropulsion):
         self.strokes_nb = strokes_nb
         self.max_thrust = 3500.0
 
-    def compute_flight_points(self, flight_points: Union[oad.FlightPoint, pd.DataFrame]):
+    def compute_flight_points(self, flight_points: oad.FlightPoint | pd.DataFrame):
         mach = np.array(flight_points.mach)
         thrust = np.array(flight_points.thrust)
         sigma = Atmosphere(flight_points.altitude).density / Atmosphere(0.0).density
@@ -105,7 +101,7 @@ class DummyEngineBE76(AbstractFuelPropulsion):
     def compute_drag(self, mach, unit_reynolds, wing_mac):
         return 0.0
 
-    def compute_max_power(self, flight_points: Union[oad.FlightPoint, pd.DataFrame]) -> float:
+    def compute_max_power(self, flight_points: oad.FlightPoint | pd.DataFrame) -> float:
         return 0.0
 
 
@@ -113,11 +109,11 @@ class DummyEngineBE76(AbstractFuelPropulsion):
 class DummyEngineWrapperBE76(oad.IOMPropulsionWrapper):
     def setup(self, component: Component):
         component.add_input("data:propulsion:IC_engine:max_power", np.nan, units="W")
-        component.add_input("data:propulsion:fuel_type", np.nan)
-        component.add_input("data:propulsion:IC_engine:strokes_nb", np.nan)
+        component.add_input("data:propulsion:fuel_type", np.nan, units="unitless")
+        component.add_input("data:propulsion:IC_engine:strokes_nb", np.nan, units="unitless")
         component.add_input("data:aerodynamics:propeller:cruise_level:altitude", np.nan, units="m")
-        component.add_input("data:geometry:propulsion:engine:layout", np.nan)
-        component.add_input("data:geometry:propulsion:engine:count", np.nan)
+        component.add_input("data:geometry:propulsion:engine:layout", np.nan, units="unitless")
+        component.add_input("data:geometry:propulsion:engine:count", np.nan, units="unitless")
 
     @staticmethod
     def get_model(inputs) -> IPropulsion:
@@ -151,7 +147,7 @@ class DummyEngineSR22(AbstractFuelPropulsion):
         self.max_power = 231000.0
         self.max_thrust = 5417.0
 
-    def compute_flight_points(self, flight_points: Union[oad.FlightPoint, pd.DataFrame]):
+    def compute_flight_points(self, flight_points: oad.FlightPoint | pd.DataFrame):
         mach = np.array(flight_points.mach)
         thrust = np.array(flight_points.thrust)
         sigma = Atmosphere(flight_points.altitude).density / Atmosphere(0.0).density
@@ -197,7 +193,7 @@ class DummyEngineSR22(AbstractFuelPropulsion):
     def compute_drag(self, mach, unit_reynolds, wing_mac):
         return 0.0
 
-    def compute_max_power(self, flight_points: Union[oad.FlightPoint, pd.DataFrame]) -> float:
+    def compute_max_power(self, flight_points: oad.FlightPoint | pd.DataFrame) -> float:
         return 0.0
 
 
@@ -205,7 +201,7 @@ class DummyEngineSR22(AbstractFuelPropulsion):
 class DummyEngineWrapperSR22(oad.IOMPropulsionWrapper):
     def setup(self, component: Component):
         component.add_input("data:aerodynamics:propeller:cruise_level:altitude", np.nan, units="m")
-        component.add_input("data:geometry:propulsion:engine:count", np.nan)
+        component.add_input("data:geometry:propulsion:engine:count", np.nan, units="unitless")
 
     @staticmethod
     def get_model(inputs) -> IPropulsion:
@@ -227,7 +223,7 @@ class DummyEngineTBM900(AbstractFuelPropulsion):
         self.max_power = 634000.0
         self.max_thrust = 30000.0
 
-    def compute_flight_points(self, flight_points: Union[oad.FlightPoint, pd.DataFrame]):
+    def compute_flight_points(self, flight_points: oad.FlightPoint | pd.DataFrame):
         mach = np.array(flight_points.mach)
         thrust = np.array(flight_points.thrust)
         sigma = Atmosphere(flight_points.altitude).density / Atmosphere(0.0).density
@@ -268,7 +264,7 @@ class DummyEngineTBM900(AbstractFuelPropulsion):
     def compute_drag(self, mach, unit_reynolds, wing_mac):
         return 0.0
 
-    def compute_max_power(self, flight_points: Union[oad.FlightPoint, pd.DataFrame]) -> float:
+    def compute_max_power(self, flight_points: oad.FlightPoint | pd.DataFrame) -> float:
         return 0.0
 
 
@@ -276,7 +272,7 @@ class DummyEngineTBM900(AbstractFuelPropulsion):
 class DummyEngineWrapperTBM900(oad.IOMPropulsionWrapper):
     def setup(self, component: Component):
         component.add_input("data:aerodynamics:propeller:cruise_level:altitude", np.nan, units="m")
-        component.add_input("data:geometry:propulsion:engine:count", np.nan)
+        component.add_input("data:geometry:propulsion:engine:count", np.nan, units="unitless")
 
     @staticmethod
     def get_model(inputs) -> IPropulsion:

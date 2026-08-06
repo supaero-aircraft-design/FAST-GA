@@ -17,12 +17,12 @@ Test load_analysis module.
 import numpy as np
 import pytest
 
-from ..wing.aerostructural_loads import AerostructuralLoad
-from ..wing.structural_loads import StructuralLoads
-from ..wing.aerodynamic_loads import AerodynamicLoads
-from ..wing.loads import WingLoads
+from tests.testing_utilities import get_indep_var_comp, list_inputs, run_system
 
-from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
+from ..wing.aerodynamic_loads import AerodynamicLoads
+from ..wing.aerostructural_loads import AerostructuralLoad
+from ..wing.loads import WingLoads
+from ..wing.structural_loads import StructuralLoads
 
 XML_FILE = "cirrus_sr22.xml"
 
@@ -135,7 +135,9 @@ def test_compute_shear_stress():
         0.0,
     ]
     ivc.add_output(
-        "data:aerodynamics:slipstream:wing:cruise:only_prop:CL_vector", cl_vector_only_prop
+        "data:aerodynamics:slipstream:wing:cruise:only_prop:CL_vector",
+        cl_vector_only_prop,
+        units="unitless",
     )
     ivc.add_output("data:aerodynamics:slipstream:wing:cruise:prop_on:Y_vector", y_vector, units="m")
     ivc.add_output("data:aerodynamics:slipstream:wing:cruise:prop_on:velocity", 82.311, units="m/s")
@@ -262,7 +264,9 @@ def test_compute_root_bending_moment():
         0.0,
     ]
     ivc.add_output(
-        "data:aerodynamics:slipstream:wing:cruise:only_prop:CL_vector", cl_vector_only_prop
+        "data:aerodynamics:slipstream:wing:cruise:only_prop:CL_vector",
+        cl_vector_only_prop,
+        units="unitless",
     )
     ivc.add_output("data:aerodynamics:slipstream:wing:cruise:prop_on:Y_vector", y_vector, units="m")
     ivc.add_output("data:aerodynamics:slipstream:wing:cruise:prop_on:velocity", 82.311, units="m/s")
@@ -284,8 +288,8 @@ def test_compute_root_bending_moment():
 def test_compute_mass_distribution():
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(StructuralLoads()), __file__, XML_FILE)
-    ivc.add_output("data:loads:max_shear:load_factor", 4.0)
-    ivc.add_output("data:loads:max_rbm:load_factor", 4.0)
+    ivc.add_output("data:loads:max_shear:load_factor", 4.0, units="unitless")
+    ivc.add_output("data:loads:max_rbm:load_factor", 4.0, units="unitless")
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(StructuralLoads(), ivc)
@@ -546,8 +550,8 @@ def test_compute_mass_distribution():
 def test_compute_structure_shear():
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(StructuralLoads()), __file__, XML_FILE)
-    ivc.add_output("data:loads:max_shear:load_factor", 4.0)
-    ivc.add_output("data:loads:max_rbm:load_factor", 4.0)
+    ivc.add_output("data:loads:max_shear:load_factor", 4.0, units="unitless")
+    ivc.add_output("data:loads:max_rbm:load_factor", 4.0, units="unitless")
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(StructuralLoads(), ivc)
@@ -802,8 +806,8 @@ def test_compute_structure_shear():
 def test_compute_structure_bending():
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(StructuralLoads()), __file__, XML_FILE)
-    ivc.add_output("data:loads:max_shear:load_factor", 4.0)
-    ivc.add_output("data:loads:max_rbm:load_factor", 4.0)
+    ivc.add_output("data:loads:max_shear:load_factor", 4.0, units="unitless")
+    ivc.add_output("data:loads:max_rbm:load_factor", 4.0, units="unitless")
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(StructuralLoads(), ivc)
@@ -1064,9 +1068,9 @@ def test_compute_structure_bending():
 def test_compute_lift_distribution():
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(AerodynamicLoads()), __file__, XML_FILE)
-    ivc.add_output("data:loads:max_shear:load_factor", 4.28)
+    ivc.add_output("data:loads:max_shear:load_factor", 4.28, units="unitless")
     ivc.add_output("data:loads:max_shear:mass", 1426.3, units="kg")
-    ivc.add_output("data:loads:max_rbm:load_factor", 4.28)
+    ivc.add_output("data:loads:max_rbm:load_factor", 4.28, units="unitless")
     ivc.add_output("data:loads:max_rbm:mass", 1426.3, units="kg")
     cl_vector_only_prop = [
         1.53,
@@ -1173,7 +1177,9 @@ def test_compute_lift_distribution():
         0.0,
     ]
     ivc.add_output(
-        "data:aerodynamics:slipstream:wing:cruise:only_prop:CL_vector", cl_vector_only_prop
+        "data:aerodynamics:slipstream:wing:cruise:only_prop:CL_vector",
+        cl_vector_only_prop,
+        units="unitless",
     )
     ivc.add_output("data:aerodynamics:slipstream:wing:cruise:prop_on:Y_vector", y_vector, units="m")
     ivc.add_output("data:aerodynamics:slipstream:wing:cruise:prop_on:velocity", 82.311, units="m/s")
@@ -1372,7 +1378,9 @@ def test_load_group():
         0.0,
     ]
     ivc.add_output(
-        "data:aerodynamics:slipstream:wing:cruise:only_prop:CL_vector", cl_vector_only_prop
+        "data:aerodynamics:slipstream:wing:cruise:only_prop:CL_vector",
+        cl_vector_only_prop,
+        units="unitless",
     )
     ivc.add_output("data:aerodynamics:slipstream:wing:cruise:prop_on:Y_vector", y_vector, units="m")
     ivc.add_output("data:aerodynamics:slipstream:wing:cruise:prop_on:velocity", 82.311, units="m/s")

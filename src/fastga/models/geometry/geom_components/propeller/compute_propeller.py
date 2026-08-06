@@ -15,11 +15,11 @@ geometry component.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import openmdao.api as om
 import fastoad.api as oad
+import openmdao.api as om
 
+from .constants import SERVICE_PROPELLER_INSTALLATION, SERVICE_PROPELLER_POSITION
 from ...constants import SERVICE_PROPELLER_GEOMETRY, SUBMODEL_PROPELLER_GEOMETRY_LEGACY
-from .constants import SERVICE_PROPELLER_POSITION, SERVICE_PROPELLER_INSTALLATION
 
 
 # pylint: disable=too-few-public-methods

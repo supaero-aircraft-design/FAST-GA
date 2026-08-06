@@ -14,9 +14,9 @@ Python module for total aircraft wet area calculation, part of the geometry comp
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 
 from ..constants import SERVICE_AIRCRAFT_WET_AREA, SUBMODEL_AIRCRAFT_WET_AREA_LEGACY
 
@@ -33,10 +33,13 @@ class ComputeTotalArea(om.ExplicitComponent):
         self.add_input("data:geometry:horizontal_tail:wet_area", val=np.nan, units="m**2")
         self.add_input("data:geometry:vertical_tail:wet_area", val=np.nan, units="m**2")
         self.add_input("data:geometry:propulsion:nacelle:wet_area", val=np.nan, units="m**2")
-        self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:count", val=np.nan, units="unitless")
 
         self.add_output("data:geometry:aircraft:wet_area", units="m**2")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials(
             "*",
             [

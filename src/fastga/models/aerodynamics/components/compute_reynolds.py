@@ -17,7 +17,9 @@ Computes Mach number and unitary Reynolds.
 
 import numpy as np
 import openmdao.api as om
-from stdatm import Atmosphere
+from stdatm import AtmosphereWithPartials
+
+ATMOSPHERE_0 = AtmosphereWithPartials(altitude=0)
 
 
 class ComputeUnitReynolds(om.ExplicitComponent):
@@ -31,28 +33,36 @@ class ComputeUnitReynolds(om.ExplicitComponent):
     def setup(self):
         if self.options["low_speed_aero"]:
             self.add_input("data:TLAR:v_approach", val=np.nan, units="m/s")
-            self.add_output("data:aerodynamics:low_speed:mach")
+            self.add_output("data:aerodynamics:low_speed:mach", units="unitless")
             self.add_output("data:aerodynamics:low_speed:unit_reynolds", units="m**-1")
         else:
             self.add_input("data:TLAR:v_cruise", val=np.nan, units="m/s")
             self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="m")
-            self.add_output("data:aerodynamics:cruise:mach")
+            self.add_output("data:aerodynamics:cruise:mach", units="unitless")
             self.add_output("data:aerodynamics:cruise:unit_reynolds", units="m**-1")
 
-        self.declare_partials("*", "*", method="fd")
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
+        if self.options["low_speed_aero"]:
+            self.declare_partials(
+                "data:aerodynamics:low_speed:mach",
+                "data:TLAR:v_approach",
+                method="exact",
+                val=1.0 / ATMOSPHERE_0.speed_of_sound,
+            )
+        else:
+            self.declare_partials(of="*", wrt="*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         if self.options["low_speed_aero"]:
-            altitude = 0.0
-            mach = inputs["data:TLAR:v_approach"] / Atmosphere(altitude).speed_of_sound
+            atm = ATMOSPHERE_0
+            mach = inputs["data:TLAR:v_approach"] / atm.speed_of_sound
         else:
-            altitude = float(inputs["data:mission:sizing:main_route:cruise:altitude"])
-            mach = (
-                inputs["data:TLAR:v_cruise"]
-                / Atmosphere(altitude, altitude_in_feet=False).speed_of_sound
-            )
+            altitude = inputs["data:mission:sizing:main_route:cruise:altitude"]
+            atm = AtmosphereWithPartials(altitude, altitude_in_feet=False)
+            mach = inputs["data:TLAR:v_cruise"] / atm.speed_of_sound
 
-        atm = Atmosphere(altitude, altitude_in_feet=False)
         atm.mach = mach
         unit_reynolds = atm.unitary_reynolds
 
@@ -62,3 +72,30 @@ class ComputeUnitReynolds(om.ExplicitComponent):
         else:
             outputs["data:aerodynamics:cruise:mach"] = mach
             outputs["data:aerodynamics:cruise:unit_reynolds"] = unit_reynolds
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+        if not self.options["low_speed_aero"]:
+            altitude = inputs["data:mission:sizing:main_route:cruise:altitude"]
+            atm = AtmosphereWithPartials(altitude, altitude_in_feet=False)
+            partials["data:aerodynamics:cruise:mach", "data:TLAR:v_cruise"] = (
+                1.0 / atm.speed_of_sound
+            )
+            partials[
+                "data:aerodynamics:cruise:mach", "data:mission:sizing:main_route:cruise:altitude"
+            ] = (
+                -inputs["data:TLAR:v_cruise"]
+                / atm.speed_of_sound**2.0
+                * atm.partial_speed_of_sound_altitude
+            )
+
+            partials["data:aerodynamics:cruise:unit_reynolds", "data:TLAR:v_cruise"] = (
+                1.0 / atm.kinematic_viscosity
+            )
+            partials[
+                "data:aerodynamics:cruise:unit_reynolds",
+                "data:mission:sizing:main_route:cruise:altitude",
+            ] = (
+                -inputs["data:TLAR:v_cruise"]
+                / atm.kinematic_viscosity**2.0
+                * atm.partial_kinematic_viscosity_altitude
+            )
