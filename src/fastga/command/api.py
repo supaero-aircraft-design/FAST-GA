@@ -352,9 +352,9 @@ def generate_block_analysis(  # noqa: PLR0915, function is inherently complex an
         # Get output names from component/group and construct dictionary
         outputs_units = [var.units for var in variables if not var.is_input]
         outputs_dict = {}
-        for idx, _ in enumerate(outputs_names):
-            value = problem_local.get_val(outputs_names[idx], outputs_units[idx])
-            outputs_dict[outputs_names[idx]] = (value, outputs_units[idx])
+        for idx, output_value in enumerate(outputs_names):
+            value = problem_local.get_val(output_value, outputs_units[idx])
+            outputs_dict[output_value] = (value, outputs_units[idx])
         return outputs_dict
 
     return patched_function

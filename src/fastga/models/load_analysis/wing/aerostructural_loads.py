@@ -439,8 +439,8 @@ class AerostructuralLoad(om.ExplicitComponent):
 
         # Each station of the shear diagram is equal to the root bending moment created by all
         # subsequent stations
-        for i, _ in enumerate(y_vector):
-            lever_arm = y_vector - y_vector[i]
+        for i, y_value in enumerate(y_vector):
+            lever_arm = y_vector - y_value
             bending_moment_diagram[i] = trapezoid(force_array[i:] * lever_arm[i:], y_vector[i:])
 
         return bending_moment_diagram
