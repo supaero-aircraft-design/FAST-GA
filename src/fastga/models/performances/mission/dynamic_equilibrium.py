@@ -41,10 +41,10 @@ FAST_FIELDS_TO_REMOVE = {
 
 # Extending FlightPoint dataclass, see FAST-OAD FlightPoint documentation
 COL_NAME = oad.FlightPoint.__annotations__
-for key, value in FAST_GA_FIELDS.items():
+for value in FAST_GA_FIELDS.values():
     if value["name"] not in COL_NAME:
         oad.FlightPoint.add_field(name=value["name"], unit=value["unit"])
-for key, value in FAST_FIELDS_TO_REMOVE.items():
+for value in FAST_FIELDS_TO_REMOVE.values():
     if value["name"] in COL_NAME:
         oad.FlightPoint.remove_field(name=value["name"])
 

@@ -256,7 +256,7 @@ class BasicTPEngineMapped(AbstractFuelPropulsion):
         unknown_keys = [key for key in EngineSetting if key not in self.mixture_values]
         if unknown_keys:
             raise FastUnknownEngineSettingError(
-                "Unknown flight phases: %s", ", ".join(unknown_keys)
+                "Unknown flight phases: %s", ", ".join(map(str, unknown_keys))
             )
 
     @property
