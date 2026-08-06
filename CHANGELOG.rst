@@ -2,6 +2,24 @@
 Changelog
 =========
 
+Version 1.4.0
+==================
+
+- Migration to Poetry 2.x by @florentLutz
+- Added compatibility with Python 3.12, 3.13, and 3.14 by @florentLutz
+- Deprecate the use of Python 3.8 and 3.9 by @florentLutz
+- Bump minimum requirement for FAST-OAD-core to 1.7.0 and 0.2.0 for stdatm by @florentLutz
+- Added new linting rules to match FAST-OAD-core by @florentLutz
+- Reworked some unit tests to speed up by @florentLutz
+- Reworked test workflows to allow earlier detection of failures by @florentLutz
+- Deprecated the `generate_variable_description` function, which was deemed not worth the trouble by @florentLutz
+- Enforced the use of `units="unitless"` for variables without units by @florentLutz
+- Enforced the definition of partials in the dedicated `setup_partials` method by @florentLutz
+- Removed forced conversion of one-element numpy array into `int` or `float` by @florentLutz
+- Reworked payload-range diagram computation for significant speed-up by @florentLutz
+- Added analytical derivatives here and there when it was easy enough by @florentLutz
+- Fixed some misc bugs by @florentLutz
+
 Version 1.3.2
 ==================
 
