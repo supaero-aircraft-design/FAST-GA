@@ -115,6 +115,8 @@ class PrepareForEnergyConsumption(om.ExplicitComponent):
             method="exact",
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         number_of_points = self.options["number_of_points"]
 
@@ -153,6 +155,8 @@ class PrepareForEnergyConsumption(om.ExplicitComponent):
             (inputs["engine_setting"], np.array([1, 1]))
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         number_of_points = self.options["number_of_points"]
 

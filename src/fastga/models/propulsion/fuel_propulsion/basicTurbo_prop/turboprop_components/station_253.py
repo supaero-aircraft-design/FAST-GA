@@ -37,6 +37,8 @@ class Station253Pressure(om.ExplicitComponent):
             cols=np.zeros(n),
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         total_pressure_25 = inputs["total_pressure_25"]
         total_pressure_2 = inputs["total_pressure_2"]
@@ -47,6 +49,8 @@ class Station253Pressure(om.ExplicitComponent):
 
         outputs["total_pressure_3"] = total_pressure_3
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         total_pressure_25 = inputs["total_pressure_25"]
         total_pressure_2 = inputs["total_pressure_2"]
@@ -104,6 +108,8 @@ class Station253Temperature(om.ExplicitComponent):
             cols=np.zeros(n),
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         total_temperature_25 = inputs["total_temperature_25"]
         total_pressure_3 = inputs["total_pressure_3"]
@@ -118,6 +124,8 @@ class Station253Temperature(om.ExplicitComponent):
 
         outputs["total_temperature_3"] = total_temperature_3
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         total_temperature_25 = inputs["total_temperature_25"]
         total_pressure_3 = inputs["total_pressure_3"]
@@ -184,12 +192,16 @@ class Station253PressureDesignPoint(om.ExplicitComponent):
             cols=np.arange(n),
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         total_pressure_25 = inputs["total_pressure_25"]
         opr_2 = inputs["opr_2"]
 
         outputs["total_pressure_3"] = total_pressure_25 * opr_2
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         total_pressure_25 = inputs["total_pressure_25"]
         opr_2 = inputs["opr_2"]

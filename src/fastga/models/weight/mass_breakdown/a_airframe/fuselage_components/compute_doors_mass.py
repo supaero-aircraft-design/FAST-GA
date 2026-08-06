@@ -34,6 +34,8 @@ class ComputeDoors(om.ExplicitComponent):
 
         self.add_output("data:weight:airframe:fuselage:doors:mass", units="kg")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         doors_number = inputs["data:geometry:cabin:doors:number"]
         doors_height = inputs["data:geometry:cabin:doors:height"]

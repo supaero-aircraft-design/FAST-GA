@@ -40,6 +40,8 @@ class PropellerThrustRequired(om.ExplicitComponent):
             val=-np.ones(n),
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         outputs["propeller_thrust"] = inputs["required_thrust"] - inputs["exhaust_thrust"]
 
@@ -151,6 +153,8 @@ class ShaftPowerRequired(om.ExplicitComponent):
             cols=np.arange(n),
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         atm = Atmosphere(inputs["altitude"], altitude_in_feet=False)
         true_airspeed = inputs["mach_0"] * atm.speed_of_sound
@@ -272,6 +276,8 @@ class PropellerMaxThrust(om.ExplicitComponent):
             cols=np.arange(n),
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         atm = Atmosphere(inputs["altitude"], altitude_in_feet=False)
         true_airspeed = inputs["mach_0"] * atm.speed_of_sound

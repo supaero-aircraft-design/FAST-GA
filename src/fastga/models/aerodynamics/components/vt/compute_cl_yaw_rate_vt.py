@@ -64,6 +64,8 @@ class ComputeClYawRateVerticalTail(om.ExplicitComponent):
     def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="exact")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         z_v = (
             inputs["data:geometry:wing:root:z"]
@@ -85,6 +87,8 @@ class ComputeClYawRateVerticalTail(om.ExplicitComponent):
             / wing_span**2.0
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         z_v = (
             inputs["data:geometry:wing:root:z"]

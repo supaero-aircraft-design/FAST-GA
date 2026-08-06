@@ -67,6 +67,8 @@ class ComputeLandingGearCG(om.ExplicitComponent):
             method="exact",
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         lav = inputs["data:geometry:fuselage:front_length"]
         l0_wing = inputs["data:geometry:wing:MAC:length"]
@@ -86,6 +88,8 @@ class ComputeLandingGearCG(om.ExplicitComponent):
         outputs["data:weight:airframe:landing_gear:main:CG:x"] = x_cg_a51
         outputs["data:weight:airframe:landing_gear:front:CG:x"] = x_cg_a52
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         lav = inputs["data:geometry:fuselage:front_length"]
         l0_wing = inputs["data:geometry:wing:MAC:length"]

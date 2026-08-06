@@ -21,6 +21,8 @@ from .b2_fuel_lines_cg import ComputeFuelLinesCG
 from ..constants import SUBMODEL_PROPULSION_CG
 
 
+# pylint: disable=too-few-public-methods
+# Overriding only necessary OpenMDAO methods
 @oad.RegisterSubmodel(SUBMODEL_PROPULSION_CG, "fastga.submodel.weight.cg.propulsion.legacy")
 class FuelPropulsionCG(om.Group):
     def setup(self):
@@ -44,6 +46,8 @@ class ComputeFuelPropulsionCG(om.ExplicitComponent):
     def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="exact")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         engine_cg = inputs["data:weight:propulsion:engine:CG:x"]
         fuel_lines_cg = inputs["data:weight:propulsion:fuel_lines:CG:x"]
@@ -57,6 +61,8 @@ class ComputeFuelPropulsionCG(om.ExplicitComponent):
 
         outputs["data:weight:propulsion:CG:x"] = cg_propulsion
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         engine_cg = inputs["data:weight:propulsion:engine:CG:x"]
         fuel_lines_cg = inputs["data:weight:propulsion:fuel_lines:CG:x"]

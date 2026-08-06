@@ -363,6 +363,8 @@ class FlightConditionsForDPComputation(om.ExplicitComponent):
                 "altitude", "data:mission:sizing:main_route:cruise:altitude", val=1.0
             )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         if self.options["low_speed_aero"]:
             mach = inputs["data:aerodynamics:low_speed:mach"]
@@ -398,6 +400,8 @@ class PropulsionForDPComputation(om.ExplicitComponent):
         self.add_output("thrust", val=0, units="N")
         self.add_output("shaft_power", val=1, units="W")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         propulsion_model = self._engine_wrapper.get_model(inputs)
         flight_point = oad.FlightPoint(

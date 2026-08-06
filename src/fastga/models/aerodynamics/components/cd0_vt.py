@@ -62,6 +62,8 @@ class Cd0VerticalTail(om.ExplicitComponent):
     def setup_partials(self):
         self.declare_partials("*", "*", method="exact")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         tip_chord = inputs["data:geometry:vertical_tail:tip:chord"]
         root_chord = inputs["data:geometry:vertical_tail:root:chord"]
@@ -101,6 +103,8 @@ class Cd0VerticalTail(om.ExplicitComponent):
         else:
             outputs["data:aerodynamics:vertical_tail:cruise:CD0"] = cd0
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):  # noqa: PLR0915, better for readability
         tip_chord = inputs["data:geometry:vertical_tail:tip:chord"]
         root_chord = inputs["data:geometry:vertical_tail:root:chord"]

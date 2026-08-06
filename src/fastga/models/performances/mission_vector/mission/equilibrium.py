@@ -189,6 +189,8 @@ class Equilibrium(om.ImplicitComponent):
                 of="delta_m", wrt="data:aerodynamics:flaps:landing:CM", method="exact"
             )
 
+    # pylint: disable=missing-function-docstring, unused-argument, too-many-arguments, too-many-positional-arguments
+    # Overriding OpenMDAO linearize, not all arguments are used
     def linearize(self, inputs, outputs, partials):  # noqa: PLR0915
         number_of_points = self.options["number_of_points"]
 
@@ -398,6 +400,8 @@ class Equilibrium(om.ImplicitComponent):
                 number_of_points
             )
 
+    # pylint: disable=missing-function-docstring, unused-argument, too-many-arguments, too-many-positional-arguments
+    # Overriding OpenMDAO apply_nonlinear, not all arguments are used
     def apply_nonlinear(
         self, inputs, outputs, residuals, discrete_inputs=None, discrete_outputs=None
     ):

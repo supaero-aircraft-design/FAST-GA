@@ -60,6 +60,8 @@ class UpdateMLWandMZFW(om.ExplicitComponent):
             method="exact",
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         owe = inputs["data:weight:aircraft:OWE"]
         mtow = inputs["data:weight:aircraft:MTOW"]
@@ -79,6 +81,8 @@ class UpdateMLWandMZFW(om.ExplicitComponent):
         outputs["data:weight:aircraft:ZFW"] = zfw
         outputs["data:weight:aircraft:MLW"] = mlw
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         owe = inputs["data:weight:aircraft:OWE"]
         max_pl = inputs["data:weight:aircraft:max_payload"]

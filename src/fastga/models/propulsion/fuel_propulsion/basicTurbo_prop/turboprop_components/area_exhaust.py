@@ -58,6 +58,8 @@ class A81(om.ExplicitComponent):
             cols=np.arange(n),
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         r_g = 287.0  # Perfect gas constant
 
@@ -79,6 +81,8 @@ class A81(om.ExplicitComponent):
 
         outputs["data:propulsion:turboprop:section:81"] = a_81
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         r_g = 287.0  # Perfect gas constant
 
@@ -151,6 +155,8 @@ class A82(om.ExplicitComponent):
             cols=np.arange(n),
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         gamma_5 = inputs["gamma_5"]
         exhaust_mach = inputs["settings:propulsion:turboprop:design_point:mach_exhaust"]
@@ -163,6 +169,8 @@ class A82(om.ExplicitComponent):
 
         outputs["data:propulsion:turboprop:section:82"] = a_82
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         gamma_5 = inputs["gamma_5"]
         exhaust_mach = inputs["settings:propulsion:turboprop:design_point:mach_exhaust"]
@@ -193,12 +201,16 @@ class A8(om.ExplicitComponent):
     def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="exact")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         outputs["data:propulsion:turboprop:section:8"] = (
             inputs["data:propulsion:turboprop:section:81"]
             / inputs["data:propulsion:turboprop:section:82"]
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         partials["data:propulsion:turboprop:section:8", "data:propulsion:turboprop:section:81"] = (
             1.0 / inputs["data:propulsion:turboprop:section:82"]

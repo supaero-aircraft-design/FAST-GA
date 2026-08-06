@@ -98,6 +98,8 @@ class BaseOMPropulsionComponent(om.ExplicitComponent, ABC):
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         wrapper = self.get_wrapper().get_model(inputs)
         flight_point = oad.FlightPoint(

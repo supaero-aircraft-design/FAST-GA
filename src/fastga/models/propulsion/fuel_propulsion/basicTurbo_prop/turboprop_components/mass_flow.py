@@ -45,6 +45,8 @@ class MassFlow(om.ExplicitComponent):
             cols=np.arange(n),
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         outputs["fuel_air_ratio"] = inputs["fuel_mass_flow"] / inputs["air_mass_flow"]
         outputs["compressor_bleed_ratio"] = (
@@ -54,6 +56,8 @@ class MassFlow(om.ExplicitComponent):
             inputs["pressurization_mass_flow"] / inputs["air_mass_flow"]
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         partials["fuel_air_ratio", "fuel_mass_flow"] = 1.0 / inputs["air_mass_flow"]
         partials["fuel_air_ratio", "air_mass_flow"] = -(

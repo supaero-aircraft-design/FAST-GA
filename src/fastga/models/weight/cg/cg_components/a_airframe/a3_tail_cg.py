@@ -22,6 +22,8 @@ import openmdao.api as om
 from ..constants import SUBMODEL_TAIL_CG
 
 
+# pylint: disable=too-few-public-methods
+# Overriding only necessary OpenMDAO methods
 @oad.RegisterSubmodel(SUBMODEL_TAIL_CG, "fastga.submodel.weight.cg.airframe.tail.legacy")
 class ComputeTailCG(om.Group):
     def setup(self):
@@ -58,6 +60,8 @@ class ComputeHTcg(om.ExplicitComponent):
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         root_chord = inputs["data:geometry:horizontal_tail:root:chord"]
         tip_chord = inputs["data:geometry:horizontal_tail:tip:chord"]
@@ -99,6 +103,8 @@ class ComputeVTcg(om.ExplicitComponent):
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         root_chord = inputs["data:geometry:vertical_tail:root:chord"]
         tip_chord = inputs["data:geometry:vertical_tail:tip:chord"]

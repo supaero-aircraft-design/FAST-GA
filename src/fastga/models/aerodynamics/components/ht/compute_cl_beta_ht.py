@@ -81,6 +81,8 @@ class ComputeClBetaHorizontalTail(FigureDigitization):
     def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="fd")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         ht_area = inputs["data:geometry:horizontal_tail:area"]
         wing_area = inputs["data:geometry:wing:area"]

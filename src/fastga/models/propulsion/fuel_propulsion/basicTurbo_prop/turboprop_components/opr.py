@@ -44,11 +44,15 @@ class OverallPressureRatio(om.ExplicitComponent):
             cols=np.arange(n),
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         outputs["opr_1"] = inputs["total_pressure_25"] / inputs["total_pressure_2"]
         outputs["opr_2"] = inputs["total_pressure_3"] / inputs["total_pressure_25"]
         outputs["opr"] = inputs["total_pressure_3"] / inputs["total_pressure_2"]
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         partials["opr_1", "total_pressure_25"] = 1.0 / inputs["total_pressure_2"]
         partials["opr_1", "total_pressure_2"] = -(
@@ -115,6 +119,8 @@ class OverallPressureRatioDesignPoint(om.ExplicitComponent):
             cols=np.zeros(n),
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         opr_design = inputs["data:propulsion:turboprop:design_point:OPR"]
         opr_ratio_design = inputs[
@@ -124,6 +130,8 @@ class OverallPressureRatioDesignPoint(om.ExplicitComponent):
         outputs["opr_1"] = opr_design * opr_ratio_design
         outputs["opr_2"] = 1.0 / opr_ratio_design
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         n = self.options["number_of_points"]
 

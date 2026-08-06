@@ -41,6 +41,8 @@ class ComputeWindows(om.ExplicitComponent):
 
         self.add_output("data:weight:airframe:fuselage:windows:mass", units="kg")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         fuselage_maximum_width = inputs["data:geometry:fuselage:maximum_width"]
         # Converting to kg/cm**2, can't be done by OpenMDAO

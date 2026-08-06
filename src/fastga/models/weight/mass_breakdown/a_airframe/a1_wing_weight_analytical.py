@@ -31,6 +31,8 @@ from .wing_components.compute_web_mass import ComputeWebMass
 from .wing_components.update_wing_mass import UpdateWingMass
 
 
+# pylint: disable=too-few-public-methods
+# Overriding only necessary OpenMDAO methods
 @oad.RegisterSubmodel(SERVICE_WING_MASS, SUBMODEL_WING_MASS_ANALYTICAL)
 class ComputeWingMassAnalytical(om.Group):
     """

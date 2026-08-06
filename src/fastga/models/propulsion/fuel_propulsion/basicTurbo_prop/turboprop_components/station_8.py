@@ -54,6 +54,8 @@ class Station8Mach(om.ExplicitComponent):
             cols=np.arange(n),
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         static_pressure_0 = inputs["static_pressure_0"]
         total_pressure_45 = inputs["total_pressure_45"]
@@ -70,6 +72,8 @@ class Station8Mach(om.ExplicitComponent):
             * (total_pressure_45 / static_pressure_0) ** ((gamma_5 + 1) / 2 / gamma_5)
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         static_pressure_0 = inputs["static_pressure_0"]
         total_pressure_45 = inputs["total_pressure_45"]
@@ -134,6 +138,8 @@ class Station8Temperature(om.ExplicitComponent):
             cols=np.arange(n),
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         gamma_5 = inputs["gamma_5"]
         mach_8 = inputs["mach_8"]
@@ -143,6 +149,8 @@ class Station8Temperature(om.ExplicitComponent):
 
         outputs["static_temperature_8"] = static_temperature_8
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         gamma_5 = inputs["gamma_5"]
         mach_8 = inputs["mach_8"]
@@ -190,6 +198,8 @@ class Station8Velocity(om.ExplicitComponent):
             cols=np.arange(n),
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         r_g = 287.0  # Perfect gas constant
 
@@ -199,6 +209,8 @@ class Station8Velocity(om.ExplicitComponent):
 
         outputs["velocity_8"] = mach_8 * np.sqrt(gamma_5 * r_g * static_temperature_8)
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         r_g = 287.0  # Perfect gas constant
 

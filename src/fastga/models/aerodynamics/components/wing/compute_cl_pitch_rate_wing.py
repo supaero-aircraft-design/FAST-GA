@@ -59,6 +59,8 @@ class ComputeCLPitchVelocityWing(om.ExplicitComponent):
     def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="exact")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         wing_ar = inputs["data:geometry:wing:aspect_ratio"]
         wing_sweep_25 = inputs["data:geometry:wing:sweep_25"]
@@ -87,6 +89,8 @@ class ComputeCLPitchVelocityWing(om.ExplicitComponent):
         else:
             outputs["data:aerodynamics:wing:cruise:CL_q"] = cl_q_wing
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         wing_ar = inputs["data:geometry:wing:aspect_ratio"]
         wing_sweep_25 = inputs["data:geometry:wing:sweep_25"]

@@ -85,6 +85,8 @@ class ComputeClBetaWing(FigureDigitization):
     def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="fd")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         wing_ar = inputs["data:geometry:wing:aspect_ratio"]
         wing_taper_ratio = inputs["data:geometry:wing:taper_ratio"]

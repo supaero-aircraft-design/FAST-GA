@@ -45,6 +45,8 @@ class ComputeTimeStep(om.ExplicitComponent):
 
         self.declare_partials(of="time_step", wrt="time", method="exact", val=d_ts_dt)
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         time = inputs["time"]
 

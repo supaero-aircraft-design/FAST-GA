@@ -87,6 +87,8 @@ class UpdateWingAreaLiftEquilibrium(om.ExplicitComponent):
             method="fd",
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         # First, compute a failsafe value, in case the computation crashes because of the wrong
         # initial guesses of the problem
@@ -159,6 +161,8 @@ class ConstraintWingAreaLiftEquilibrium(om.ExplicitComponent):
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         v_stall = inputs["data:TLAR:v_approach"] / 1.3
         mlw = inputs["data:weight:aircraft:MLW"]
@@ -180,6 +184,8 @@ class _IDThrustRate(om.ExplicitComponent):
         self.add_input("thrust_rate_t_econ", shape=4, val=np.full(4, np.nan))
         self.add_output("thrust_rate", shape=2)
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         outputs["thrust_rate"] = inputs["thrust_rate_t_econ"][0:2]
 

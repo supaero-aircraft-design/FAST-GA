@@ -21,6 +21,8 @@ from fastoad.module_management.constants import ModelDomain
 from fastga.models.aerodynamics.aero_center import ComputeAeroCenter
 
 
+# pylint: disable=too-few-public-methods
+# Overriding only necessary OpenMDAO methods
 @oad.RegisterOpenMDAOSystem(
     "fastga.handling_qualities.static_margin", domain=ModelDomain.HANDLING_QUALITIES
 )
@@ -71,6 +73,8 @@ class _ComputeStaticMargin(om.ExplicitComponent):
             val=1.0,
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         cg_ratio = inputs["data:weight:aircraft:CG:aft:MAC_position"]
         ac_ratio_fixed = inputs["data:aerodynamics:cruise:neutral_point:stick_fixed:x"]

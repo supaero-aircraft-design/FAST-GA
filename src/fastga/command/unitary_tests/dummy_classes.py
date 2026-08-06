@@ -32,6 +32,8 @@ class Disc1(om.ExplicitComponent):
         self.add_output("data:geometry:variable_4", val=1.0, desc="")
         self.declare_partials("*", "*", method="fd")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         """
         Evaluates a simple equation

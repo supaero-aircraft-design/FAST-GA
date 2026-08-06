@@ -94,6 +94,8 @@ class ComputeAddBendingMassHorizontal(om.ExplicitComponent):
 
         self.add_output("data:weight:airframe:fuselage:additional_mass:horizontal", units="kg")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):  # noqa: PLR0915, PLR0912
         """Computing the horizontal additional bending material."""
         wing_area = inputs["data:geometry:wing:area"]

@@ -64,6 +64,8 @@ class Cd0Wing(om.ExplicitComponent):
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         l2_wing = inputs["data:geometry:wing:root:chord"]
         l4_wing = inputs["data:geometry:wing:tip:chord"]

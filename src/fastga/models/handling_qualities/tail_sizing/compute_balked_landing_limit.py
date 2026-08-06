@@ -116,20 +116,20 @@ class AircraftEquilibriumLimit(om.ExplicitComponent):
         a = np.array([[a11, a12], [a21.item(), a22.item()]])
         b = np.array([b1, b2])
         inv_a = np.linalg.inv(a)
-        CL = np.dot(inv_a, b)
+        cl = np.dot(inv_a, b)
 
         # Now that we have the Cl on both lifting surfaces we need to find the corresponding
         # aircraft angle of attack and elevator deflection to see if the equilibrium is possible,
         # but first we must remove the effect of HLD on the wing
 
-        Cl_corrected_1 = (CL[0] - (cl_flaps + cl0_wing)).item()
-        Cl_corrected_2 = (CL[1]).item()
-        CL_corrected = np.array([Cl_corrected_1, Cl_corrected_2])
+        cl_corrected_1 = (cl[0] - (cl_flaps + cl0_wing)).item()
+        cl_corrected_2 = (cl[1]).item()
+        cl_corrected = np.array([cl_corrected_1, cl_corrected_2])
 
         c = np.array([[cl_alpha_wing, 0.0], [cl_alpha_htp, cl_delta_htp]])
         inv_c = np.linalg.inv(c)
 
-        commands = np.dot(inv_c, CL_corrected)
+        commands = np.dot(inv_c, cl_corrected)
         alpha_avion = commands[0]
         delta_e = commands[1]
 
@@ -143,7 +143,7 @@ class AircraftEquilibriumLimit(om.ExplicitComponent):
             abs(delta_e) > abs(max_elevator_deflection)
             or alpha_avion > stall_angle_max_htp
             or alpha_avion < stall_angle_min_htp
-            or CL[0] > cl_max_landing
+            or cl[0] > cl_max_landing
         ):
             equilibrium_found = False
         else:
@@ -225,6 +225,8 @@ class ComputeBalkedLandingLimit(AircraftEquilibriumLimit):
             units="unitless",
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         mlw = inputs["data:weight:aircraft:MLW"]
 
@@ -277,17 +279,17 @@ class ComputeBalkedLandingLimit(AircraftEquilibriumLimit):
         alpha_ac, delta_e, equilibrium_found = self.found_cl_repartition(
             inputs, 1.0, mass, dynamic_pressure, x_cg
         )
-        cl_AOA_wing = cl_alpha_wing * alpha_ac
-        cl_AOA_htp = cl_alpha_htp * alpha_ac
+        cl_aoa_wing = cl_alpha_wing * alpha_ac
+        cl_aoa_htp = cl_alpha_htp * alpha_ac
         cl_elevator = cl_delta_htp * delta_e
 
         cd_min = cd_0 + cd_flaps
 
-        cl = cl_AOA_wing + cl_AOA_htp + cl_elevator + cl_flaps
+        cl = cl_aoa_wing + cl_aoa_htp + cl_elevator + cl_flaps
         cd = (
             cd_min
-            + coeff_k_wing * (cl_AOA_wing + cl_flaps) ** 2.0
-            + coeff_k_htp * (cl_AOA_htp + cl_elevator) ** 2.0
+            + coeff_k_wing * (cl_aoa_wing + cl_flaps) ** 2.0
+            + coeff_k_htp * (cl_aoa_htp + cl_elevator) ** 2.0
         )
 
         flight_point = oad.FlightPoint(

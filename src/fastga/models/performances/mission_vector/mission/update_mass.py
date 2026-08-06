@@ -46,6 +46,8 @@ class UpdateMass(om.ExplicitComponent):
     def setup_partials(self):
         self.declare_partials("*", "*", method="exact")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         mtow = inputs["data:weight:aircraft:MTOW"]
         fuel_taxi_out = inputs["data:mission:sizing:taxi_out:fuel"]
@@ -66,6 +68,8 @@ class UpdateMass(om.ExplicitComponent):
             - np.cumsum(np.concatenate((np.zeros(1), inputs["fuel_consumed_t"][:-1])))
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         number_of_points = self.options["number_of_points"]
 

@@ -62,6 +62,8 @@ class ComputeCyBetaVerticalTail(om.ExplicitComponent):
     def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="exact")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         wing_ar = inputs["data:geometry:wing:aspect_ratio"]
         wing_area = inputs["data:geometry:wing:area"]
@@ -100,6 +102,8 @@ class ComputeCyBetaVerticalTail(om.ExplicitComponent):
         else:
             outputs["data:aerodynamics:vertical_tail:cruise:Cy_beta"] = cy_beta_vt
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):  # noqa: PLR0915
         wing_ar = inputs["data:geometry:wing:aspect_ratio"]
         wing_area = inputs["data:geometry:wing:area"]

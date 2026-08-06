@@ -100,6 +100,8 @@ class ComputeVh(om.ExplicitComponent):
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         # The maximum Sea Level flight velocity is computed using a method which finds for which
         # speed the thrust required for flight (drag) is equal to the thrust available
@@ -218,6 +220,8 @@ class ComputeVN(om.ExplicitComponent):
         # let void to avoid logger error on "The command cannot be empty"
         pass
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         v_tas = inputs["data:TLAR:v_cruise"]
         cruise_altitude = inputs["data:mission:sizing:main_route:cruise:altitude"]

@@ -63,6 +63,8 @@ class ComputeEngineCG(om.ExplicitComponent):
             method="fd",
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         prop_layout = inputs["data:geometry:propulsion:engine:layout"]
         engine_count_pre_wing = inputs["data:geometry:propulsion:engine:count"] / 2.0

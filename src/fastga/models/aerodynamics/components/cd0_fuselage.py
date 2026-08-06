@@ -49,6 +49,8 @@ class Cd0Fuselage(om.ExplicitComponent):
     def setup_partials(self):
         self.declare_partials("*", "*", method="exact")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         height = inputs["data:geometry:fuselage:maximum_height"]
         width = inputs["data:geometry:fuselage:maximum_width"]
@@ -79,6 +81,8 @@ class Cd0Fuselage(om.ExplicitComponent):
         else:
             outputs["data:aerodynamics:fuselage:cruise:CD0"] = cd0_fuselage + cd0_window
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         height = inputs["data:geometry:fuselage:maximum_height"]
         width = inputs["data:geometry:fuselage:maximum_width"]

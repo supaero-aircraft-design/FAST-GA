@@ -31,6 +31,8 @@ class ComputeNLGHatch(om.ExplicitComponent):
 
         self.add_output("data:weight:airframe:fuselage:nlg_hatch:mass", units="kg")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         lg_height = inputs["data:geometry:landing_gear:height"]
         pressurized = inputs["data:geometry:cabin:pressurized"]

@@ -155,6 +155,8 @@ class ToCSV(om.ExplicitComponent):
             "tsfc", shape=number_of_points, val=np.full(number_of_points, 7e-6), units="kg/s/N"
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):  # noqa: PLR0915
         time = inputs["time"]
         altitude = inputs["altitude"]

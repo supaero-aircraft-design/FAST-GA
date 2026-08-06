@@ -191,7 +191,9 @@ class BasicICEngine(AbstractFuelPropulsion):
         # ... so check that all EngineSetting values are in dict
         unknown_keys = [key for key in EngineSetting if key not in self.mixture_values]
         if unknown_keys:
-            raise FastUnknownEngineSettingError("Unknown flight phases: %s", str(unknown_keys))
+            raise FastUnknownEngineSettingError(
+                "Unknown flight phases: %s", ", ".join(map(str, unknown_keys))
+            )
 
     @property
     def propeller_efficiency_interpolator_sl(self):

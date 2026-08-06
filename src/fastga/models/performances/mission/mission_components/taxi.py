@@ -66,6 +66,8 @@ class ComputeTaxi(om.ExplicitComponent):
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         if self.options["taxi_out"]:
             _LOGGER.info("Entering mission computation")

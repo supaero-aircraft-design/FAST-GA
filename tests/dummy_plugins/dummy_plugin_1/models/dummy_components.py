@@ -31,6 +31,8 @@ class DummyComponent1(om.ExplicitComponent):
 
         self.add_output(name="dummy_output_1", val=42.0, units="kg")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         outputs["dummy_output_1"] = 10 + 32.0 * inputs["dummy_input_1"]
 
@@ -47,5 +49,7 @@ class DummyComponent2(om.ExplicitComponent):
 
         self.add_output(name="dummy_output_1", val=42.0, units="kg")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         outputs["dummy_output_1"] = 10 + 32.0 * inputs["dummy_input_1"]

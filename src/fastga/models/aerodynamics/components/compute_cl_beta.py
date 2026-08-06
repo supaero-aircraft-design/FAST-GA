@@ -101,6 +101,8 @@ class _SumCLBetaContributions(om.ExplicitComponent):
     def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="exact")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         if self.options["low_speed_aero"]:
             outputs["data:aerodynamics:aircraft:low_speed:Cl_beta"] = (
@@ -115,6 +117,8 @@ class _SumCLBetaContributions(om.ExplicitComponent):
                 + inputs["data:aerodynamics:vertical_tail:cruise:Cl_beta"]
             )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         if self.options["low_speed_aero"]:
             partials[

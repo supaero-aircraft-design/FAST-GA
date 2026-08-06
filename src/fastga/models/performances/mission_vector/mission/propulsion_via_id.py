@@ -99,6 +99,8 @@ class FuelConsumed(om.ExplicitComponent):
             desc="thrust ratio at each time step",
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         propulsion_model = self._engine_wrapper.get_model(inputs)
 

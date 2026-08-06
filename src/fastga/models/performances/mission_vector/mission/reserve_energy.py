@@ -55,6 +55,8 @@ class ReserveEnergy(om.ExplicitComponent):
             method="exact",
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         m_reserve = (
             inputs["data:mission:sizing:main_route:cruise:fuel"]
@@ -75,6 +77,8 @@ class ReserveEnergy(om.ExplicitComponent):
         outputs["data:mission:sizing:main_route:reserve:fuel"] = m_reserve
         outputs["data:mission:sizing:main_route:reserve:energy"] = energy_reserve
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         cruise_time = inputs["data:mission:sizing:main_route:cruise:duration"]
         rsv_time = inputs["data:mission:sizing:main_route:reserve:duration"]

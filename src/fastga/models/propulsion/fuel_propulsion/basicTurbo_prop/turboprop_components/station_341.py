@@ -33,12 +33,16 @@ class Station341Pressure(om.ExplicitComponent):
             cols=np.zeros(n),
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         total_pressure_3 = inputs["total_pressure_3"]
         pressure_loss_34 = inputs["pressure_loss_34"]
 
         outputs["total_pressure_41"] = total_pressure_3 * pressure_loss_34
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         n = self.options["number_of_points"]
 

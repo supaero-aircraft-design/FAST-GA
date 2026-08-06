@@ -46,6 +46,8 @@ class ThrustTaxi(om.ExplicitComponent):
         self.add_input("data:mission:sizing:taxi_in:speed", np.nan, units="m/s")
         self.add_output("data:mission:sizing:taxi_in:thrust", 1500, units="N")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         propulsion_model = FuelEngineSet(
             self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]

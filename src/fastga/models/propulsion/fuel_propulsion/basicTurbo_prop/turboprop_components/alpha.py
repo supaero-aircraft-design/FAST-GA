@@ -75,6 +75,8 @@ class AlphaRatio(om.ExplicitComponent):
             cols=np.arange(n),
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         total_temperature_41 = inputs[
             "data:propulsion:turboprop:design_point:turbine_entry_temperature"
@@ -91,6 +93,8 @@ class AlphaRatio(om.ExplicitComponent):
             total_pressure_45 / total_pressure_41
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         total_temperature_41 = inputs[
             "data:propulsion:turboprop:design_point:turbine_entry_temperature"

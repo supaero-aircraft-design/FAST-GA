@@ -43,6 +43,8 @@ class ComputeTankCG(om.ExplicitComponent):
     def setup_partials(self):
         self.declare_partials("*", "*", method="exact")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         l0_wing = inputs["data:geometry:wing:MAC:length"]
         fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
@@ -53,6 +55,8 @@ class ComputeTankCG(om.ExplicitComponent):
 
         outputs["data:weight:propulsion:tank:CG:x"] = cg_b3
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         distance_from_25_mac_ratio = inputs["settings:weight:propulsion:tank:CG:from_wingMAC25"]
         l0_wing = inputs["data:geometry:wing:MAC:length"]

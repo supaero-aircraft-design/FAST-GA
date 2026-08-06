@@ -45,16 +45,20 @@ class UpdateWingArea(om.ExplicitComponent):
             method="exact",
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         wing_area_mission = inputs["wing_area:geometric"].item()
         wing_area_approach = inputs["wing_area:aerodynamic"].item()
 
-        wing_area = round(max(wing_area_mission, wing_area_approach), 5)
+        wing_area = max(wing_area_mission, wing_area_approach)
 
-        _LOGGER.info(f"Looping on wing area with new value equal to {wing_area}")
+        _LOGGER.info("Looping on wing area with new value equal to %f", round(wing_area, 5))
 
         outputs["data:geometry:wing:area"] = wing_area
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         wing_area_mission = inputs["wing_area:geometric"]
         wing_area_approach = inputs["wing_area:aerodynamic"]

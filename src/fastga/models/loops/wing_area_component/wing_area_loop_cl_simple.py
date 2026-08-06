@@ -62,6 +62,8 @@ class UpdateWingAreaLiftSimple(om.ExplicitComponent):
             method="exact",
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         stall_speed = inputs["data:TLAR:v_approach"] / 1.3
         mlw = inputs["data:weight:aircraft:MLW"]
@@ -70,6 +72,8 @@ class UpdateWingAreaLiftSimple(om.ExplicitComponent):
 
         outputs["wing_area"] = wing_area_approach
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         stall_speed = inputs["data:TLAR:v_approach"] / 1.3
         mlw = inputs["data:weight:aircraft:MLW"]
@@ -120,6 +124,8 @@ class ConstraintWingAreaLiftSimple(om.ExplicitComponent):
             method="exact",
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         v_stall = inputs["data:TLAR:v_approach"] / 1.3
         cl_max = inputs["data:aerodynamics:aircraft:landing:CL_max"]
@@ -130,6 +136,8 @@ class ConstraintWingAreaLiftSimple(om.ExplicitComponent):
             0.5 * 1.225 * v_stall**2 * wing_area
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         v_stall = inputs["data:TLAR:v_approach"] / 1.3
         mlw = inputs["data:weight:aircraft:MLW"]

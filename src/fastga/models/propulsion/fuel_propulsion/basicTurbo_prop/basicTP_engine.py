@@ -246,7 +246,9 @@ class BasicTPEngine(AbstractFuelPropulsion):
         # ... so check that all EngineSetting values are in dict
         unknown_keys = [key for key in EngineSetting if key not in self.mixture_values]
         if unknown_keys:
-            raise FastUnknownEngineSettingError("Unknown flight phases: %s", unknown_keys)
+            raise FastUnknownEngineSettingError(
+                "Unknown flight phases: %s", ", ".join(map(str, unknown_keys))
+            )
 
         # This new version of the turboprop model will use nested OpenMDAO problem to compute
         # fuel consumption, max thrust and geometry, but because the setup might take some time,

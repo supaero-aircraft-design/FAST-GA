@@ -36,6 +36,8 @@ class InitializeAltitude(om.ExplicitComponent):
 
         self.add_output("altitude", shape=number_of_points, units="m")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         cruise_altitude = inputs["data:mission:sizing:main_route:cruise:altitude"]
 

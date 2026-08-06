@@ -80,6 +80,8 @@ class Cd0Total(om.ExplicitComponent):
     def setup_partials(self):
         self.declare_partials("*", "*", method="exact")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         if self.options["low_speed_aero"]:
             cd0_wing = inputs["data:aerodynamics:wing:low_speed:CD0"]
@@ -108,6 +110,8 @@ class Cd0Total(om.ExplicitComponent):
         else:
             outputs["data:aerodynamics:aircraft:cruise:CD0"] = cd0
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         crud_factor = inputs["settings:aerodynamics:aircraft:undesirable_drag:k_factor"]
 

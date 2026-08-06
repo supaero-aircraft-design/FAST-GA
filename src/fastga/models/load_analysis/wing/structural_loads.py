@@ -151,6 +151,8 @@ class StructuralLoads(om.ExplicitComponent):
             shape=SPAN_MESH_POINT_LOADS,
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         # STEP 1/XX - DEFINE OR CALCULATE INPUT DATA FOR LOAD COMPUTATION
 

@@ -169,6 +169,8 @@ class ThermodynamicEquilibrium(om.ImplicitComponent):
             cols=np.zeros(n),
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument, too-many-arguments, too-many-positional-arguments
+    # Overriding OpenMDAO apply_nonlinear, not all arguments are used
     def apply_nonlinear(
         self, inputs, outputs, residuals, discrete_inputs=None, discrete_outputs=None
     ):
@@ -256,6 +258,8 @@ class ThermodynamicEquilibrium(om.ImplicitComponent):
             / (1.0 - compressor_bleed_ratio)
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument, too-many-arguments, too-many-positional-arguments
+    # Overriding OpenMDAO linearize, not all arguments are used
     def linearize(self, inputs, outputs, jacobian, discrete_inputs=None, discrete_outputs=None):  # noqa: PLR0915
         r_g = 287.0  # Perfect gas constant
 

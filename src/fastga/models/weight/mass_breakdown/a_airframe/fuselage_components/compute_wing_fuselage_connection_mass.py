@@ -37,6 +37,8 @@ class ComputeWingFuselageConnection(om.ExplicitComponent):
 
         self.add_output("data:weight:airframe:fuselage:wing_fuselage_connection:mass", units="kg")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         n_ult_flight = inputs["data:mission:sizing:cs23:sizing_factor:ultimate_aircraft"]
         n_ult_landing = inputs["data:mission:landing:cs23:sizing_factor:ultimate_aircraft"]

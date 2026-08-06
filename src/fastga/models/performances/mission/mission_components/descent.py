@@ -97,6 +97,8 @@ class ComputeDescent(DynamicEquilibrium):
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):  # noqa: PLR0915
         wing_area = inputs["data:geometry:wing:area"]
         propulsion_model = self._engine_wrapper.get_model(inputs)
@@ -246,6 +248,8 @@ class ComputeDescentSpeed(om.ExplicitComponent):
 
         self.add_output("data:mission:sizing:main_route:descent:v_cas", units="m/s")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         mtow = inputs["data:weight:aircraft:MTOW"]
         m_to = inputs["data:mission:sizing:taxi_out:fuel"]

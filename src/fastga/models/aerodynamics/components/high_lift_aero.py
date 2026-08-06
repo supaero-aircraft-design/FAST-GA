@@ -73,6 +73,8 @@ class ComputeDeltaHighLift(FigureDigitization):
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         mach_ls = inputs["data:aerodynamics:low_speed:mach"]
         flap_chord_ratio = inputs["data:geometry:flap:chord_ratio"].item()

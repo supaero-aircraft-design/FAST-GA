@@ -52,6 +52,8 @@ class ComputeAddBendingMassVertical(om.ExplicitComponent):
 
         self.add_output("data:weight:airframe:fuselage:additional_mass:vertical", units="kg")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         vtp_area = inputs["data:geometry:vertical_tail:area"]
         lav = inputs["data:geometry:fuselage:front_length"]
