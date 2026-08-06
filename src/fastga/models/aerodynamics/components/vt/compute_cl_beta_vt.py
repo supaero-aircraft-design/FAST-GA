@@ -95,6 +95,8 @@ class ComputeClBetaVerticalTail(om.ExplicitComponent):
                 cy_beta_vt * (z_v * np.cos(aoa_ref) - lp_vt * np.sin(aoa_ref)) / wing_span
             )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         z_v = (
             inputs["data:geometry:wing:root:z"]

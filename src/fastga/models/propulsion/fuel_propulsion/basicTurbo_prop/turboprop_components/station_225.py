@@ -53,6 +53,8 @@ class Station225Pressure(om.ExplicitComponent):
 
         outputs["total_pressure_25"] = total_pressure_25
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         total_temperature_2 = inputs["total_temperature_2"]
         total_temperature_25 = inputs["total_temperature_25"]
@@ -151,6 +153,8 @@ class Station225DesignPoint(om.ExplicitComponent):
             (gamma_2 - 1) / gamma_2 / eta_225
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         total_temperature_2 = inputs["total_temperature_2"]
         total_pressure_2 = inputs["total_pressure_2"]

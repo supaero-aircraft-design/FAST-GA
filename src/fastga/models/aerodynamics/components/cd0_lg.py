@@ -98,6 +98,8 @@ class Cd0LandingGear(om.ExplicitComponent):
             else:
                 outputs["data:aerodynamics:landing_gear:cruise:CD0"] = 0.0
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         lg_type = inputs["data:geometry:landing_gear:type"]
         lg_height = inputs["data:geometry:landing_gear:height"]

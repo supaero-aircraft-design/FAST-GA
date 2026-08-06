@@ -98,6 +98,8 @@ class AirCoefficientReader(om.ExplicitComponent):
         outputs["cv"] = cv
         outputs["gamma"] = gamma
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         total_temperature = inputs[self.input_name]
 

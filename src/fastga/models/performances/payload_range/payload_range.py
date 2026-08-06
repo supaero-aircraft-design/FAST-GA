@@ -237,6 +237,8 @@ class DistanceToTarget(om.ExplicitComponent):
             (climb_range + cruise_range + descent_range) * target_fuel / current_fuel
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         climb_range = inputs["data:mission:sizing:main_route:climb:distance"]
         descent_range = inputs["data:mission:sizing:main_route:descent:distance"]

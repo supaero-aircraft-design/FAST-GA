@@ -43,6 +43,8 @@ class Station4145Temperature(om.ExplicitComponent):
             inputs["data:propulsion:turboprop:design_point:alpha"] * inputs["total_temperature_41"]
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         n = self.options["number_of_points"]
 
@@ -94,6 +96,8 @@ class Station4145Pressure(om.ExplicitComponent):
             inputs["data:propulsion:turboprop:design_point:alpha_p"] * inputs["total_pressure_41"]
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         n = self.options["number_of_points"]
 

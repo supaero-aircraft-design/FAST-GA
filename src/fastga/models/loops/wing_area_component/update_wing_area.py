@@ -57,6 +57,8 @@ class UpdateWingArea(om.ExplicitComponent):
 
         outputs["data:geometry:wing:area"] = wing_area
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         wing_area_mission = inputs["wing_area:geometric"]
         wing_area_approach = inputs["wing_area:aerodynamic"]

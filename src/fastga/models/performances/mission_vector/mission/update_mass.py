@@ -68,6 +68,8 @@ class UpdateMass(om.ExplicitComponent):
             - np.cumsum(np.concatenate((np.zeros(1), inputs["fuel_consumed_t"][:-1])))
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         number_of_points = self.options["number_of_points"]
 

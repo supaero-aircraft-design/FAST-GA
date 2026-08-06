@@ -61,6 +61,8 @@ class ComputeCnBetaFuselage(om.ExplicitComponent):
 
         outputs["data:aerodynamics:fuselage:Cn_beta"] = cn_beta
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         width_max = inputs["data:geometry:fuselage:maximum_width"]
         height_max = inputs["data:geometry:fuselage:maximum_height"]

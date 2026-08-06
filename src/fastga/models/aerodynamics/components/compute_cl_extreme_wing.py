@@ -155,6 +155,8 @@ class ComputeLocalReynolds(om.ExplicitComponent):
         )
         outputs["mach"] = inputs["data:aerodynamics:low_speed:mach"]
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         partials[
             "data:aerodynamics:horizontal_tail:root:low_speed:reynolds",

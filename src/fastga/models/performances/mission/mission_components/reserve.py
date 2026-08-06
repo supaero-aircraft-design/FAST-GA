@@ -61,6 +61,8 @@ class ComputeReserve(om.ExplicitComponent):
         ) * inputs["settings:mission:sizing:main_route:reserve:k_factor"]
         outputs["data:mission:sizing:main_route:reserve:fuel"] = m_reserve
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
 
         cruise_duration = max(

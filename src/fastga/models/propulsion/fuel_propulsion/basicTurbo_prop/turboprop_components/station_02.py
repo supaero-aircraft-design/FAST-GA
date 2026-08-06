@@ -56,6 +56,8 @@ class Station02(om.ExplicitComponent):
         outputs["total_temperature_2"] = total_temperature_0
         outputs["total_pressure_2"] = total_pressure_0 * pi_02
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         n = self.options["number_of_points"]
 

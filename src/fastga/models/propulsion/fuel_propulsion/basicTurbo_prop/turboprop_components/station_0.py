@@ -67,6 +67,8 @@ class Station0(om.ExplicitComponent):
         outputs["total_temperature_0"] = static_temperature_0 * total_factor
         outputs["total_pressure_0"] = static_pressure_0 * total_factor ** (gamma / (gamma - 1.0))
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         mach_0 = inputs[self.input_mach_name]
 
@@ -140,6 +142,8 @@ class Station0Static(om.ExplicitComponent):
         outputs["static_temperature_0"] = self.atm.temperature
         outputs["static_pressure_0"] = self.atm.pressure
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
 
         partials["static_temperature_0", self.input_alt_name] = (

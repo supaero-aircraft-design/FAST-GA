@@ -92,6 +92,8 @@ class A45(om.ExplicitComponent):
 
         outputs["data:propulsion:turboprop:section:45"] = a_45
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         r_g = 287.0  # Perfect gas constant
 

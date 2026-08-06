@@ -94,6 +94,8 @@ class PressurizationAirFlow(om.ExplicitComponent):
 
         outputs["pressurization_mass_flow"] = air_mass_flow_pressurization
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         cabin_altitude = np.interp(
             inputs[self.input_name],

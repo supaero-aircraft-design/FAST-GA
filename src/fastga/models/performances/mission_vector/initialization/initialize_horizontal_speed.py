@@ -51,6 +51,8 @@ class InitializeHorizontalSpeed(om.ExplicitComponent):
 
         outputs["horizontal_speed"] = true_airspeed * np.cos(gamma)
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         true_airspeed = inputs["true_airspeed"]
         gamma = inputs["gamma"] * np.pi / 180.0

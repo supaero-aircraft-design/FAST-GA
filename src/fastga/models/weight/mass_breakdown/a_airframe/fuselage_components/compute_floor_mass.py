@@ -45,6 +45,8 @@ class ComputeFloor(om.ExplicitComponent):
 
         outputs["data:weight:airframe:fuselage:floor:mass"] = floor_weight
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         floor_width = inputs["data:geometry:fuselage:maximum_width"]
         cabin_length = inputs["data:geometry:cabin:length"]

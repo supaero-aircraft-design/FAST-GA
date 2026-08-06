@@ -82,6 +82,8 @@ class ComputeCMPitchVelocityHorizontalTail(om.ExplicitComponent):
             -2.0 * cl_alpha_ht * wing_area / ht_area * eta_h * volume_coeff_ht * lp_ht / l0_wing
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         l0_wing = inputs["data:geometry:wing:MAC:length"]
         wing_area = inputs["data:geometry:wing:area"]

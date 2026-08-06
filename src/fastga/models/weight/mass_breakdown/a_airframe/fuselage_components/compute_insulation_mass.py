@@ -38,6 +38,8 @@ class ComputeInsulation(om.ExplicitComponent):
             * inputs["settings:materials:insulation:area_density"]
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         partials[
             "data:weight:airframe:fuselage:insulation:mass", "data:geometry:fuselage:wet_area"

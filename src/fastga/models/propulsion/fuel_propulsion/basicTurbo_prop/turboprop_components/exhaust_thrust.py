@@ -55,6 +55,8 @@ class ExhaustThrust(om.ExplicitComponent):
 
         outputs["exhaust_thrust"] = exhaust_thrust
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         r_g = 287.0  # Perfect gas constant
         gamma = 1.4  # Gamma taken at its usual value

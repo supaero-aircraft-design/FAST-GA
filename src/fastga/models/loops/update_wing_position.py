@@ -56,6 +56,8 @@ class UpdateWingPosition(om.ExplicitComponent):
 
         outputs["data:geometry:wing:MAC:at25percent:x"] = mac_position
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         static_margin = inputs["data:handling_qualities:stick_fixed_static_margin"]
         target_static_margin = inputs["data:handling_qualities:static_margin:target"]

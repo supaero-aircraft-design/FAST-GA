@@ -94,6 +94,8 @@ class UpdateWingAreaGeomSimple(om.ExplicitComponent):
 
         outputs["wing_area"] = wing_area_mission
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         mfw_mission = inputs["data:mission:sizing:fuel"]
         fuel_type = inputs["data:propulsion:fuel_type"]

@@ -63,6 +63,8 @@ class Station441Temperature(om.ExplicitComponent):
 
         outputs["total_temperature_4"] = total_temperature_4
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         total_temperature_3 = inputs["total_temperature_3"]
         total_temperature_41 = inputs["total_temperature_41"]

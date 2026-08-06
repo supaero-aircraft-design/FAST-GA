@@ -42,5 +42,7 @@ class ComputeCyBetaWing(om.ExplicitComponent):
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         outputs["data:aerodynamics:wing:Cy_beta"] = -0.00573 * inputs["data:geometry:wing:dihedral"]
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         partials["data:aerodynamics:wing:Cy_beta", "data:geometry:wing:dihedral"] = -0.00573

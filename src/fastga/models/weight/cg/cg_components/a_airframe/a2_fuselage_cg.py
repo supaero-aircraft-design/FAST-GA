@@ -73,6 +73,8 @@ class ComputeFuselageCG(om.ExplicitComponent):
 
         outputs["data:weight:airframe:fuselage:CG:x"] = x_cg_a2
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         prop_layout = inputs["data:geometry:propulsion:engine:layout"]
 

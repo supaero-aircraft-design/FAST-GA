@@ -49,6 +49,8 @@ class ComputeSecondaryMass(om.ExplicitComponent):
 
         outputs["data:weight:airframe:wing:secondary_structure:mass"] = secondary_structure_mass
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         sec_mass_ratio = inputs["settings:wing:structure:secondary_mass_ratio"]
         primary_structure_mass = inputs["data:weight:airframe:wing:primary_structure:mass"]

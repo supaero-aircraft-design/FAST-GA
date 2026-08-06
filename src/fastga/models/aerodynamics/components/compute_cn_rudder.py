@@ -106,6 +106,8 @@ class ComputeCnDeltaRudder(om.ExplicitComponent):
                 / wing_area
             )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         z_v = (
             inputs["data:geometry:wing:root:z"]

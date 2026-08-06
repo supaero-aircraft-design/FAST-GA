@@ -216,6 +216,8 @@ class ComputeLocalReynolds(om.ExplicitComponent):
             * inputs["data:geometry:horizontal_tail:MAC:length"]
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
 

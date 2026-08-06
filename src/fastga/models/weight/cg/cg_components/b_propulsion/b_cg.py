@@ -61,6 +61,8 @@ class ComputeFuelPropulsionCG(om.ExplicitComponent):
 
         outputs["data:weight:propulsion:CG:x"] = cg_propulsion
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         engine_cg = inputs["data:weight:propulsion:engine:CG:x"]
         fuel_lines_cg = inputs["data:weight:propulsion:fuel_lines:CG:x"]

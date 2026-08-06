@@ -92,6 +92,8 @@ class _PrepareMissionBuilder(om.ExplicitComponent):
 
         outputs["data:mission:sizing:holding:v_holding"] = 0.75 * inputs["data:TLAR:v_cruise"]
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         mtow = inputs["data:weight:aircraft:MTOW"]
         wing_area = inputs["data:geometry:wing:area"]

@@ -216,6 +216,8 @@ class PerformancePerPhase(om.ExplicitComponent):
         outputs["non_consumable_energy_t"] = non_consumable_energy[:-2]
         outputs["thrust_rate_t"] = thrust_rate_t_econ[:-2]
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         number_of_points = self.options["number_of_points"]
 
