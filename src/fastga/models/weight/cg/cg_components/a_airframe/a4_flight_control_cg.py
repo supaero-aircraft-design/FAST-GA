@@ -64,6 +64,8 @@ class ComputeFlightControlCG(om.ExplicitComponent):
             val=0.25,
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
         lp_ht = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"]

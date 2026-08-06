@@ -52,6 +52,8 @@ class InitializeGamma(om.ExplicitComponent):
         self.add_output("vertical_speed", val=np.full(number_of_points, 0.0), units="m/s")
         self.add_output("gamma", val=np.full(number_of_points, 0.0), units="deg")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         cruise_altitude = np.array(inputs["data:mission:sizing:main_route:cruise:altitude"]).item()
         climb_rate_sl = inputs["data:mission:sizing:main_route:climb:climb_rate:sea_level"]

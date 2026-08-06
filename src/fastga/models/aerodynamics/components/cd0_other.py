@@ -64,6 +64,8 @@ class Cd0Other(om.ExplicitComponent):
     def setup_partials(self):
         self.declare_partials("*", "*", method="exact")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         prop_layout = inputs["data:geometry:propulsion:engine:layout"]
         wing_area = inputs["data:geometry:wing:area"]

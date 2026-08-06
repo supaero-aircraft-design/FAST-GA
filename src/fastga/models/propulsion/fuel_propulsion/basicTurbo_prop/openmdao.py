@@ -42,6 +42,8 @@ class OMBasicTurbopropWrapper(oad.IOMPropulsionWrapper):
                 # Do the normal setup
                 self.add_input("my_input")
                 [finish the setup...]
+            # pylint: disable=missing-function-docstring, unused-argument
+            # Overriding OpenMDAO compute, not all arguments are used
             def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
                 [do something]
                 # Get the engine instance, with parameters defined from OpenMDAO inputs

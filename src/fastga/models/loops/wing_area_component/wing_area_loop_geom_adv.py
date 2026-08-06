@@ -227,6 +227,8 @@ class DistanceToMFWForConstraint(om.ExplicitComponent):
             of="data:constraints:wing:additional_fuel_capacity", wrt="MFW", method="exact", val=1.0
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         outputs["data:constraints:wing:additional_fuel_capacity"] = (
             inputs["MFW"] - inputs["data:mission:sizing:fuel"]

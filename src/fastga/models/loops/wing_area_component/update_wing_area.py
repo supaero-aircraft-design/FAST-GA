@@ -45,6 +45,8 @@ class UpdateWingArea(om.ExplicitComponent):
             method="exact",
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         wing_area_mission = inputs["wing_area:geometric"].item()
         wing_area_approach = inputs["wing_area:aerodynamic"].item()

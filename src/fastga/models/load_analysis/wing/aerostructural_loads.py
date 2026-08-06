@@ -224,6 +224,8 @@ class AerostructuralLoad(om.ExplicitComponent):
 
         self.add_output("data:loads:y_vector", units="m", shape=SPAN_MESH_POINT_LOADS)
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):  # noqa: PLR0915
         # STEP 1/XX - DEFINE OR CALCULATE INPUT DATA FOR LOAD COMPUTATION ##########################
         ############################################################################################

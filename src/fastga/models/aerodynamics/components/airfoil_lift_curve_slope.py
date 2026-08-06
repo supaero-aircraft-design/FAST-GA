@@ -152,6 +152,8 @@ class ComputeLocalReynolds(om.ExplicitComponent):
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         outputs["data:aerodynamics:wing:MAC:low_speed:reynolds"] = (
             inputs["data:aerodynamics:low_speed:unit_reynolds"]
@@ -201,6 +203,8 @@ class _ComputeAirfoilLiftCurveSlope(om.ExplicitComponent):
         self.add_output("data:aerodynamics:vertical_tail:airfoil:CL_alpha", units="rad**-1")
         self.add_output("data:aerodynamics:wing:airfoil:CL_alpha", units="rad**-1")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         wing_cl_orig = inputs["wing:CL"]
         wing_alpha_orig = inputs["wing:alpha"]

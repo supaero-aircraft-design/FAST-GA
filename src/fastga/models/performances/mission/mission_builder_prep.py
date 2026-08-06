@@ -76,6 +76,8 @@ class _PrepareMissionBuilder(om.ExplicitComponent):
             val=0.75,
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         mtow = inputs["data:weight:aircraft:MTOW"]
         wing_area = inputs["data:geometry:wing:area"]

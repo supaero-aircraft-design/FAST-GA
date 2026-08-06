@@ -68,6 +68,8 @@ class ComputePayloadRange(om.ExplicitComponent):
 
         self.declare_partials("*", "*", method="fd")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         payload_mission = inputs["data:weight:aircraft:payload"][0]
         max_payload = inputs["data:weight:aircraft:max_payload"][0]
@@ -220,6 +222,8 @@ class DistanceToTarget(om.ExplicitComponent):
     def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="exact")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
         climb_range = inputs["data:mission:sizing:main_route:climb:distance"]

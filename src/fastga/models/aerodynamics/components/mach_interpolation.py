@@ -127,6 +127,8 @@ class _ComputeMachInterpolation(om.ExplicitComponent):
             units="unitless",
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         sweep_25_wing = inputs["data:geometry:wing:sweep_25"]
         aspect_ratio_wing = inputs["data:geometry:wing:aspect_ratio"]

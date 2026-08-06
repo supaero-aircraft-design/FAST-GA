@@ -54,6 +54,8 @@ class Station8Mach(om.ExplicitComponent):
             cols=np.arange(n),
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         static_pressure_0 = inputs["static_pressure_0"]
         total_pressure_45 = inputs["total_pressure_45"]
@@ -134,6 +136,8 @@ class Station8Temperature(om.ExplicitComponent):
             cols=np.arange(n),
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         gamma_5 = inputs["gamma_5"]
         mach_8 = inputs["mach_8"]
@@ -190,6 +194,8 @@ class Station8Velocity(om.ExplicitComponent):
             cols=np.arange(n),
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         r_g = 287.0  # Perfect gas constant
 

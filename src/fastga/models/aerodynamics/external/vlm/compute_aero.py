@@ -202,6 +202,8 @@ class ComputeLocalReynolds(om.ExplicitComponent):
             method="exact",
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
 
@@ -329,6 +331,8 @@ class _ComputeAeroVLM(VLMSimpleGeometry):
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         _LOGGER.debug("Entering aerodynamic computation")
         input_aoa = self.options["input_angle_of_attack"]

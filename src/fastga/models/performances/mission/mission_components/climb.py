@@ -96,6 +96,8 @@ class ComputeClimb(DynamicEquilibrium):
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):  # noqa: PLR0915
         # Delete previous .csv results
         if self.options["out_file"] != "":
@@ -241,6 +243,8 @@ class ComputeClimbSpeed(om.ExplicitComponent):
 
         self.add_output("data:mission:sizing:main_route:climb:v_cas", units="m/s")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         altitude_t = SAFETY_HEIGHT  # conversion to m
 

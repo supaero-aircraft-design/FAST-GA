@@ -48,6 +48,8 @@ class InFlightCGVariation(om.ExplicitComponent):
         )
         self.add_output("data:weight:aircraft:in_flight_variation:fixed_mass_comp:mass", units="kg")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         npax = inputs["data:TLAR:NPAX_design"]
         count_by_row = inputs["data:geometry:cabin:seats:passenger:count_by_row"]

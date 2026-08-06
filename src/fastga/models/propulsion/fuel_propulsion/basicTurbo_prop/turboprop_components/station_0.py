@@ -52,6 +52,8 @@ class Station0(om.ExplicitComponent):
             cols=np.arange(n),
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         mach_0 = inputs[self.input_mach_name]
 
@@ -128,6 +130,8 @@ class Station0Static(om.ExplicitComponent):
             cols=np.arange(n),
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         self.atm = AtmosphereWithPartials(
             altitude=inputs[self.input_alt_name], altitude_in_feet=False

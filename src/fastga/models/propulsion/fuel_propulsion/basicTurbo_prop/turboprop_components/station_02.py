@@ -45,6 +45,8 @@ class Station02(om.ExplicitComponent):
             cols=np.zeros(n),
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         total_temperature_0 = inputs["total_temperature_0"]
         total_pressure_0 = inputs["total_pressure_0"]

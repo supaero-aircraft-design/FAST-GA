@@ -54,6 +54,8 @@ class ComputeUnitReynolds(om.ExplicitComponent):
         else:
             self.declare_partials(of="*", wrt="*", method="exact")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         if self.options["low_speed_aero"]:
             atm = ATMOSPHERE_0

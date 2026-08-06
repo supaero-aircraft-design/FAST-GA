@@ -48,6 +48,8 @@ class ComputeWingCG(om.ExplicitComponent):
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
         x0_wing = inputs["data:geometry:wing:MAC:leading_edge:x:local"]

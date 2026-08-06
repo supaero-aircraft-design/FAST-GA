@@ -30,6 +30,8 @@ class ComputeBulkhead(om.ExplicitComponent):
 
         self.add_output("data:weight:airframe:fuselage:bulkhead:mass", units="kg")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         fuselage_max_width = inputs["data:geometry:fuselage:maximum_width"]
         fuselage_max_height = inputs["data:geometry:fuselage:maximum_height"]

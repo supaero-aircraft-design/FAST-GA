@@ -76,6 +76,8 @@ class ComputeLDMax(om.ExplicitComponent):
             method="exact",
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         # TODO: to be written with momentum equilibrium formula to consider htp drag
         cl0_clean = inputs["data:aerodynamics:wing:cruise:CL0_clean"]

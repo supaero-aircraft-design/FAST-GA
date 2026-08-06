@@ -68,6 +68,8 @@ class ComputeCLPitchVelocityHorizontalTail(om.ExplicitComponent):
             method="exact",
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         eta_h = inputs["data:aerodynamics:horizontal_tail:efficiency"]
         volume_coeff_ht = inputs["data:geometry:horizontal_tail:volume_coefficient"]

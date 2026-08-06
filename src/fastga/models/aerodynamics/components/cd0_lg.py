@@ -59,6 +59,8 @@ class Cd0LandingGear(om.ExplicitComponent):
             of="*", wrt=["data:geometry:landing_gear:height", "data:geometry:wing:area"]
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         lg_type = inputs["data:geometry:landing_gear:type"]
         lg_height = inputs["data:geometry:landing_gear:height"]

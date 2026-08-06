@@ -28,6 +28,8 @@ class ComputeInsulation(om.ExplicitComponent):
     def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="exact")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         # Default value of insulation comes from https://www.fire.tc.faa.gov/pdf/insulate.pdf
 

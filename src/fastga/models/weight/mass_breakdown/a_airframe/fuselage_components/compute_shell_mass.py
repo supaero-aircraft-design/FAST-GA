@@ -57,6 +57,8 @@ class ComputeShell(om.ExplicitComponent):
         self.add_output("data:weight:airframe:fuselage:shell:added_weight_ratio", units="unitless")
         self.add_output("data:weight:airframe:fuselage:shell:area_density", units="kg/m**2")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         fuselage_max_width = inputs["data:geometry:fuselage:maximum_width"]
         fuselage_max_height = inputs["data:geometry:fuselage:maximum_height"]

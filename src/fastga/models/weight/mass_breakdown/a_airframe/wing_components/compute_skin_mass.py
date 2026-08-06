@@ -86,6 +86,8 @@ class ComputeSkinMass(om.ExplicitComponent):
 
         self.add_output("data:weight:airframe:wing:skin:mass", units="kg")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):  # noqa: PLR0915
         """
         Component that computes the skin mass necessary to react to the given linear force

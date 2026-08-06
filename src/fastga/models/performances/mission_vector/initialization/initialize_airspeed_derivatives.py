@@ -55,6 +55,8 @@ class InitializeAirspeedDerivatives(om.ExplicitComponent):
             "d_vx_dt", shape=number_of_points, val=np.full(number_of_points, 0.0), units="m/s**2"
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         true_airspeed = inputs["true_airspeed"]
         equivalent_airspeed = inputs["equivalent_airspeed"]

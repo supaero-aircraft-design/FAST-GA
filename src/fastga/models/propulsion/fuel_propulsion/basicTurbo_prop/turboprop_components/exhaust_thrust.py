@@ -32,6 +32,8 @@ class ExhaustThrust(om.ExplicitComponent):
             cols=np.arange(n),
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         r_g = 287.0  # Perfect gas constant
         gamma = 1.4  # Gamma taken at its usual value

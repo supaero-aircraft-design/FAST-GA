@@ -161,6 +161,8 @@ class ComputeCG(om.ExplicitComponent):
         self.declare_partials("data:weight:aircraft_empty:mass", "*", method="fd")
         self.declare_partials("data:weight:aircraft_empty:CG:x", "*", method="fd")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         cgs = [inputs[cg_name][0] for cg_name in self.options["cg_names"]]
         masses = [inputs[mass_name][0] for mass_name in self.options["mass_names"]]
@@ -179,6 +181,8 @@ class CGRatio(om.ExplicitComponent):
 
         self.add_output("data:weight:aircraft:empty:CG:MAC_position", units="unitless")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         x_cg_all = inputs["data:weight:aircraft_empty:CG:x"]
         wing_position = inputs["data:geometry:wing:MAC:at25percent:x"]
@@ -227,6 +231,8 @@ class ComputeZCG(om.ExplicitComponent):
         self.add_output("data:weight:aircraft_empty:CG:z", units="m")
         self.add_output("data:weight:propulsion:engine:CG:z", units="m")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         masses = [inputs[mass_name][0] for mass_name in self.options["mass_names"]]
         height_max = inputs["data:geometry:fuselage:maximum_height"][0]

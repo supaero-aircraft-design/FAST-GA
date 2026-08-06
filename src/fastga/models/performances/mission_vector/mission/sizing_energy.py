@@ -47,6 +47,8 @@ class SizingEnergy(om.ExplicitComponent):
             of="data:mission:sizing:energy", wrt="*:energy", method="exact", val=1.0
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         outputs["data:mission:sizing:fuel"] = (
             inputs["data:mission:sizing:main_route:climb:fuel"]

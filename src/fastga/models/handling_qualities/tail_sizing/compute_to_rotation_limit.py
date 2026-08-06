@@ -132,6 +132,8 @@ class ComputeTORotationLimit(om.ExplicitComponent):
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         cl_max_takeoff = inputs["data:aerodynamics:wing:low_speed:CL_max_clean"]
         cl0_clean = inputs["data:aerodynamics:wing:low_speed:CL0_clean"]
@@ -244,6 +246,8 @@ class _ComputeAeroCoeffTO(om.ExplicitComponent):
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         wing_area = inputs["data:geometry:wing:area"]
         ht_area = inputs["data:geometry:horizontal_tail:area"]

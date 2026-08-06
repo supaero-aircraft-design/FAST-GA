@@ -42,6 +42,8 @@ class ComputePayloadCG(om.ExplicitComponent):
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         lav = inputs["data:geometry:fuselage:front_length"]
         x_cg_d2 = inputs["data:weight:furniture:passenger_seats:CG:x"]

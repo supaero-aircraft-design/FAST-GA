@@ -100,6 +100,8 @@ class NoDEPEffect(om.ExplicitComponent):
         self.add_output("delta_Cd", val=np.full(number_of_points, 0.0), units="unitless")
         self.add_output("delta_Cm", val=np.full(number_of_points, 0.0), units="unitless")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         outputs["delta_Cl"] = 0.0
         outputs["delta_Cd"] = 0.0

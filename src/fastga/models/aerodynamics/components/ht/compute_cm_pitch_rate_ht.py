@@ -64,6 +64,8 @@ class ComputeCMPitchVelocityHorizontalTail(om.ExplicitComponent):
     def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="exact")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         l0_wing = inputs["data:geometry:wing:MAC:length"]
         wing_area = inputs["data:geometry:wing:area"]

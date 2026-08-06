@@ -70,6 +70,8 @@ class PressurizationAirFlow(om.ExplicitComponent):
             cols=np.zeros(n),
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         cabin_altitude = np.interp(
             inputs[self.input_name] * 3.28084,

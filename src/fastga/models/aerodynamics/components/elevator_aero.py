@@ -53,6 +53,8 @@ class ComputeDeltaElevator(FigureDigitization):
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         wing_area = inputs["data:geometry:wing:area"]
         htp_area = inputs["data:geometry:horizontal_tail:area"]

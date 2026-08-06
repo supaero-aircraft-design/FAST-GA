@@ -49,6 +49,8 @@ class InitializeCoG(om.ExplicitComponent):
 
         self.add_output("x_cg", shape=number_of_points, units="m")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         fuel_taxi_out = inputs["data:mission:sizing:taxi_out:fuel"]
         fuel_takeoff = inputs["data:mission:sizing:takeoff:fuel"]

@@ -54,6 +54,8 @@ class ComputeRibsMass(om.ExplicitComponent):
 
         self.add_output("data:weight:airframe:wing:ribs:mass", units="kg")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         """
         Component that computes the ribs mass necessary to react to the given linear force

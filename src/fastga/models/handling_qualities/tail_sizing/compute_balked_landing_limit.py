@@ -225,6 +225,8 @@ class ComputeBalkedLandingLimit(AircraftEquilibriumLimit):
             units="unitless",
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         mlw = inputs["data:weight:aircraft:MLW"]
 

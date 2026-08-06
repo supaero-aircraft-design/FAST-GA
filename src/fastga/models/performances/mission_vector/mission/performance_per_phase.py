@@ -161,6 +161,8 @@ class PerformancePerPhase(om.ExplicitComponent):
             of="data:mission:sizing:main_route:descent:duration", wrt="time", method="exact"
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         time = inputs["time"]
         position = inputs["position"]

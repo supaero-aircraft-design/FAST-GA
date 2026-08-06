@@ -51,6 +51,8 @@ class ComputeFuselageCG(om.ExplicitComponent):
             method="exact",
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         prop_layout = inputs["data:geometry:propulsion:engine:layout"]
         fus_length = inputs["data:geometry:fuselage:length"]

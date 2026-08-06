@@ -62,6 +62,8 @@ class ComputeAircraftMaxCl(om.ExplicitComponent):
             val=1.0,
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         cl_max_clean = inputs["data:aerodynamics:wing:low_speed:CL_max_clean"]
         cl_max_takeoff = cl_max_clean + inputs["data:aerodynamics:flaps:takeoff:CL_max"]

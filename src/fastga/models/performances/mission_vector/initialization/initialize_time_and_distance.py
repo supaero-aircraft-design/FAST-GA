@@ -62,6 +62,8 @@ class InitializeTimeAndDistance(om.ExplicitComponent):
         self.add_output("time", val=np.linspace(0.0, 7200.0, number_of_points), units="s")
         self.add_output("position", val=np.linspace(0.0, 926000.0, number_of_points), units="m")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         altitude = inputs["altitude"]
         horizontal_speed = inputs["horizontal_speed"]

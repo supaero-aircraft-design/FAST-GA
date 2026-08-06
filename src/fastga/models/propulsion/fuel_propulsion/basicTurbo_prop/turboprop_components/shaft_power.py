@@ -55,6 +55,8 @@ class ShaftPower(om.ExplicitComponent):
             cols=np.zeros(n),
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         air_mass_flow = inputs["air_mass_flow"]
         fuel_air_ratio = inputs["fuel_air_ratio"]

@@ -174,6 +174,8 @@ class ComputeWebMass(om.ExplicitComponent):
 
             self.add_output("data:weight:airframe:wing:web:mass:min_fuel_in_wing", units="kg")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):  # noqa: PLR0915
         """
         Component that computes the wing web mass necessary to react to the given linear force

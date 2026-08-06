@@ -59,6 +59,8 @@ class ComputeClAlphaVerticalTail(FigureDigitization):
         else:
             self.add_output("data:aerodynamics:vertical_tail:cruise:CL_alpha", units="rad**-1")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         if self.options["low_speed_aero"]:
             mach = inputs["data:aerodynamics:low_speed:mach"]

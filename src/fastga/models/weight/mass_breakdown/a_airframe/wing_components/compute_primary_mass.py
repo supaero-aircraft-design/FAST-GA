@@ -47,6 +47,8 @@ class ComputePrimaryMass(om.ExplicitComponent):
 
         self.add_output("data:weight:airframe:wing:primary_structure:mass", units="kg")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         primary_mass = (
             max(

@@ -58,6 +58,8 @@ class ComputeGroundCGCase(om.ExplicitComponent):
             "data:weight:aircraft:CG:ground_condition:min:MAC_position", units="unitless"
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         luggage_mass_max = inputs["data:geometry:cabin:luggage:mass_max"].item()
         l0_wing = inputs["data:geometry:wing:MAC:length"]
@@ -154,6 +156,8 @@ class ComputeFlightCGCase(om.ExplicitComponent):
             "data:weight:aircraft:CG:flight_condition:min:MAC_position", units="unitless"
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         luggage_mass_max = inputs["data:geometry:cabin:luggage:mass_max"].item()
         n_pax_max = int(inputs["data:geometry:cabin:seats:passenger:NPAX_max"].item())

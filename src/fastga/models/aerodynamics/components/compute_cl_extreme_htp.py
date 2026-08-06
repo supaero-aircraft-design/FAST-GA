@@ -148,6 +148,8 @@ class ComputeLocalReynolds(om.ExplicitComponent):
         )
         self.declare_partials("mach", "data:aerodynamics:low_speed:mach", method="exact", val=1)
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         outputs["data:aerodynamics:horizontal_tail:root:low_speed:reynolds"] = (
             inputs["data:aerodynamics:low_speed:unit_reynolds"]
@@ -270,6 +272,8 @@ class ComputeHtp3DExtremeCL(om.ExplicitComponent):
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         y_root = 0.0
         y_tip = inputs["data:geometry:horizontal_tail:span"].item() / 2.0

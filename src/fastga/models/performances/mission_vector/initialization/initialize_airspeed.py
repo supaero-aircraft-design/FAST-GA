@@ -56,6 +56,8 @@ class InitializeAirspeed(om.ExplicitComponent):
         self.add_output("true_airspeed", val=np.full(number_of_points, 50.0), units="m/s")
         self.add_output("equivalent_airspeed", val=np.full(number_of_points, 50.0), units="m/s")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         v_tas_cruise = inputs["data:TLAR:v_cruise"]
 

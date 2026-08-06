@@ -38,6 +38,8 @@ class UpdateWingPosition(om.ExplicitComponent):
     def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="exact")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         static_margin = inputs["data:handling_qualities:stick_fixed_static_margin"]
         target_static_margin = inputs["data:handling_qualities:static_margin:target"]

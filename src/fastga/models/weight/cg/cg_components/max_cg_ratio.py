@@ -73,6 +73,8 @@ class ComputeMaxMinCGRatio(om.ExplicitComponent):
     def setup_partials(self):
         self.declare_partials("*", "*", method="fd")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         ground_conditions_aft = inputs["data:weight:aircraft:CG:ground_condition:max:MAC_position"]
         ground_conditions_fwd = inputs["data:weight:aircraft:CG:ground_condition:min:MAC_position"]
