@@ -22,7 +22,6 @@ from fastoad.module_management._bundle_loader import BundleLoader
 from scipy.constants import g
 from stdatm import Atmosphere
 
-from fastga.command.api import list_inputs, list_outputs
 from fastga.utils.options_checkers import check_propulsion_id
 
 from .constants import SERVICE_HT_AREA, SUBMODEL_HT_AREA_LEGACY, SUBMODEL_HT_AREA_VOLUME_COEFF
@@ -51,36 +50,22 @@ class UpdateHTArea(om.Group):
         self.add_subsystem(
             "aero_coeff_landing",
             _ComputeAeroCoeff(landing=True),
-            promotes=self.get_io_names(_ComputeAeroCoeff(landing=True), iotypes="inputs"),
+            promotes_inputs=["*"],
         )
         self.add_subsystem(
             "aero_coeff_takeoff",
             _ComputeAeroCoeff(),
-            promotes=self.get_io_names(_ComputeAeroCoeff(), iotypes="inputs"),
+            promotes_inputs=["*"],
         )
         self.add_subsystem(
             "ht_area",
             _UpdateArea(propulsion_id=self.options["propulsion_id"]),
-            promotes=self.get_io_names(
-                _UpdateArea(propulsion_id=self.options["propulsion_id"]),
-                excludes=[
-                    "landing:cl_htp",
-                    "takeoff:cl_htp",
-                    "low_speed:cl_alpha_htp_isolated",
-                ],
-            ),
+            promotes=["data:*", "settings:*"],
         )
         self.add_subsystem(
             "ht_area_constraints",
             _ComputeHTPAreaConstraints(propulsion_id=self.options["propulsion_id"]),
-            promotes=self.get_io_names(
-                _ComputeHTPAreaConstraints(propulsion_id=self.options["propulsion_id"]),
-                excludes=[
-                    "landing:cl_htp",
-                    "takeoff:cl_htp",
-                    "low_speed:cl_alpha_htp_isolated",
-                ],
-            ),
+            promotes=["data:*", "settings:*"],
         )
 
         self.connect("aero_coeff_landing.cl_htp", "ht_area.landing:cl_htp")
@@ -95,25 +80,6 @@ class UpdateHTArea(om.Group):
             "aero_coeff_takeoff.cl_alpha_htp_isolated",
             "ht_area_constraints.low_speed:cl_alpha_htp_isolated",
         )
-
-    @staticmethod
-    def get_io_names(
-        component: om.ExplicitComponent,
-        excludes: str | list[str] | None = None,
-        iotypes: str | tuple[str, str] | None = ("inputs", "outputs"),
-    ) -> list[str]:
-        list_names = []
-        if isinstance(iotypes, tuple):
-            list_names.extend(list_inputs(component))
-            list_names.extend(list_outputs(component))
-        elif iotypes == "inputs":
-            list_names.extend(list_inputs(component))
-        else:
-            list_names.extend(list_outputs(component))
-        if excludes is not None:
-            list_names = [x for x in list_names if x not in excludes]
-
-        return list_names
 
 
 class HTPConstraints(om.ExplicitComponent):

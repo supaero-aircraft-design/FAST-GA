@@ -28,7 +28,6 @@ from fastoad.module_management._bundle_loader import BundleLoader
 from scipy.constants import g
 from stdatm import Atmosphere
 
-from fastga.command.api import list_inputs, list_outputs
 from fastga.utils.options_checkers import check_propulsion_id
 
 ALPHA_LIMIT = 13.5 * np.pi / 180.0  # Limit angle to touch tail on ground in rad
@@ -50,45 +49,22 @@ class TakeOffPhase(om.Group):
         self.add_subsystem(
             "compute_v2",
             V2(propulsion_id=self.options["propulsion_id"]),
-            promotes=self.get_io_names(
-                V2(propulsion_id=self.options["propulsion_id"]),
-                iotypes="inputs",
-            ),
+            promotes_inputs=["*"],
         )
         self.add_subsystem(
             "compute_v_lift_off",
             VLiftOffFromV2(propulsion_id=self.options["propulsion_id"]),
-            promotes=self.get_io_names(
-                VLiftOffFromV2(propulsion_id=self.options["propulsion_id"]),
-                excludes=[
-                    "v2:speed",
-                    "v2:angle",
-                ],
-                iotypes="inputs",
-            ),
+            promotes_inputs=["data:*"],
         )
         self.add_subsystem(
             "compute_vr",
             VRFromV2(propulsion_id=self.options["propulsion_id"]),
-            promotes=self.get_io_names(
-                VRFromV2(propulsion_id=self.options["propulsion_id"]),
-                excludes=[
-                    "v_lift_off:speed",
-                    "v_lift_off:angle",
-                ],
-                iotypes="inputs",
-            ),
+            promotes_inputs=["data:*"],
         )
         self.add_subsystem(
             "simulate_takeoff",
             SimulateTakeoff(propulsion_id=self.options["propulsion_id"]),
-            promotes=self.get_io_names(
-                SimulateTakeoff(propulsion_id=self.options["propulsion_id"]),
-                excludes=[
-                    "vr:speed",
-                    "v2:angle",
-                ],
-            ),
+            promotes=["data:*"],
         )
         self.connect("compute_v2.v2:speed", "compute_v_lift_off.v2:speed")
         self.connect("compute_v2.v2:angle", "compute_v_lift_off.v2:angle")
@@ -96,25 +72,6 @@ class TakeOffPhase(om.Group):
         self.connect("compute_v_lift_off.v_lift_off:angle", "compute_vr.v_lift_off:angle")
         self.connect("compute_vr.vr:speed", "simulate_takeoff.vr:speed")
         self.connect("compute_v2.v2:angle", "simulate_takeoff.v2:angle")
-
-    @staticmethod
-    def get_io_names(
-        component: om.ExplicitComponent,
-        excludes: str | list[str] | None = None,
-        iotypes: str | tuple[str, str] | None = ("inputs", "outputs"),
-    ) -> list[str]:
-        list_names = []
-        if isinstance(iotypes, tuple):
-            list_names.extend(list_inputs(component))
-            list_names.extend(list_outputs(component))
-        elif iotypes == "inputs":
-            list_names.extend(list_inputs(component))
-        else:
-            list_names.extend(list_outputs(component))
-        if excludes is not None:
-            list_names = [x for x in list_names if x not in excludes]
-
-        return list_names
 
 
 class V2(om.ExplicitComponent):
