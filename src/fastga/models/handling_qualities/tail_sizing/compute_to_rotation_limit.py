@@ -22,7 +22,6 @@ from fastoad.module_management._bundle_loader import BundleLoader
 from scipy.constants import g
 from stdatm import Atmosphere
 
-from fastga.command.api import list_inputs, list_outputs
 from fastga.utils.options_checkers import check_propulsion_id
 
 _ANG_VEL = 12 * np.pi / 180  # 12 deg/s (typical for light aircraft)
@@ -40,42 +39,16 @@ class ComputeTORotationLimitGroup(om.Group):
         self.add_subsystem(
             "aero_coeff_to",
             _ComputeAeroCoeffTO(),
-            promotes=self.get_io_names(_ComputeAeroCoeffTO(), iotypes="inputs"),
+            promotes_inputs=["*"],
         )
         self.add_subsystem(
             "to_rotation_limit",
             ComputeTORotationLimit(propulsion_id=self.options["propulsion_id"]),
-            promotes=self.get_io_names(
-                ComputeTORotationLimit(propulsion_id=self.options["propulsion_id"]),
-                excludes=[
-                    "takeoff:cl_htp",
-                    "takeoff:cm_wing",
-                    "low_speed:cl_alpha_htp",
-                ],
-            ),
+            promotes=["data:*"],
         )
         self.connect("aero_coeff_to.cl_htp", "to_rotation_limit.takeoff:cl_htp")
         self.connect("aero_coeff_to.cm_wing", "to_rotation_limit.takeoff:cm_wing")
         self.connect("aero_coeff_to.cl_alpha_htp", "to_rotation_limit.low_speed:cl_alpha_htp")
-
-    @staticmethod
-    def get_io_names(
-        component: om.ExplicitComponent,
-        excludes: str | list[str] | None = None,
-        iotypes: str | tuple[str, str] | None = ("inputs", "outputs"),
-    ) -> list[str]:
-        list_names = []
-        if isinstance(iotypes, tuple):
-            list_names.extend(list_inputs(component))
-            list_names.extend(list_outputs(component))
-        elif iotypes == "inputs":
-            list_names.extend(list_inputs(component))
-        else:
-            list_names.extend(list_outputs(component))
-        if excludes is not None:
-            list_names = [x for x in list_names if x not in excludes]
-
-        return list_names
 
 
 class ComputeTORotationLimit(om.ExplicitComponent):
